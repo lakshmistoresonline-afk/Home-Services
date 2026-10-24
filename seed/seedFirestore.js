@@ -1,13 +1,12 @@
 const { db, auth } = require("./firebase-utils");
 const { Timestamp, FieldValue } = require("firebase-admin/firestore");
 
-// Import JSON data
 const applicationSettings = require("./applicationSettings.json");
 const systemSettings = require("./systemSettings.json");
 const roles = require("./roles.json");
 const permissions = require("./permissions.json");
 const departments = require("./departments.json");
-const wards = require("./wards.json");
+const taluks = require("./taluks.json");
 const categories = require("./complaintCategories.json");
 const priorities = require("./complaintPriorities.json");
 const statuses = require("./complaintStatuses.json");
@@ -16,10 +15,10 @@ const slaRules = require("./slaRules.json");
 const notificationTemplates = require("./notificationTemplates.json");
 const superAdmins = require("./superAdmin.json");
 const readonlyAdmins = require("./readonlyAdmin.json");
-const wardAdmins = require("./wardAdmins.json");
+const talukAdmins = require("./talukAdmins.json");
 const staff = require("./staff.json");
 const citizens = require("./citizens.json");
-const bookings = require("./bookings.json");
+const complaints = require("./complaints.json");
 const timeline = require("./timeline.json");
 const attachments = require("./attachments.json");
 const comments = require("./comments.json");
@@ -33,7 +32,7 @@ function getRolePassword(role) {
     switch (role) {
         case 'super_admin': return 'Super@123';
         case 'readonly_super_admin': return 'Audit@123';
-        case 'ward_admin': return 'Admin@123';
+        case 'taluk_admin': return 'Admin@123';
         case 'staff': return 'Staff@123';
         case 'citizen': return 'User@123';
         default: return 'User@123';
@@ -87,6 +86,10 @@ async function seedCollection(collectionName, data, idField = "id", createAuth =
             preparedData.resolvedAt = Timestamp.fromDate(new Date(item.resolvedAt));
         }
 
+        if (item.slaDueAt) {
+            preparedData.slaDueAt = Timestamp.fromDate(new Date(item.slaDueAt));
+        }
+
         bulkWriter.set(ref, preparedData);
     }
 
@@ -113,7 +116,7 @@ async function seedSettings() {
     });
     await metadataRef.doc("counters").set({
         staffId: staff.length,
-        bookingId: bookings.length
+        complaintId: complaints.length
     });
 
     console.log("Done");
@@ -121,7 +124,7 @@ async function seedSettings() {
 
 async function runSeeder() {
     console.log("=========================================================");
-    console.log(" STARTING HOME SERVICE DATABASE SEED");
+    console.log(" STARTING DATABASE SEED (KERALA TALUK STRUCTURE)");
     console.log("=========================================================\n");
 
     try {
@@ -129,7 +132,7 @@ async function runSeeder() {
         await seedCollection("roles", roles);
         await seedCollection("permissions", permissions);
         await seedCollection("departments", departments);
-        await seedCollection("wards", wards, "wardNumber");
+        await seedCollection("taluks", taluks, "id");
         await seedCollection("complaintCategories", categories);
         await seedCollection("complaintPriorities", priorities);
         await seedCollection("complaintStatuses", statuses);
@@ -139,12 +142,12 @@ async function runSeeder() {
         // Users
         await seedCollection("users", superAdmins, "uid", true);
         await seedCollection("users", readonlyAdmins, "uid", true);
-        await seedCollection("users", wardAdmins, "uid", true);
+        await seedCollection("users", talukAdmins, "uid", true);
         await seedCollection("users", staff, "uid", true);
         await seedCollection("users", citizens, "uid", true);
 
-        // Bookings and related
-        await seedCollection("bookings", bookings);
+        // Complaints and related
+        await seedCollection("complaints", complaints);
         await seedCollection("timeline", timeline);
         await seedCollection("attachments", attachments);
         await seedCollection("comments", comments);
@@ -156,7 +159,7 @@ async function runSeeder() {
         await seedCollection("reportConfigurations", reportConfigs);
 
         console.log("\n=========================================================");
-        console.log(" HOME SERVICE SEED COMPLETED SUCCESSFULLY");
+        console.log(" KERALA TALUK SEED COMPLETED SUCCESSFULLY");
         console.log("=========================================================\n");
         process.exit(0);
     } catch (error) {

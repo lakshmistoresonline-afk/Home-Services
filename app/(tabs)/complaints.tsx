@@ -76,7 +76,7 @@ export default function ComplaintsListScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={[typography.label.small, { color: colors.primary, letterSpacing: 1.5, fontWeight: '700' }]}>HISTORY</Text>
-          <Text style={[typography.headline.small, { color: colors.text, fontWeight: '800' }]}>My Complaints</Text>
+          <Text style={[typography.headline.small, { color: colors.text, fontWeight: '800' }]}>My Service Requests</Text>
         </View>
         <TouchableOpacity
           testID="new-complaint-fab"
@@ -110,12 +110,12 @@ export default function ComplaintsListScreen() {
               <View style={[styles.emptyIconContainer, { backgroundColor: colors.surfaceTint }]}>
                 <Ionicons name="document-text-outline" size={64} color={colors.textSecondary} />
               </View>
-              <Text style={[typography.headline.small, { color: colors.text, fontWeight: '800', marginTop: spacing.lg }]}>No complaints yet</Text>
+              <Text style={[typography.headline.small, { color: colors.text, fontWeight: '800', marginTop: spacing.lg }]}>No service requests yet</Text>
               <Text style={[typography.body.large, { color: colors.textSecondary, textAlign: 'center', marginTop: spacing.sm, marginBottom: spacing.xl }]}>
-                You haven't filed any complaints yet. Tap the button below to report an issue.
+                You haven't requested any home services yet. Tap the button below to book a service.
               </Text>
               <AppButton
-                title="File a Complaint"
+                title="Raise Service Request"
                 onPress={() => router.push('/complaint/new')}
                 style={{ width: '100%' }}
               />

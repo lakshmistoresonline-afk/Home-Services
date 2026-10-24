@@ -1,0 +1,24 @@
+[
+  {
+    "uid": "taluk_admin_01",
+    "fullName": "Thrissur Taluk Admin",
+    "email": "talukadmin.thrissur@homeservice.gov.in",
+    "role": "taluk_admin",
+    "district": "Thrissur",
+    "taluk": "Thrissur",
+    "permissions": ["manage_requests", "assign_staff", "view_reports"],
+    "isActive": true,
+    "mobile": "9876543220"
+  },
+  {
+    "uid": "taluk_admin_02",
+    "fullName": "Kochi Taluk Admin",
+    "email": "talukadmin.kochi@homeservice.gov.in",
+    "role": "taluk_admin",
+    "district": "Ernakulam",
+    "taluk": "Kochi",
+    "permissions": ["manage_requests", "assign_staff", "view_reports"],
+    "isActive": true,
+    "mobile": "9876543221"
+  }
+]

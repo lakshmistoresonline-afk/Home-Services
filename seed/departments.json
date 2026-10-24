@@ -1,12 +1,17 @@
 [
-  { "id": "appliance", "name": "Appliance Repair", "description": "AC, washing machine, refrigerator, water purifier, and chimney repair", "displayOrder": 10, "icon": "hardware-chip", "isActive": true },
-  { "id": "cleaning", "name": "Cleaning & Pest Control", "description": "Deep home cleaning, sofa cleaning, water tank sanitization, and pest control", "displayOrder": 20, "icon": "sparkles", "isActive": true },
-  { "id": "electrical", "name": "Electrician", "description": "Wiring, fans, switches, inverter maintenance, and lighting installation", "displayOrder": 30, "icon": "flash", "isActive": true },
-  { "id": "plumbing", "name": "Plumber", "description": "Tap leaks, pipe unblocking, geysers, and sanitary fittings", "displayOrder": 40, "icon": "water", "isActive": true },
-  { "id": "carpentry", "name": "Carpenter", "description": "Furniture assembly, door repairs, lock replacement, and woodwork", "displayOrder": 50, "icon": "construct", "isActive": true },
-  { "id": "painting", "name": "Painting & Waterproofing", "description": "Interior/exterior painting, roof waterproofing, and wood polishing", "displayOrder": 60, "icon": "color-palette", "isActive": true },
-  { "id": "gardening", "name": "Gardener", "description": "Lawn mowing, pruning, plant care, and garden landscaping", "displayOrder": 70, "icon": "leaf", "isActive": true },
-  { "id": "driving", "name": "Driver & Automotive", "description": "On-demand personal drivers, outstation trips, and doorstep car wash", "displayOrder": 80, "icon": "car", "isActive": true },
-  { "id": "smarthome", "name": "Smart Home & Tech Support", "description": "CCTV installation, smart locks, Wi-Fi mesh setup, and computer repair", "displayOrder": 90, "icon": "wifi", "isActive": true },
-  { "id": "handyman", "name": "Handyman & Odd Jobs", "description": "Picture hanging, heavy lifting, furniture rearranging, and general odd jobs", "displayOrder": 100, "icon": "hammer", "isActive": true }
+  { "id": "appliance", "name": "Appliance Repair", "description": "AC, washing machine, refrigerator, water purifier (RO) repair and service", "displayOrder": 10, "icon": "hardware-chip", "isActive": true },
+  { "id": "cleaning", "name": "Cleaning & Pest Control", "description": "Full home deep cleaning, kitchen/bathroom cleaning, sofa shampooing, and pest control", "displayOrder": 20, "icon": "sparkles", "isActive": true },
+  { "id": "water_systems", "name": "Water Systems & Well Care", "description": "Well cleaning & desilting, borewell pump repair, and septic tank de-sludging", "displayOrder": 25, "icon": "water", "isActive": true },
+  { "id": "electrical", "name": "Electrician", "description": "Fan repair, switchboard replacement, MCB fixing, and home wiring", "displayOrder": 30, "icon": "flash", "isActive": true },
+  { "id": "plumbing", "name": "Plumber", "description": "Tap leakages, pipe unblocking, geyser installation, and sanitary fittings", "displayOrder": 40, "icon": "water", "isActive": true },
+  { "id": "carpentry", "name": "Carpenter", "description": "Furniture assembly, door lock replacement, and woodwork", "displayOrder": 50, "icon": "construct", "isActive": true },
+  { "id": "painting", "name": "Painting & Waterproofing", "description": "Interior and exterior wall painting, and roof waterproofing", "displayOrder": 60, "icon": "color-palette", "isActive": true },
+  { "id": "monsoon_care", "name": "Monsoon & Waterproofing Care", "description": "Roof tile leak repair, anti-termite treatment, and damp wall waterproofing", "displayOrder": 62, "icon": "umbrella", "isActive": true },
+  { "id": "civil", "name": "Civil Works & Renovation", "description": "Masonry, tiling, flooring, wall plastering, and bathroom/kitchen remodeling", "displayOrder": 65, "icon": "business", "isActive": true },
+  { "id": "power_backup", "name": "Solar & Power Backup", "description": "Solar panel cleaning, inverter servicing, and surge protector installation", "displayOrder": 68, "icon": "sunny", "isActive": true },
+  { "id": "heritage_care", "name": "Wood & Heritage Care", "description": "Traditional teak wood polishing and brassware restoration", "displayOrder": 72, "icon": "color-fill", "isActive": true },
+  { "id": "elder_care", "name": "Elder Care & Nursing", "description": "In-home nursing care, attender services, and bedside physiotherapy", "displayOrder": 75, "icon": "medkit", "isActive": true },
+  { "id": "beauty", "name": "Salon, Spa & Grooming", "description": "Salon for women, men's grooming, and relaxing spa/massage therapies at home", "displayOrder": 78, "icon": "heart", "isActive": true },
+  { "id": "driving", "name": "Driver & Automotive", "description": "On-demand personal drivers and doorstep car wash/detailing", "displayOrder": 80, "icon": "car", "isActive": true },
+  { "id": "smarthome", "name": "Smart Home & Tech", "description": "CCTV camera installation, smart lock setup, and Wi-Fi configuration", "displayOrder": 90, "icon": "wifi", "isActive": true }
 ]

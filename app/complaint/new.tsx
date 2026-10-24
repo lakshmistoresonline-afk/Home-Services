@@ -249,7 +249,7 @@ export default function NewComplaintScreen() {
         <TouchableOpacity onPress={() => router.back()} testID="new-complaint-back" style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[typography.title.large, { color: colors.text, fontWeight: '800', flex: 1 }]}>Submit Complaint</Text>
+        <Text style={[typography.title.large, { color: colors.text, fontWeight: '800', flex: 1 }]}>Raise Service Request</Text>
         <TouchableOpacity onPress={goHome} style={styles.homeBtn}>
           <Ionicons name="home-outline" size={24} color={colors.primary} />
         </TouchableOpacity>
@@ -258,7 +258,7 @@ export default function NewComplaintScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={{ marginBottom: spacing.lg }}>
-            <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>ISSUE CATEGORY</Text>
+            <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>SERVICE CATEGORY</Text>
             <TouchableOpacity
               testID="category-picker"
               onPress={() => setShowCat(true)}
@@ -266,18 +266,18 @@ export default function NewComplaintScreen() {
               activeOpacity={0.7}
             >
               <Text style={{ color: category ? colors.text : colors.textSecondary, fontSize: 16 }}>
-                {category || 'What is the issue about?'}
+                {category || 'Select service category...'}
               </Text>
               <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
           <AppInput
-            label="COMPLAINT TITLE"
+            label="SERVICE TITLE"
             testID="complaint-title-input"
             value={title}
             onChangeText={setTitle}
-            placeholder="Brief summary of the problem"
+            placeholder="Brief summary of the service needed"
             containerStyle={{ marginBottom: spacing.lg }}
           />
 
@@ -288,7 +288,7 @@ export default function NewComplaintScreen() {
             onChangeText={setDescription}
             multiline
             numberOfLines={5}
-            placeholder="Provide exact location and details..."
+            placeholder="Provide exact address and service details..."
             textAlignVertical="top"
             inputStyle={{ height: 120, paddingTop: 12 }}
             containerStyle={{ marginBottom: spacing.lg }}

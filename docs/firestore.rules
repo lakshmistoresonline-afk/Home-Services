@@ -3,86 +3,97 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helpers ---
+    // --- Core Authorization Helpers ---
 
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // --- Master Data (Readable by ANY authenticated user) ---
-    // NO lookups or helpers here to ensure zero-friction loading for context bootstrap.
+    function isEmployee() {
+      return isAuthenticated() &&
+             request.auth.token.email != null &&
+             request.auth.token.email.matches('.*\\.gov\\.in$');
+    }
 
-    match /roles/{id} { allow read: if isAuthenticated(); allow write: if false; }
-    match /permissions/{id} { allow read: if isAuthenticated(); allow write: if false; }
-    match /wards/{id} { allow read: if isAuthenticated(); allow write: if false; }
-    match /departments/{id} { allow read: if isAuthenticated(); allow write: if false; }
-    match /complaintCategories/{id} { allow read: if isAuthenticated(); allow write: if false; }
-    match /complaintStatuses/{id} { allow read: if isAuthenticated(); allow write: if false; }
-    match /metadata/{id} { allow read: if isAuthenticated(); allow write: if false; }
-    match /settings/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    function actorPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function actorData() {
+      return get(actorPath()).data;
+    }
+
+    function actorExists() {
+      return isAuthenticated() && exists(actorPath());
+    }
+
+    function isSuperAdmin() { return actorExists() && actorData().role == 'super_admin'; }
+    function isReadOnlyAdmin() { return actorExists() && actorData().role == 'readonly_super_admin'; }
+    function isTalukAdmin() { return actorExists() && actorData().role == 'taluk_admin'; }
+    function isSuperLevel() { return isSuperAdmin() || isReadOnlyAdmin(); }
+
+    // --- Master Data (Viewable by all auth users, writable only by primary Super Admin) ---
+
+    match /roles/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /permissions/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /taluks/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /departments/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /complaintCategories/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /complaintStatuses/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /metadata/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /settings/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
 
     // --- Functional Collections ---
 
     // 1. Users
     match /users/{uid} {
-      // Direct access to own profile (Self-read must be first and standalone to avoid recursion)
-      allow read, write: if isAuthenticated() && request.auth.uid == uid;
-
-      // Administrative read access (Cross-document lookup)
-      // Allow Ward Admin to see all Staff (needed for assignment queries)
-      // Allow Ward Admin to see Citizens in their own ward
-      allow read: if isAuthenticated() && request.auth.uid != uid && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin' && (
-           resource.data.get('role', '') == 'staff' ||
-           resource.data.get('wardNumber', -1) == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('wardNumber', -2)
-        ))
-      );
-
-      // Update restricted to Super Admin
-      allow update: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin';
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
     }
 
-    // 2. Complaints
+    // 2. Complaints / Service Requests
     match /complaints/{id} {
       allow create: if isAuthenticated();
-      allow list: if isAuthenticated();
+
+      allow list: if isSuperLevel() ||
+                  (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
+                  (resource.data.assignedStaffId == request.auth.uid) ||
+                  (isAuthenticated() && resource.data.citizenId == request.auth.uid);
 
       allow get: if isAuthenticated() && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('wardNumber', -1) == resource.data.get('wardNumber', -2)) ||
-        (resource.data.get('assignedStaffId', '') == request.auth.uid) ||
-        (resource.data.get('citizenId', '') == request.auth.uid)
+        isSuperLevel() ||
+        (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
+        (resource.data.assignedStaffId == request.auth.uid) ||
+        (resource.data.citizenId == request.auth.uid)
       );
 
       allow update: if isAuthenticated() && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('wardNumber', -1) == resource.data.get('wardNumber', -2)) ||
-        (resource.data.get('assignedStaffId', '') == request.auth.uid && (
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['citizenId', 'wardNumber', 'departmentId'])
+        isSuperAdmin() ||
+        (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
+        (resource.data.assignedStaffId == request.auth.uid && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['citizenId', 'taluk', 'departmentId'])
         )) ||
-        (resource.data.get('citizenId', '') == request.auth.uid && (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'history', 'timeline', 'status', 'updatedAt'])
+        (resource.data.citizenId == request.auth.uid && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'history', 'timeline', 'status', 'updatedAt', 'photos', 'attachments', 'remarks', 'assignedStaffId', 'assignedStaffName', 'assignmentHistory'])
         ))
       );
 
-      allow delete: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin';
+      allow delete: if isSuperAdmin();
     }
 
     // 3. Notifications
     match /notifications/{id} {
-      allow list: if isAuthenticated();
-      allow get: if isAuthenticated() && resource.data.get('recipientUid', '') == request.auth.uid;
+      allow list, get: if isSuperLevel() || (isAuthenticated() && resource.data.recipientUid == request.auth.uid);
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.get('recipientUid', '') == request.auth.uid && (
+      allow update: if isSuperAdmin() || (isAuthenticated() && resource.data.recipientUid == request.auth.uid && (
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'archived', 'updatedAt'])
-      );
-      allow delete: if isAuthenticated() && (resource.data.get('recipientUid', '') == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin');
+      ));
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.recipientUid == request.auth.uid);
     }
 
     // 4. Audit Logs
     match /auditLogs/{id} {
-      allow list, get: if isAuthenticated() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin');
+      allow read: if isSuperLevel() || isEmployee();
       allow create: if isAuthenticated();
       allow update, delete: if false;
     }

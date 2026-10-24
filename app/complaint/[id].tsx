@@ -370,7 +370,7 @@ export default function ComplaintDetail() {
         <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Complaint Details</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Service Request Details</Text>
         <TouchableOpacity onPress={goHome} style={styles.headerIconBtn}>
           <Ionicons name="home-outline" size={22} color={colors.primary} />
         </TouchableOpacity>

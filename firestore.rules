@@ -9,7 +9,6 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Fast-path heuristic for the query engine.
     function isEmployee() {
       return isAuthenticated() &&
              request.auth.token.email != null &&
@@ -28,19 +27,16 @@ service cloud.firestore {
       return isAuthenticated() && exists(actorPath());
     }
 
-    // Role-specific helpers
     function isSuperAdmin() { return actorExists() && actorData().role == 'super_admin'; }
     function isReadOnlyAdmin() { return actorExists() && actorData().role == 'readonly_super_admin'; }
-    function isWardAdmin() { return actorExists() && actorData().role == 'ward_admin'; }
-
-    // Tiered Access: Grants full READ access to both primary and read-only admins
+    function isTalukAdmin() { return actorExists() && actorData().role == 'taluk_admin'; }
     function isSuperLevel() { return isSuperAdmin() || isReadOnlyAdmin(); }
 
     // --- Master Data (Viewable by all auth users, writable only by primary Super Admin) ---
 
     match /roles/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
     match /permissions/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /wards/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /taluks/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
     match /departments/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
     match /complaintCategories/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
     match /complaintStatuses/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
@@ -51,37 +47,33 @@ service cloud.firestore {
 
     // 1. Users
     match /users/{uid} {
-      // allow create even if auth token propagation is slow; write is still locked to the UID
       allow create: if true;
       allow read, update, delete: if request.auth != null;
     }
 
-    // 2. Complaints
+    // 2. Complaints / Service Requests
     match /complaints/{id} {
       allow create: if isAuthenticated();
 
       allow list: if isSuperLevel() ||
-                  (isWardAdmin() && resource.data.wardNumber == actorData().wardNumber) ||
+                  (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
                   (resource.data.assignedStaffId == request.auth.uid) ||
                   (isAuthenticated() && resource.data.citizenId == request.auth.uid);
 
       allow get: if isAuthenticated() && (
         isSuperLevel() ||
-        (isWardAdmin() && resource.data.wardNumber == actorData().wardNumber) ||
+        (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
         (resource.data.assignedStaffId == request.auth.uid) ||
         (resource.data.citizenId == request.auth.uid)
       );
 
       allow update: if isAuthenticated() && (
         isSuperAdmin() ||
-        (isWardAdmin() && resource.data.wardNumber == actorData().wardNumber) ||
+        (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
         (resource.data.assignedStaffId == request.auth.uid && (
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['citizenId', 'wardNumber', 'departmentId'])
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['citizenId', 'taluk', 'departmentId'])
         )) ||
         (resource.data.citizenId == request.auth.uid && (
-          // Citizens can update basic info, comments, and status (for cancel/reopen)
-          // During a REOPEN (status set to Submitted/Assigned), we also allow them to update assignment fields
-          // because our client-side logic performs auto-assignment in the same call.
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'history', 'timeline', 'status', 'updatedAt', 'photos', 'attachments', 'remarks', 'assignedStaffId', 'assignedStaffName', 'assignmentHistory'])
         ))
       );
