@@ -1,0 +1,4 @@
+[
+  { "id": "COM_001", "complaintId": "CMP_001", "author_id": "wa_01", "author_name": "Ward Admin 1", "author_role": "ward_admin", "text": "Verifying the location.", "created_at": "2026-07-25T12:00:00Z" },
+  { "id": "COM_002", "complaintId": "CMP_003", "author_id": "staff_05", "author_name": "Sanitation Staff 1", "author_role": "staff", "text": "Arrived at location, starting collection.", "created_at": "2026-07-27T10:05:00Z" }
+]

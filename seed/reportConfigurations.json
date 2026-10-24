@@ -1,0 +1,6 @@
+[
+  { "id": "complaint_summary", "name": "Complaint Summary", "type": "summary", "defaultPeriod": "30d" },
+  { "id": "ward_performance", "name": "Ward Performance", "type": "comparison", "groupBy": "wardNumber" },
+  { "id": "department_efficiency", "name": "Department Efficiency", "type": "metric", "metric": "resolutionTime" },
+  { "id": "sla_compliance", "name": "SLA Compliance", "type": "percentage", "metric": "breachStatus" }
+]

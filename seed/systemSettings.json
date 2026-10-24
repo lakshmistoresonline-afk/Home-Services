@@ -1,0 +1,9 @@
+{
+  "autoAssignmentEnabled": true,
+  "defaultSlaHours": 72,
+  "maxAttachmentsPerComplaint": 5,
+  "allowedFileTypes": ["image/jpeg", "image/png", "application/pdf"],
+  "retentionPeriodDays": 365,
+  "auditLoggingEnabled": true,
+  "enableNotifications": true
+}

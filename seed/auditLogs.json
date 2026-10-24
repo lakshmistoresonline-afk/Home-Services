@@ -1,0 +1,4 @@
+[
+  { "id": "LOG_001", "timestamp": "2026-07-25T10:00:00Z", "actor": { "uid": "citizen_01", "name": "Rahul Nair", "role": "citizen" }, "action": "COMPLAINT_CREATED", "entity": { "type": "complaint", "id": "TCR-2026-001" }, "context": { "device": "android 34" } },
+  { "id": "LOG_002", "timestamp": "2026-07-25T10:31:00Z", "actor": { "uid": "system", "name": "Assignment Engine", "role": "super_admin" }, "action": "COMPLAINT_ASSIGNED", "entity": { "type": "complaint", "id": "TCR-2026-002" }, "changes": { "prev": null, "next": "Electrical Specialist 1" }, "context": { "device": "system-process" } }
+]

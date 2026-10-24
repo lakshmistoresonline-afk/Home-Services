@@ -1,0 +1,10 @@
+{
+  "appName": "ComplaintsFire",
+  "supportEmail": "support@mcms.gov.in",
+  "supportPhone": "+91 487 2331111",
+  "version": "1.1.0",
+  "maintenanceMode": false,
+  "allowCitizenRegistration": true,
+  "termsUrl": "https://mcms.gov.in/terms",
+  "privacyUrl": "https://mcms.gov.in/privacy"
+}

@@ -1,0 +1,17 @@
+{
+  "transitions": {
+    "Submitted": ["Assigned", "Cancelled"],
+    "Assigned": ["Accepted", "Rejected"],
+    "Accepted": ["In Progress"],
+    "Rejected": ["Assigned"],
+    "In Progress": ["Resolved"],
+    "Resolved": ["Closed", "Reopened"],
+    "Closed": [],
+    "Cancelled": [],
+    "Reopened": ["Assigned", "Cancelled"]
+  },
+  "autoAssignmentEnabled": true,
+  "allowCitizenCancel": true,
+  "allowCitizenReopen": true,
+  "requireResolutionRemarks": true
+}

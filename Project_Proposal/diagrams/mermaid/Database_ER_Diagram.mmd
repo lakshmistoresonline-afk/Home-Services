@@ -1,0 +1,70 @@
+erDiagram
+    users ||--o{ complaints : "files"
+    users ||--o{ complaints : "assigned_to"
+    users ||--o{ notifications : "receives"
+    users ||--o{ auditLogs : "performs"
+    complaints ||--o{ notifications : "triggers"
+    departments ||--o{ complaintCategories : "contains"
+    complaintCategories ||--o{ complaints : "classifies"
+    wards ||--o{ users : "assigned_to"
+    wards ||--o{ complaints : "located_in"
+
+    users {
+        string uid PK
+        string email
+        string fullName
+        string mobile
+        string role
+        int wardNumber
+        string[] departmentIds
+        boolean isActive
+    }
+
+    complaints {
+        string id PK
+        string complaint_id
+        string citizenId FK
+        string assignedStaffId FK
+        string status
+        string categoryName
+        int wardNumber
+        string[] photos_base64
+        datetime slaDueAt
+        boolean slaBreached
+    }
+
+    departments {
+        string id PK
+        string name
+        int displayOrder
+    }
+
+    complaintCategories {
+        string id PK
+        string name
+        string departmentId FK
+        int slaHours
+    }
+
+    wards {
+        int wardNumber PK
+        string name
+        boolean isActive
+    }
+
+    notifications {
+        string id PK
+        string recipientUid FK
+        string title
+        string message
+        boolean read
+    }
+
+    auditLogs {
+        string id PK
+        string actorUid FK
+        string action
+        string entityType
+        string entityId
+        datetime timestamp
+    }

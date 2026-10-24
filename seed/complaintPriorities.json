@@ -1,0 +1,6 @@
+[
+  { "id": "low", "name": "Low", "color": "#64748B", "isActive": true },
+  { "id": "medium", "name": "Medium", "color": "#3B82F6", "isActive": true },
+  { "id": "high", "name": "High", "color": "#F59E0B", "isActive": true },
+  { "id": "critical", "name": "Critical", "color": "#EF4444", "isActive": true }
+]

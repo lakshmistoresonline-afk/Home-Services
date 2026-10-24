@@ -1,0 +1,11 @@
+[
+  { "id": "submitted", "name": "Submitted", "displayOrder": 10, "color": "#F59E0B", "icon": "file-tray-full", "isActive": true },
+  { "id": "assigned", "name": "Assigned", "displayOrder": 20, "color": "#7C3AED", "icon": "person", "isActive": true },
+  { "id": "accepted", "name": "Accepted", "displayOrder": 30, "color": "#3B82F6", "icon": "checkmark-circle", "isActive": true },
+  { "id": "in_progress", "name": "In Progress", "displayOrder": 40, "color": "#3B82F6", "icon": "time", "isActive": true },
+  { "id": "resolved", "name": "Resolved", "displayOrder": 50, "color": "#10B981", "icon": "checkmark-done", "isActive": true },
+  { "id": "closed", "name": "Closed", "displayOrder": 70, "color": "#64748B", "icon": "lock-closed", "isActive": true },
+  { "id": "rejected", "name": "Rejected", "displayOrder": 80, "color": "#EF4444", "icon": "close-circle", "isActive": true },
+  { "id": "reopened", "name": "Reopened", "displayOrder": 90, "color": "#F59E0B", "icon": "refresh", "isActive": true },
+  { "id": "cancelled", "name": "Cancelled", "displayOrder": 100, "color": "#EF4444", "icon": "close-circle", "isActive": true }
+]

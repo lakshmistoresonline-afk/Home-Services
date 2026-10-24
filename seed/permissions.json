@@ -1,0 +1,19 @@
+[
+  { "id": "view_dashboard", "name": "View Dashboard", "module": "General", "isActive": true },
+  { "id": "manage_staff", "name": "Manage Staff", "module": "Admin", "isActive": true },
+  { "id": "manage_departments", "name": "Manage Departments", "module": "System", "isActive": true },
+  { "id": "manage_categories", "name": "Manage Categories", "module": "System", "isActive": true },
+  { "id": "manage_wards", "name": "Manage Wards", "module": "System", "isActive": true },
+  { "id": "assign_complaints", "name": "Assign Complaints", "module": "Workflow", "isActive": true },
+  { "id": "reassign_complaints", "name": "Reassign Complaints", "module": "Workflow", "isActive": true },
+  { "id": "close_complaints", "name": "Close Complaints", "module": "Workflow", "isActive": true },
+  { "id": "update_progress", "name": "Update Progress", "module": "Workflow", "isActive": true },
+  { "id": "upload_photos", "name": "Upload Photos", "module": "Workflow", "isActive": true },
+  { "id": "view_reports", "name": "View Reports", "module": "System", "isActive": true },
+  { "id": "view_audit_logs", "name": "View Audit Logs", "module": "Security", "isActive": true },
+  { "id": "create_complaint", "name": "Create Complaint", "module": "Citizen", "isActive": true },
+  { "id": "view_own_complaints", "name": "View Own Complaints", "module": "Citizen", "isActive": true },
+  { "id": "reopen_complaint", "name": "Reopen Complaint", "module": "Citizen", "isActive": true },
+  { "id": "add_comment", "name": "Add Comment", "module": "General", "isActive": true },
+  { "id": "manage_settings", "name": "Manage Settings", "module": "Admin", "isActive": true }
+]

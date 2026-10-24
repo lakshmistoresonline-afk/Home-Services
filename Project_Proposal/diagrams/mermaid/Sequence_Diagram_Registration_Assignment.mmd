@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant C as Citizen
+    participant A as Auth
+    participant F as Firestore
+    participant AE as AssignmentEngine
+    participant S as Staff
+
+    Note over C,F: Registration Phase
+    C->>A: Register (Email, Mobile, Ward)
+    A->>F: Create User Profile (Role: Citizen)
+    F-->>C: Redirect to Dashboard
+
+    Note over C,S: Complaint Submission & Delayed Assignment
+    C->>F: Submit Complaint (Title, Category, Optional Photo)
+    F->>F: Create Document (Status: Submitted)
+    Note over AE,F: 3-Hour Review Window (Manual Assignment Possible)
+    AE->>F: Maintenance Sweep (After 3 Hours)
+    AE->>F: Query Eligible Staff for Ward/Category
+    F-->>AE: List of Staff
+    AE->>AE: Rank by Workload & Expertise
+    AE-->>F: Update Document (Status: Assigned)
+    F->>S: Push Notification (New Assignment)
+    F->>C: Push Notification (Staff Assigned)

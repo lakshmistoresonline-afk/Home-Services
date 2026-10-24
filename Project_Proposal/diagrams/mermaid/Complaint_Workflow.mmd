@@ -1,0 +1,14 @@
+stateDiagram-v2
+    [*] --> Submitted: Citizen Files Complaint
+    Submitted --> Submitted: 3-Hour Review Window (Manual Assignment Possible)
+    Submitted --> Assigned: Automatic Assignment (After 3 Hours)
+    Submitted --> Cancelled: Citizen Cancels (Requires Remarks)
+    Assigned --> Accepted: Staff Accepts (Requires Remarks)
+    Assigned --> Rejected: Staff Rejects (Requires Remarks)
+    Rejected --> Assigned: Re-assignment (Requires Remarks)
+    Accepted --> InProgress: Work Started (Requires Remarks)
+    InProgress --> Resolved: Staff Resolves (Requires Remarks)
+    Resolved --> Closed: Manual Closure or 7-Day Auto-Closure
+    Resolved --> Reopened: Citizen/Admin dissatisfied
+    Closed --> [*]
+    Cancelled --> [*]

@@ -1,0 +1,29 @@
+graph TD
+    subgraph "Client Tier (React Native / Expo)"
+        CitizenApp["Citizen Mobile/Web App"]
+        AdminPortal["Ward Admin Dashboard"]
+        SuperAdmin["Super Admin Console"]
+        StaffApp["Staff Mobile Interface"]
+    end
+
+    subgraph "Service Tier (Firebase)"
+        Auth["Firebase Authentication"]
+        Firestore["Cloud Firestore (NoSQL + Base64 Storage)"]
+        Hosting["Firebase Hosting (Web Deployment)"]
+    end
+
+    subgraph "External Integration"
+        GovIn["Gov.in Email Validation"]
+    end
+
+    CitizenApp --> Auth
+    AdminPortal --> Auth
+    SuperAdmin --> Auth
+    StaffApp --> Auth
+
+    CitizenApp --> Firestore
+    AdminPortal --> Firestore
+    SuperAdmin --> Firestore
+    StaffApp --> Firestore
+
+    SuperAdmin --> GovIn

@@ -1,0 +1,4 @@
+[
+  { "id": "NOTIF_001", "recipientUid": "staff_01", "recipientRole": "staff", "title": "New Assignment", "message": "You have been assigned to complaint TCR-2026-002: Second light out", "complaintId": "TCR-2026-002", "read": false, "type": "ASSIGNMENT", "priority": "HIGH", "createdAt": "2026-07-25T10:31:00Z" },
+  { "id": "NOTIF_002", "recipientUid": "citizen_01", "recipientRole": "citizen", "title": "Staff Assigned", "message": "Staff member Electrical Specialist 1 has been assigned to your complaint.", "complaintId": "TCR-2026-002", "read": true, "type": "UPDATE", "priority": "MEDIUM", "createdAt": "2026-07-25T10:31:00Z" }
+]

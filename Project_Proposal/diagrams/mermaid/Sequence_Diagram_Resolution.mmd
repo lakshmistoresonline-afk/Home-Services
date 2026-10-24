@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant C as Citizen
+    participant A as AssignmentEngine
+    participant S as Staff
+    participant W as WardAdmin
+    participant F as Firestore
+
+    C->>F: Create Complaint (Status: Submitted)
+    Note over A,F: 3-Hour Review Window
+    A->>F: Auto-Assignment Sweep (After 3 Hours)
+    A->>F: Identify & Assign Best Staff (Status: Assigned)
+    F->>S: Notify Assignment
+    S->>F: Update Status (Status: In Progress)
+    S->>F: Upload Photos & Remarks
+    S->>F: Resolve Complaint (Status: Resolved)
+    F->>W: Notify Resolution
+    F->>C: Notify Resolution
+    W->>F: Close Complaint (Status: Closed)
+    Note over A,F: 7-Day Inactivity Sweep
+    A->>F: Auto-Close Resolved Complaints (Status: Closed)
+    C->>F: (Optional) Reopen if unhappy

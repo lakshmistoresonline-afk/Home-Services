@@ -1,0 +1,66 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // --- Helper Functions ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper to fetch user role from Firestore
+    function getUserData() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return getUserData().role == 'super_admin';
+    }
+
+    // --- Storage Paths ---
+
+    // 1. Complaint Photos
+    // Path pattern: complaints/{complaint_id}/{filename}
+    match /complaints/{complaintId}/{filename} {
+
+      // Allow read if user is the uploader (temp files) or can see the final complaint document
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        complaintId.startsWith('TEMP_' + request.auth.uid + '_') ||
+        (
+          firestore.exists(/databases/(default)/documents/complaints/$(complaintId)) &&
+          (
+            getUserData().wardNumber == firestore.get(/databases/(default)/documents/complaints/$(complaintId)).data.wardNumber ||
+            request.auth.uid == firestore.get(/databases/(default)/documents/complaints/$(complaintId)).data.citizenId ||
+            request.auth.uid == firestore.get(/databases/(default)/documents/complaints/$(complaintId)).data.assignedStaffId
+          )
+        )
+      );
+
+      // Allow upload if user is authenticated and:
+      // 1. It's a temporary upload for a new complaint (prefixed with user UID)
+      // 2. User is the reporter or assigned staff of an existing complaint
+      allow write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        complaintId.startsWith('TEMP_' + request.auth.uid + '_') ||
+        (
+          firestore.exists(/databases/(default)/documents/complaints/$(complaintId)) &&
+          (
+            request.auth.uid == firestore.get(/databases/(default)/documents/complaints/$(complaintId)).data.citizenId ||
+            request.auth.uid == firestore.get(/databases/(default)/documents/complaints/$(complaintId)).data.assignedStaffId
+          )
+        )
+      ) && request.resource.size < 5 * 1024 * 1024 // Max 5MB per photo
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // 2. Profile Photos
+    match /profiles/{uid}/{filename} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == uid
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

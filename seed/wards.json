@@ -1,0 +1,7 @@
+[
+  { "wardNumber": 1, "name": "Zone 1 - Downtown", "pincode": "680001", "isActive": true },
+  { "wardNumber": 2, "name": "Zone 2 - North Suburbs", "pincode": "680002", "isActive": true },
+  { "wardNumber": 3, "name": "Zone 3 - West End", "pincode": "680003", "isActive": true },
+  { "wardNumber": 4, "name": "Zone 4 - East District", "pincode": "680004", "isActive": true },
+  { "wardNumber": 5, "name": "Zone 5 - South Metro", "pincode": "680005", "isActive": true }
+]

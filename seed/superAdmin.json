@@ -1,0 +1,11 @@
+[
+  {
+    "uid": "super_admin_01",
+    "fullName": "System Administrator",
+    "email": "superadmin@mcms.gov.in",
+    "role": "super_admin",
+    "isActive": true,
+    "joiningDate": "2026-01-01T00:00:00Z",
+    "mobile": "9000000001"
+  }
+]

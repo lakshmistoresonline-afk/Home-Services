@@ -1,0 +1,11 @@
+[
+  {
+    "uid": "readonly_admin_01",
+    "fullName": "Audit Observer",
+    "email": "observer@mcms.gov.in",
+    "role": "readonly_super_admin",
+    "isActive": true,
+    "joiningDate": "2026-08-01T00:00:00Z",
+    "mobile": "9000000002"
+  }
+]

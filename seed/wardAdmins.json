@@ -1,0 +1,562 @@
+[
+  {
+    "uid": "ward_admin_01",
+    "fullName": "Admin Poonkunnam",
+    "email": "ward1@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 1,
+    "wardName": "Poonkunnam",
+    "isActive": true,
+    "mobile": "9000000003"
+  },
+  {
+    "uid": "ward_admin_02",
+    "fullName": "Admin Kuttankulangara",
+    "email": "ward2@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 2,
+    "wardName": "Kuttankulangara",
+    "isActive": true,
+    "mobile": "9000000004"
+  },
+  {
+    "uid": "ward_admin_03",
+    "fullName": "Admin Patturaikkal",
+    "email": "ward3@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 3,
+    "wardName": "Patturaikkal",
+    "isActive": true,
+    "mobile": "9000000005"
+  },
+  {
+    "uid": "ward_admin_04",
+    "fullName": "Admin Viyyur",
+    "email": "ward4@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 4,
+    "wardName": "Viyyur",
+    "isActive": true,
+    "mobile": "9000000006"
+  },
+  {
+    "uid": "ward_admin_05",
+    "fullName": "Admin Peringavu",
+    "email": "ward5@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 5,
+    "wardName": "Peringavu",
+    "isActive": true,
+    "mobile": "9000000007"
+  },
+  {
+    "uid": "ward_admin_06",
+    "fullName": "Admin Ramavarmapuram",
+    "email": "ward6@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 6,
+    "wardName": "Ramavarmapuram",
+    "isActive": true,
+    "mobile": "9000000008"
+  },
+  {
+    "uid": "ward_admin_07",
+    "fullName": "Admin Kuttumukku",
+    "email": "ward7@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 7,
+    "wardName": "Kuttumukku",
+    "isActive": true,
+    "mobile": "9000000009"
+  },
+  {
+    "uid": "ward_admin_08",
+    "fullName": "Admin Villadam",
+    "email": "ward8@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 8,
+    "wardName": "Villadam",
+    "isActive": true,
+    "mobile": "9000000010"
+  },
+  {
+    "uid": "ward_admin_09",
+    "fullName": "Admin Cheroor",
+    "email": "ward9@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 9,
+    "wardName": "Cheroor",
+    "isActive": true,
+    "mobile": "9000000011"
+  },
+  {
+    "uid": "ward_admin_10",
+    "fullName": "Admin Gandhi Nagar",
+    "email": "ward10@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 10,
+    "wardName": "Gandhi Nagar",
+    "isActive": true,
+    "mobile": "9000000012"
+  },
+  {
+    "uid": "ward_admin_11",
+    "fullName": "Admin Mukkattukara",
+    "email": "ward11@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 11,
+    "wardName": "Mukkattukara",
+    "isActive": true,
+    "mobile": "9000000013"
+  },
+  {
+    "uid": "ward_admin_12",
+    "fullName": "Admin Nettissery",
+    "email": "ward12@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 12,
+    "wardName": "Nettissery",
+    "isActive": true,
+    "mobile": "9000000014"
+  },
+  {
+    "uid": "ward_admin_13",
+    "fullName": "Admin Mullakkara",
+    "email": "ward13@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 13,
+    "wardName": "Mullakkara",
+    "isActive": true,
+    "mobile": "9000000015"
+  },
+  {
+    "uid": "ward_admin_14",
+    "fullName": "Admin Mannuthy",
+    "email": "ward14@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 14,
+    "wardName": "Mannuthy",
+    "isActive": true,
+    "mobile": "9000000016"
+  },
+  {
+    "uid": "ward_admin_15",
+    "fullName": "Admin Ollukkara",
+    "email": "ward15@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 15,
+    "wardName": "Ollukkara",
+    "isActive": true,
+    "mobile": "9000000017"
+  },
+  {
+    "uid": "ward_admin_16",
+    "fullName": "Admin Krishnapuram",
+    "email": "ward16@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 16,
+    "wardName": "Krishnapuram",
+    "isActive": true,
+    "mobile": "9000000018"
+  },
+  {
+    "uid": "ward_admin_17",
+    "fullName": "Admin Kuttanellur",
+    "email": "ward17@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 17,
+    "wardName": "Kuttanellur",
+    "isActive": true,
+    "mobile": "9000000019"
+  },
+  {
+    "uid": "ward_admin_18",
+    "fullName": "Admin Chelakkottukara",
+    "email": "ward18@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 18,
+    "wardName": "Chelakkottukara",
+    "isActive": true,
+    "mobile": "9000000020"
+  },
+  {
+    "uid": "ward_admin_19",
+    "fullName": "Admin Kalathode",
+    "email": "ward19@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 19,
+    "wardName": "Kalathode",
+    "isActive": true,
+    "mobile": "9000000021"
+  },
+  {
+    "uid": "ward_admin_20",
+    "fullName": "Admin Paravattany",
+    "email": "ward20@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 20,
+    "wardName": "Paravattany",
+    "isActive": true,
+    "mobile": "9000000022"
+  },
+  {
+    "uid": "ward_admin_21",
+    "fullName": "Admin Kizhakkumpattukara",
+    "email": "ward21@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 21,
+    "wardName": "Kizhakkumpattukara",
+    "isActive": true,
+    "mobile": "9000000023"
+  },
+  {
+    "uid": "ward_admin_22",
+    "fullName": "Admin Chembukavu",
+    "email": "ward22@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 22,
+    "wardName": "Chembukavu",
+    "isActive": true,
+    "mobile": "9000000024"
+  },
+  {
+    "uid": "ward_admin_23",
+    "fullName": "Admin Mission Quarters",
+    "email": "ward23@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 23,
+    "wardName": "Mission Quarters",
+    "isActive": true,
+    "mobile": "9000000025"
+  },
+  {
+    "uid": "ward_admin_24",
+    "fullName": "Admin Kuriachira",
+    "email": "ward24@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 24,
+    "wardName": "Kuriachira",
+    "isActive": true,
+    "mobile": "9000000026"
+  },
+  {
+    "uid": "ward_admin_25",
+    "fullName": "Admin Valarkavu",
+    "email": "ward25@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 25,
+    "wardName": "Valarkavu",
+    "isActive": true,
+    "mobile": "9000000027"
+  },
+  {
+    "uid": "ward_admin_26",
+    "fullName": "Admin Anchery",
+    "email": "ward26@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 26,
+    "wardName": "Anchery",
+    "isActive": true,
+    "mobile": "9000000028"
+  },
+  {
+    "uid": "ward_admin_27",
+    "fullName": "Admin Padavaradu",
+    "email": "ward27@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 27,
+    "wardName": "Padavaradu",
+    "isActive": true,
+    "mobile": "9000000029"
+  },
+  {
+    "uid": "ward_admin_28",
+    "fullName": "Admin Ollur Centre",
+    "email": "ward28@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 28,
+    "wardName": "Ollur Centre",
+    "isActive": true,
+    "mobile": "9000000030"
+  },
+  {
+    "uid": "ward_admin_29",
+    "fullName": "Admin Edakkunny",
+    "email": "ward29@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 29,
+    "wardName": "Edakkunny",
+    "isActive": true,
+    "mobile": "9000000031"
+  },
+  {
+    "uid": "ward_admin_30",
+    "fullName": "Admin Thaikattussery",
+    "email": "ward30@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 30,
+    "wardName": "Thaikattussery",
+    "isActive": true,
+    "mobile": "9000000032"
+  },
+  {
+    "uid": "ward_admin_31",
+    "fullName": "Admin Ollur",
+    "email": "ward31@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 31,
+    "wardName": "Ollur",
+    "isActive": true,
+    "mobile": "9000000033"
+  },
+  {
+    "uid": "ward_admin_32",
+    "fullName": "Admin Chiyaram",
+    "email": "ward32@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 32,
+    "wardName": "Chiyaram",
+    "isActive": true,
+    "mobile": "9000000034"
+  },
+  {
+    "uid": "ward_admin_33",
+    "fullName": "Admin Chiyaram South",
+    "email": "ward33@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 33,
+    "wardName": "Chiyaram South",
+    "isActive": true,
+    "mobile": "9000000035"
+  },
+  {
+    "uid": "ward_admin_34",
+    "fullName": "Admin Kuriyachira West",
+    "email": "ward34@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 34,
+    "wardName": "Kuriyachira West",
+    "isActive": true,
+    "mobile": "9000000036"
+  },
+  {
+    "uid": "ward_admin_35",
+    "fullName": "Admin Kannamkulangara",
+    "email": "ward35@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 35,
+    "wardName": "Kannamkulangara",
+    "isActive": true,
+    "mobile": "9000000037"
+  },
+  {
+    "uid": "ward_admin_36",
+    "fullName": "Admin Thekkinkadu",
+    "email": "ward36@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 36,
+    "wardName": "Thekkinkadu",
+    "isActive": true,
+    "mobile": "9000000038"
+  },
+  {
+    "uid": "ward_admin_37",
+    "fullName": "Admin Thiruvambadi",
+    "email": "ward37@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 37,
+    "wardName": "Thiruvambadi",
+    "isActive": true,
+    "mobile": "9000000039"
+  },
+  {
+    "uid": "ward_admin_38",
+    "fullName": "Admin Kottappuram",
+    "email": "ward38@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 38,
+    "wardName": "Kottappuram",
+    "isActive": true,
+    "mobile": "9000000040"
+  },
+  {
+    "uid": "ward_admin_39",
+    "fullName": "Admin Poothole",
+    "email": "ward39@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 39,
+    "wardName": "Poothole",
+    "isActive": true,
+    "mobile": "9000000041"
+  },
+  {
+    "uid": "ward_admin_40",
+    "fullName": "Admin Kokkalai",
+    "email": "ward40@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 40,
+    "wardName": "Kokkalai",
+    "isActive": true,
+    "mobile": "9000000042"
+  },
+  {
+    "uid": "ward_admin_41",
+    "fullName": "Admin Vadookara",
+    "email": "ward41@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 41,
+    "wardName": "Vadookara",
+    "isActive": true,
+    "mobile": "9000000043"
+  },
+  {
+    "uid": "ward_admin_42",
+    "fullName": "Admin Koorkanchery",
+    "email": "ward42@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 42,
+    "wardName": "Koorkanchery",
+    "isActive": true,
+    "mobile": "9000000044"
+  },
+  {
+    "uid": "ward_admin_43",
+    "fullName": "Admin Kanimangalam",
+    "email": "ward43@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 43,
+    "wardName": "Kanimangalam",
+    "isActive": true,
+    "mobile": "9000000045"
+  },
+  {
+    "uid": "ward_admin_44",
+    "fullName": "Admin Panamukku",
+    "email": "ward44@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 44,
+    "wardName": "Panamukku",
+    "isActive": true,
+    "mobile": "9000000046"
+  },
+  {
+    "uid": "ward_admin_45",
+    "fullName": "Admin Nedupuzha",
+    "email": "ward45@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 45,
+    "wardName": "Nedupuzha",
+    "isActive": true,
+    "mobile": "9000000047"
+  },
+  {
+    "uid": "ward_admin_46",
+    "fullName": "Admin Kariattukara",
+    "email": "ward46@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 46,
+    "wardName": "Kariattukara",
+    "isActive": true,
+    "mobile": "9000000048"
+  },
+  {
+    "uid": "ward_admin_47",
+    "fullName": "Admin Laloor",
+    "email": "ward47@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 47,
+    "wardName": "Laloor",
+    "isActive": true,
+    "mobile": "9000000049"
+  },
+  {
+    "uid": "ward_admin_48",
+    "fullName": "Admin Aranattukara",
+    "email": "ward48@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 48,
+    "wardName": "Aranattukara",
+    "isActive": true,
+    "mobile": "9000000050"
+  },
+  {
+    "uid": "ward_admin_49",
+    "fullName": "Admin Kanattukara",
+    "email": "ward49@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 49,
+    "wardName": "Kanattukara",
+    "isActive": true,
+    "mobile": "9000000051"
+  },
+  {
+    "uid": "ward_admin_50",
+    "fullName": "Admin Ayyanthole",
+    "email": "ward50@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 50,
+    "wardName": "Ayyanthole",
+    "isActive": true,
+    "mobile": "9000000052"
+  },
+  {
+    "uid": "ward_admin_51",
+    "fullName": "Admin Civil Station",
+    "email": "ward51@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 51,
+    "wardName": "Civil Station",
+    "isActive": true,
+    "mobile": "9000000053"
+  },
+  {
+    "uid": "ward_admin_52",
+    "fullName": "Admin Olari",
+    "email": "ward52@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 52,
+    "wardName": "Olari",
+    "isActive": true,
+    "mobile": "9000000054"
+  },
+  {
+    "uid": "ward_admin_53",
+    "fullName": "Admin Elthuruth",
+    "email": "ward53@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 53,
+    "wardName": "Elthuruth",
+    "isActive": true,
+    "mobile": "9000000055"
+  },
+  {
+    "uid": "ward_admin_54",
+    "fullName": "Admin Chettupuzha",
+    "email": "ward54@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 54,
+    "wardName": "Chettupuzha",
+    "isActive": true,
+    "mobile": "9000000056"
+  },
+  {
+    "uid": "ward_admin_55",
+    "fullName": "Admin Pullazhi",
+    "email": "ward55@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 55,
+    "wardName": "Pullazhi",
+    "isActive": true,
+    "mobile": "9000000057"
+  },
+  {
+    "uid": "ward_admin_56",
+    "fullName": "Admin Puthoorkara",
+    "email": "ward56@mcms.gov.in",
+    "role": "ward_admin",
+    "wardNumber": 56,
+    "wardName": "Puthoorkara",
+    "isActive": true,
+    "mobile": "9000000058"
+  }
+]

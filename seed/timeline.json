@@ -1,0 +1,24 @@
+[
+  {
+    "complaintId": "CMP_001",
+    "activity": [
+      { "type": "COMPLAINT_CREATED", "title": "Complaint Filed", "performedBy": "citizen_01", "performedByName": "Rahul Nair", "performedByRole": "citizen", "timestamp": "2026-07-25T10:00:00Z" }
+    ]
+  },
+  {
+    "complaintId": "CMP_002",
+    "activity": [
+      { "type": "COMPLAINT_CREATED", "title": "Complaint Filed", "performedBy": "citizen_01", "performedByName": "Rahul Nair", "performedByRole": "citizen", "timestamp": "2026-07-25T10:30:00Z" },
+      { "type": "COMPLAINT_ASSIGNED", "title": "Automatically Assigned", "performedBy": "system", "performedByName": "Assignment Engine", "performedByRole": "super_admin", "timestamp": "2026-07-25T10:31:00Z", "newValue": "Electrical Specialist 1" }
+    ]
+  },
+  {
+    "complaintId": "CMP_005",
+    "activity": [
+      { "type": "COMPLAINT_CREATED", "title": "Complaint Filed", "performedBy": "citizen_04", "performedByName": "Saritha Varma", "performedByRole": "citizen", "timestamp": "2026-07-27T09:00:00Z" },
+      { "type": "COMPLAINT_ASSIGNED", "title": "Automatically Assigned", "performedBy": "system", "performedByName": "Assignment Engine", "performedByRole": "super_admin", "timestamp": "2026-07-27T09:05:00Z", "newValue": "Sanitation Lead 1" },
+      { "type": "ASSIGNMENT_ACCEPTED", "title": "Assignment Accepted", "performedBy": "staff_05", "performedByName": "Sanitation Lead 1", "performedByRole": "staff", "timestamp": "2026-07-27T10:00:00Z" },
+      { "type": "COMPLAINT_RESOLVED", "title": "Complaint Resolved", "performedBy": "staff_05", "performedByName": "Sanitation Lead 1", "performedByRole": "staff", "timestamp": "2026-07-28T10:00:00Z", "remarks": "Garbage heap cleared completely." }
+    ]
+  }
+]

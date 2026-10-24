@@ -1,0 +1,90 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helpers ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // --- Master Data (Readable by ANY authenticated user) ---
+    // NO lookups or helpers here to ensure zero-friction loading for context bootstrap.
+
+    match /roles/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    match /permissions/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    match /wards/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    match /departments/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    match /complaintCategories/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    match /complaintStatuses/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    match /metadata/{id} { allow read: if isAuthenticated(); allow write: if false; }
+    match /settings/{id} { allow read: if isAuthenticated(); allow write: if false; }
+
+    // --- Functional Collections ---
+
+    // 1. Users
+    match /users/{uid} {
+      // Direct access to own profile (Self-read must be first and standalone to avoid recursion)
+      allow read, write: if isAuthenticated() && request.auth.uid == uid;
+
+      // Administrative read access (Cross-document lookup)
+      // Allow Ward Admin to see all Staff (needed for assignment queries)
+      // Allow Ward Admin to see Citizens in their own ward
+      allow read: if isAuthenticated() && request.auth.uid != uid && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin' && (
+           resource.data.get('role', '') == 'staff' ||
+           resource.data.get('wardNumber', -1) == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('wardNumber', -2)
+        ))
+      );
+
+      // Update restricted to Super Admin
+      allow update: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin';
+    }
+
+    // 2. Complaints
+    match /complaints/{id} {
+      allow create: if isAuthenticated();
+      allow list: if isAuthenticated();
+
+      allow get: if isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('wardNumber', -1) == resource.data.get('wardNumber', -2)) ||
+        (resource.data.get('assignedStaffId', '') == request.auth.uid) ||
+        (resource.data.get('citizenId', '') == request.auth.uid)
+      );
+
+      allow update: if isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('wardNumber', -1) == resource.data.get('wardNumber', -2)) ||
+        (resource.data.get('assignedStaffId', '') == request.auth.uid && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['citizenId', 'wardNumber', 'departmentId'])
+        )) ||
+        (resource.data.get('citizenId', '') == request.auth.uid && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'history', 'timeline', 'status', 'updatedAt'])
+        ))
+      );
+
+      allow delete: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin';
+    }
+
+    // 3. Notifications
+    match /notifications/{id} {
+      allow list: if isAuthenticated();
+      allow get: if isAuthenticated() && resource.data.get('recipientUid', '') == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && resource.data.get('recipientUid', '') == request.auth.uid && (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'archived', 'updatedAt'])
+      );
+      allow delete: if isAuthenticated() && (resource.data.get('recipientUid', '') == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin');
+    }
+
+    // 4. Audit Logs
+    match /auditLogs/{id} {
+      allow list, get: if isAuthenticated() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ward_admin');
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+  }
+}

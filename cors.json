@@ -1,0 +1,20 @@
+[
+  {
+    "origin": [
+      "https://mycomplaintstcr.web.app",
+      "https://mycomplaintstcr.firebaseapp.com",
+      "http://localhost:8081"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "x-firebase-storage-version",
+      "x-goog-resumable",
+      "Authorization",
+      "Content-Length",
+      "ETag",
+      "x-goog-meta-*"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

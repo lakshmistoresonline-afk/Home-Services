@@ -1,0 +1,4 @@
+[
+  { "id": "ATT_001", "complaintId": "CMP_001", "filename": "light_issue.jpg", "url": "https://storage.googleapis.com/thrissur-cms/attachments/light_issue.jpg", "contentType": "image/jpeg", "size": 102400, "uploadedBy": "citizen_01", "uploadedAt": "2026-07-25T10:01:00Z" },
+  { "id": "ATT_002", "complaintId": "CMP_002", "filename": "pothole_photo.png", "url": "https://storage.googleapis.com/thrissur-cms/attachments/pothole_photo.png", "contentType": "image/png", "size": 204800, "uploadedBy": "citizen_02", "uploadedAt": "2026-07-26T11:02:00Z" }
+]

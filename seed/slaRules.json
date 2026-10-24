@@ -1,0 +1,9 @@
+[
+  { "categoryId": "street_light", "hours": 48, "priority": "Medium" },
+  { "categoryId": "pothole", "hours": 72, "priority": "High" },
+  { "categoryId": "garbage", "hours": 24, "priority": "Medium" },
+  { "categoryId": "water_leak", "hours": 12, "priority": "High" },
+  { "categoryId": "stray_dogs", "hours": 48, "priority": "Low" },
+  { "categoryId": "drainage", "hours": 24, "priority": "High" },
+  { "categoryId": "illegal_dumping", "hours": 48, "priority": "Medium" }
+]

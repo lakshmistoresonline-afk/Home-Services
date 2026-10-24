@@ -1,0 +1,37 @@
+[
+  {
+    "id": "super_admin",
+    "name": "Super Admin",
+    "description": "Full system access and configuration control.",
+    "permissions": ["all"],
+    "isActive": true
+  },
+  {
+    "id": "ward_admin",
+    "name": "Ward Admin",
+    "description": "Administrative access for a specific ward.",
+    "permissions": ["view_dashboard", "assign_complaints", "reassign_complaints", "close_complaints", "view_reports", "manage_staff", "manage_wards"],
+    "isActive": true
+  },
+  {
+    "id": "staff",
+    "name": "Field Staff",
+    "description": "Field resources assigned to resolve complaints.",
+    "permissions": ["view_dashboard", "update_progress", "upload_photos", "add_notes"],
+    "isActive": true
+  },
+  {
+    "id": "readonly_super_admin",
+    "name": "Read-Only Super Admin",
+    "description": "Full visibility into system data without modification rights.",
+    "permissions": ["all"],
+    "isActive": true
+  },
+  {
+    "id": "citizen",
+    "name": "Citizen",
+    "description": "General users who can file and track complaints.",
+    "permissions": ["create_complaint", "view_own_complaints", "reopen_complaint", "add_comment"],
+    "isActive": true
+  }
+]

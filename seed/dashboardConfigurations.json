@@ -1,0 +1,6 @@
+[
+  { "role": "citizen", "widgets": ["summary", "quick_action", "history"] },
+  { "role": "staff", "widgets": ["workload", "efficiency", "recent_tasks"] },
+  { "role": "ward_admin", "widgets": ["ward_stats", "staff_performance", "pending_assignments"] },
+  { "role": "super_admin", "widgets": ["system_summary", "department_performance", "audit_feed"] }
+]

@@ -1,0 +1,23 @@
+- [ ] Refactor API Layer (`src/api/*.ts`)
+    - [ ] authApi.ts
+    - [ ] complaintApi.ts
+    - [ ] staffApi.ts
+    - [ ] wardAdminApi.ts
+    - [ ] wardApi.ts
+    - [ ] departmentApi.ts
+    - [ ] categoryApi.ts
+    - [ ] workflowApi.ts
+    - [ ] auditApi.ts
+    - [ ] metadataApi.ts
+    - [ ] timelineApi.ts
+    - [ ] storageApi.ts
+    - [ ] reportApi.ts
+    - [ ] seeder.ts
+- [ ] Clean up `src/api/index.ts`
+- [ ] Update `src/context/auth.tsx`
+- [ ] Update Application Screens
+    - [ ] Fix `app/(auth)/register.tsx`
+    - [ ] Fix `app/(tabs)/*.tsx`
+    - [ ] Fix `app/admin/*.tsx`
+    - [ ] Fix `app/complaint/*.tsx`
+- [ ] Final Verification & Cleanup

@@ -1,0 +1,6 @@
+{
+  "complaintSearchFields": ["title", "description", "complaint_id", "citizenName", "assignedStaffName"],
+  "userSearchFields": ["fullName", "email", "employeeId", "mobile"],
+  "enableFuzzySearch": true,
+  "recentSearchesLimit": 10
+}

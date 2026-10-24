@@ -1,0 +1,29 @@
+usecaseDiagram
+    actor Citizen
+    actor Staff
+    actor "Ward Admin" as WardAdmin
+    actor "Super Admin" as SuperAdmin
+
+    Citizen --> (Register/Login)
+    Citizen --> (File Complaint)
+    Citizen --> (Track Complaint Status)
+    Citizen --> (Add Comment/Feedback)
+    Citizen --> (Reopen Resolved Complaint)
+
+    Staff --> (View Assigned Tasks)
+    Staff --> (Accept/Reject Assignment)
+    Staff --> (Update Work Progress)
+    Staff --> (Resolve Complaint)
+    Staff --> (Upload Work Photos)
+
+    WardAdmin --> (Monitor Ward Complaints)
+    WardAdmin --> (Manually Assign Staff)
+    WardAdmin --> (Close Resolved Complaints)
+    WardAdmin --> (Manage Ward Staff)
+    WardAdmin --> (View Ward Reports)
+
+    SuperAdmin --> (Configure System Meta)
+    SuperAdmin --> (Manage Wards/Departments)
+    SuperAdmin --> (System-wide Analytics)
+    SuperAdmin --> (Audit Trail Monitoring)
+    SuperAdmin --> (Global SLA Tracking)
