@@ -17,7 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useTheme } from '@/src/theme';
 import { useAuth } from '@/src/context/auth';
-import { listCategories, uploadFile, createComplaint, type ComplaintCategory, type TimelineAttachment } from '@/src/api';
+import { listCategories, listDepartments, uploadFile, createComplaint, type ComplaintCategory, type Department, type TimelineAttachment } from '@/src/api';
 import { showToast } from '@/src/components/Toast';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { AppInput } from '@/src/components/AppInput';
@@ -43,6 +43,11 @@ export default function NewComplaintScreen() {
   const router = useRouter();
 
   const [categories, setCategories] = useState<ComplaintCategory[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
+  const [departmentName, setDepartmentName] = useState('');
+  const [showDept, setShowDept] = useState(false);
+
   const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | null>(null);
   const [category, setCategory] = useState('');
   const [title, setTitle] = useState('');
@@ -59,23 +64,39 @@ export default function NewComplaintScreen() {
       }
       Alert.alert(
         'Update Profile',
-        'A mobile number is required to file a complaint. Please update your profile.',
+        'A mobile number is required to file a service request. Please update your profile.',
         [{ text: 'Go to Profile', onPress: () => router.replace('/(tabs)/profile') }],
         { cancelable: false }
       );
       return;
     }
 
-    listCategories().then((list) => {
-      setCategories(list.filter(c => c.isActive));
+    Promise.all([listDepartments(), listCategories()]).then(([deptList, catList]) => {
+      setDepartments(deptList.filter(d => d.isActive));
+      setCategories(catList.filter(c => c.isActive));
     });
   }, [user, router]);
+
+  const onSelectDepartment = (name: string) => {
+    const dept = departments.find(d => d.name === name);
+    setSelectedDepartment(dept || null);
+    setDepartmentName(name);
+    setCategory('');
+    setSelectedCategory(null);
+  };
 
   const onSelectCategory = (name: string) => {
      const cat = categories.find(c => c.name === name);
      setSelectedCategory(cat || null);
      setCategory(name);
   };
+
+  const filteredCategories = selectedDepartment
+    ? categories.filter(c => c.departmentId === selectedDepartment.id)
+    : categories;
+
+  const departmentOptions = departments.map(d => ({ label: d.name, value: d.name }));
+  const categoryOptions = filteredCategories.map(c => ({ label: c.name, value: c.name }));
 
   const pickImage = async () => {
     if (pendingFiles.length >= MAX_PHOTOS) {
@@ -181,6 +202,7 @@ export default function NewComplaintScreen() {
   };
 
   const submit = async () => {
+    if (!departmentName) return showToast('Select a department', 'error');
     if (!category) return showToast('Select a category', 'error');
     if (!title.trim()) return showToast('Enter a title', 'error');
     if (!description.trim()) return showToast('Enter a description', 'error');
@@ -231,8 +253,6 @@ export default function NewComplaintScreen() {
     }
   };
 
-  const categoryOptions = categories.map(c => c.name);
-
   const goHome = () => {
     if (user?.role === 'super_admin' || user?.role === 'readonly_super_admin') {
       router.replace('/admin/super');
@@ -258,15 +278,36 @@ export default function NewComplaintScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={{ marginBottom: spacing.lg }}>
-            <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>SERVICE CATEGORY</Text>
+            <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>SERVICE DEPARTMENT</Text>
             <TouchableOpacity
-              testID="category-picker"
-              onPress={() => setShowCat(true)}
+              testID="department-picker"
+              onPress={() => setShowDept(true)}
               style={[styles.selector, { backgroundColor: colors.surfaceTint, borderColor: colors.border }]}
               activeOpacity={0.7}
             >
+              <Text style={{ color: departmentName ? colors.text : colors.textSecondary, fontSize: 16 }}>
+                {departmentName || 'Select department first...'}
+              </Text>
+              <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ marginBottom: spacing.lg }}>
+            <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>SERVICE CATEGORY</Text>
+            <TouchableOpacity
+              testID="category-picker"
+              onPress={() => {
+                if (!selectedDepartment) {
+                  showToast('Please select a department first', 'error');
+                  return;
+                }
+                setShowCat(true);
+              }}
+              style={[styles.selector, { backgroundColor: selectedDepartment ? colors.surfaceTint : colors.background, borderColor: colors.border, opacity: selectedDepartment ? 1 : 0.6 }]}
+              activeOpacity={0.7}
+            >
               <Text style={{ color: category ? colors.text : colors.textSecondary, fontSize: 16 }}>
-                {category || 'Select service category...'}
+                {category || (selectedDepartment ? 'Select service category...' : 'Select department first...')}
               </Text>
               <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -334,7 +375,7 @@ export default function NewComplaintScreen() {
           </View>
 
           <AppButton
-            title={busy ? "Submitting..." : "File Official Complaint"}
+            title={busy ? "Submitting..." : "Submit Service Request"}
             onPress={submit}
             loading={busy}
             testID="submit-complaint-button"
@@ -342,6 +383,16 @@ export default function NewComplaintScreen() {
           />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <PickerSheet
+        visible={showDept}
+        title="Select Department"
+        options={departmentOptions}
+        value={departmentName}
+        onSelect={onSelectDepartment}
+        onClose={() => setShowDept(false)}
+        testIDPrefix="department"
+      />
 
       <PickerSheet
         visible={showCat}

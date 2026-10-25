@@ -2,6 +2,7 @@ export * from "./authApi";
 export * from "./complaintApi";
 export * from "./staffApi";
 export * from "./wardAdminApi";
+export * from "./talukAdminApi";
 export * from "./notificationApi";
 export * from "./departmentApi";
 export * from "./categoryApi";

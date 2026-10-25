@@ -5,7 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/auth';
 import { useTheme } from '@/src/theme';
-import { listComplaints, getWardAdminContact, type Complaint, type User } from '@/src/api';
+import { listComplaints, getTalukAdminContact, type Complaint, type User } from '@/src/api';
 import { onSnapshot, collection, query, where } from 'firebase/firestore';
 import { auth, db } from '@/src/config/firebase';
 import { AppCard } from '@/src/components/AppCard';
@@ -59,13 +59,13 @@ export default function HomeScreen() {
       });
       setStats(s);
 
-      if (user.wardNumber) {
+      {
         setLoadingAdmin(true);
         try {
-          const admin = await getWardAdminContact(user.wardNumber);
+          const admin = await getTalukAdminContact(user.taluk || 'Thrissur');
           setWardAdmin(admin);
         } catch (adminError: any) {
-          console.error("Ward Admin lookup failed:", adminError.message);
+          console.error("Taluk Admin lookup failed:", adminError.message);
         } finally {
           setLoadingAdmin(false);
         }
@@ -126,7 +126,7 @@ export default function HomeScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={[typography.label.small, { color: colors.primary, letterSpacing: 2, fontWeight: '700' }]}>GRIEVANCE REDRESSAL</Text>
+          <Text style={[typography.label.small, { color: colors.primary, letterSpacing: 2, fontWeight: '700' }]}>HOME SERVICES</Text>
           <Text style={[typography.headline.small, { color: colors.text, fontWeight: '800' }]} numberOfLines={1}>
             Hello, {user?.fullName?.split(' ')[0] || 'Citizen'}
           </Text>
@@ -168,8 +168,8 @@ export default function HomeScreen() {
           <AppCard elevation="md" style={styles.heroCard} padding="lg">
             <View style={{ flex: 1 }}>
               <Text style={[typography.label.medium, { color: 'rgba(255,255,255,0.8)', letterSpacing: 1 }]}>QUICK ACTION</Text>
-              <Text style={[typography.headline.small, { color: '#FFFFFF', fontWeight: '800', marginTop: spacing.xs }]}>File a New Complaint</Text>
-              <Text style={[typography.body.medium, { color: 'rgba(255,255,255,0.9)', marginTop: spacing.sm }]}>Report civic issues to your local departments instantly.</Text>
+              <Text style={[typography.headline.small, { color: '#FFFFFF', fontWeight: '800', marginTop: spacing.xs }]}>Book a Home Service</Text>
+              <Text style={[typography.body.medium, { color: 'rgba(255,255,255,0.9)', marginTop: spacing.sm }]}>Book verified electricians, plumbers, and home experts instantly.</Text>
             </View>
             <View style={styles.heroIconContainer}>
               <Ionicons name="add-circle" size={48} color="#FFFFFF" />
@@ -180,7 +180,7 @@ export default function HomeScreen() {
         {/* Statistics Hub */}
         <View style={{ marginTop: spacing.lg }}>
           <View style={styles.sectionHeader}>
-            <Text style={[typography.title.medium, { color: colors.text, fontWeight: '700' }]}>Complaint Statistics</Text>
+            <Text style={[typography.title.medium, { color: colors.text, fontWeight: '700' }]}>Service Request Statistics</Text>
             <TouchableOpacity onPress={() => router.push('/(tabs)/complaints')}>
               <Text style={[typography.label.large, { color: colors.primary }]}>View All</Text>
             </TouchableOpacity>
@@ -207,9 +207,9 @@ export default function HomeScreen() {
           </View>
         </AppCard>
 
-        {/* Ward Admin Contact */}
+        {/* Taluk Admin Contact */}
         <View style={{ marginTop: spacing.lg }}>
-          <Text style={[typography.title.medium, { color: colors.text, fontWeight: '700', marginBottom: spacing.md }]}>Your Ward Official</Text>
+          <Text style={[typography.title.medium, { color: colors.text, fontWeight: '700', marginBottom: spacing.md }]}>Your Taluk Official</Text>
           {loadingAdmin ? (
             <AppCard style={styles.contactPlaceholder}>
               <Text style={[typography.body.medium, { color: colors.textSecondary, fontStyle: 'italic' }]}>Loading contact information...</Text>
@@ -222,7 +222,7 @@ export default function HomeScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[typography.title.medium, { color: colors.text, fontWeight: '700' }]}>{wardAdmin.fullName}</Text>
-                  <Text style={[typography.body.small, { color: colors.textSecondary }]}>Ward Administrator • {wardAdmin.wardName}</Text>
+                  <Text style={[typography.body.small, { color: colors.textSecondary }]}>Taluk Administrator • {wardAdmin.taluk || 'Thrissur'}</Text>
                 </View>
               </View>
 

@@ -51,8 +51,8 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null;
     }
 
-    // 2. Complaints / Service Requests
-    match /complaints/{id} {
+    // 2. Service Requests
+    match /serviceRequests/{id} {
       allow create: if isAuthenticated();
 
       allow list: if isSuperLevel() ||

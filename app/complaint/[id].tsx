@@ -511,7 +511,7 @@ export default function ComplaintDetail() {
 
           {item.status === 'Submitted' && isOwner && workflowApi.canCancel(user!, item) && canModify() && (
             <AppButton
-              title="Cancel Complaint"
+              title="Cancel Service Request"
               onPress={() => setStatus('Cancelled')}
               loading={saving}
               variant="outline"
@@ -733,7 +733,7 @@ export default function ComplaintDetail() {
                   <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
                </TouchableOpacity>
 
-               <Text style={[styles.label, { marginTop: 12 }]}>COMPLAINT CATEGORY</Text>
+               <Text style={[styles.label, { marginTop: 12 }]}>SERVICE CATEGORY</Text>
                <TouchableOpacity onPress={() => setShowOverrideCatPicker(true)} style={[styles.selector, { borderColor: colors.border }]}>
                   <Text style={{ color: colors.text }}>{overrideCat}</Text>
                   <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />

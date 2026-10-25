@@ -18,7 +18,7 @@ const readonlyAdmins = require("./readonlyAdmin.json");
 const talukAdmins = require("./talukAdmins.json");
 const staff = require("./staff.json");
 const citizens = require("./citizens.json");
-const complaints = require("./complaints.json");
+const serviceRequests = require("./serviceRequests.json");
 const timeline = require("./timeline.json");
 const attachments = require("./attachments.json");
 const comments = require("./comments.json");
@@ -116,7 +116,7 @@ async function seedSettings() {
     });
     await metadataRef.doc("counters").set({
         staffId: staff.length,
-        complaintId: complaints.length
+        requestId: serviceRequests.length
     });
 
     console.log("Done");
@@ -146,8 +146,8 @@ async function runSeeder() {
         await seedCollection("users", staff, "uid", true);
         await seedCollection("users", citizens, "uid", true);
 
-        // Complaints and related
-        await seedCollection("complaints", complaints);
+        // Service Requests and related
+        await seedCollection("serviceRequests", serviceRequests);
         await seedCollection("timeline", timeline);
         await seedCollection("attachments", attachments);
         await seedCollection("comments", comments);

@@ -91,7 +91,7 @@ export default function LoginScreen() {
           <View style={styles.brandBadge}>
             <Ionicons name="megaphone" size={22} color="#fff" />
           </View>
-          <Text style={styles.brandName}>My Complaints</Text>
+          <Text style={styles.brandName}>Home Services</Text>
         </View>
       </SafeAreaView>
 
