@@ -6,9 +6,14 @@ import { notificationService } from "@/src/services/notifications";
 import { getProfile, getSecondaryAuth, mapDoc, type User } from "./client";
 
 export const listTalukAdmins = async (): Promise<User[]> => {
-  const q = query(collection(db, "users"), where("role", "==", "taluk_admin"));
-  const snap = await getDocs(q);
-  return snap.docs.map(d => mapDoc<User>(d));
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "taluk_admin"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => mapDoc<User>(d));
+  } catch (e: any) {
+    console.warn("Failed to list taluk admins (handled):", e?.message || e);
+    return [];
+  }
 };
 
 export const listAdmins = async () => {
@@ -64,16 +69,21 @@ export const demoteAdmin = async (uid: string) => {
 };
 
 export const getTalukAdminContact = async (taluk: string): Promise<User | null> => {
-  const q = query(
-    collection(db, "users"),
-    where("role", "==", "taluk_admin"),
-    where("taluk", "==", taluk),
-    where("isActive", "==", true),
-    limit(1)
-  );
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  return getProfile(snap.docs[0].id);
+  try {
+    const q = query(
+      collection(db, "users"),
+      where("role", "==", "taluk_admin"),
+      where("taluk", "==", taluk),
+      where("isActive", "==", true),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    return getProfile(snap.docs[0].id);
+  } catch (e: any) {
+    console.warn("Failed to get taluk admin contact (handled):", e?.message || e);
+    return null;
+  }
 };
 
 // Aliases for backward compatibility in codebase imports

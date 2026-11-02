@@ -38,14 +38,14 @@ function roleLabel(role: string): string {
   switch (role) {
     case 'citizen': return 'Citizen';
     case 'staff': return 'Field Staff';
-    case 'ward_admin': return 'Ward Admin';
+    case 'taluk_admin': return 'Taluk Admin';
     case 'super_admin': return 'Super Admin';
     case 'system': return 'System';
     default: return role;
   }
 }
 
-export default function ComplaintDetail() {
+export default function ServiceRequestDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
   const { user, hasPermission, isLoggingOut, canModify, canAssign, canComment } = useAuth();
@@ -74,13 +74,11 @@ export default function ComplaintDetail() {
   const [timelineSearch, setTimelineSearch] = useState('');
   const [assignmentHistoryOpen, setAssignmentHistoryOpen] = useState(false);
 
-  // Workflow Helper State
   const [pendingWorkflowAction, setPendingWorkflowAction] = useState<{ type: 'STATUS_CHANGE', status: string } | { type: 'REOPEN' } | { type: 'ASSIGNMENT', staffId: string | null } | null>(null);
 
   const [allCategories, setAllCategories] = useState<any[]>([]);
   const [allWards, setAllWards] = useState<any[]>([]);
 
-  // Super Admin Overrides
   const [showOverrideModal, setShowOverrideModal] = useState(false);
   const [overrideWard, setOverrideWard] = useState<number | null>(null);
   const [overrideCat, setOverrideCat] = useState<string | null>(null);
@@ -88,10 +86,10 @@ export default function ComplaintDetail() {
   const [showOverrideCatPicker, setShowOverrideCatPicker] = useState(false);
 
   const isSuper = user?.role === 'super_admin' || user?.role === 'readonly_super_admin';
-  const isWardAdmin = user?.role === 'ward_admin';
+  const isTalukAdmin = user?.role === 'taluk_admin';
   const isStaff = user?.role === 'staff';
 
-  const isSuperOrAdmin = isSuper || isWardAdmin;
+  const isSuperOrAdmin = isSuper || isTalukAdmin;
   const isAdminSide = isSuperOrAdmin || isStaff;
 
   const isOwner = !!(user && item && item.citizenId === user.uid);
@@ -148,122 +146,73 @@ export default function ComplaintDetail() {
     } finally {
       setLoading(false);
     }
-  }, [id, isSuperOrAdmin, user, isLoggingOut, isSuper]);
+  }, [id, user, isLoggingOut, isAdminSide, isSuperOrAdmin, isSuper]);
 
   useFocusEffect(
     useCallback(() => {
       load();
-      listWards().then(list => setAllWards(list));
-    }, [load]),
+    }, [load])
   );
 
-  const { recommendedStaff, otherEligible } = useMemo(() => {
-    if (!item) return { recommendedStaff: [], otherEligible: [] };
-
-    const lowSearch = staffSearch.toLowerCase();
-
-    const eligiblePool = staffList.filter(s => {
-      const isEligible = assignmentUtils.isStaffEligible(s, item!);
-      const matchesSearch = !staffSearch || (
-        s.fullName.toLowerCase().includes(lowSearch) ||
-        s.employeeId?.toLowerCase().includes(lowSearch)
-      );
-      return isEligible && matchesSearch;
-    });
-
-    const ranked = assignmentUtils.rankStaff(eligiblePool, item!);
-
-    const rec = ranked.filter(s => s.categories?.includes(item.categoryName));
-    const others = ranked.filter(s => !s.categories?.includes(item.categoryName));
-
-    return { recommendedStaff: rec, otherEligible: others };
-  }, [staffList, item, staffSearch]);
-
-  const filteredTimeline = useMemo(() => {
-    if (!item?.timeline) return [];
-    let list = [...item.timeline];
-
-    if (timelineFilter !== 'ALL') {
-      if (timelineFilter === 'COMMENTS') list = list.filter(t => t.type === 'COMMENT_ADDED');
-      else if (timelineFilter === 'STATUS') list = list.filter(t => t.type.includes('STATUS') || t.type.includes('COMPLAINT_'));
-      else if (timelineFilter === 'ASSIGNMENTS') list = list.filter(t => t.type.includes('ASSIGNED') || t.type.includes('ASSIGNMENT'));
-      else if (timelineFilter === 'UPLOADS') list = list.filter(t => t.type.includes('UPLOADED'));
-    }
-
-    if (timelineSearch.trim()) {
-      const q = timelineSearch.toLowerCase();
-      list = list.filter(t =>
-        t.title.toLowerCase().includes(q) ||
-        t.remarks?.toLowerCase().includes(q) ||
-        t.performedByName.toLowerCase().includes(q)
-      );
-    }
-
-    return list;
-  }, [item?.timeline, timelineFilter, timelineSearch]);
-
-  const goHome = () => {
-    if (isSuper) {
-      router.replace('/admin/super');
-    } else if (isAdminSide) {
-      router.replace('/admin');
-    } else {
-      router.replace('/(tabs)/home');
-    }
-  };
-
-  const setStatus = (newStatus: string) => {
+  const setStatus = async (status: string) => {
     if (!item) return;
-    setPendingWorkflowAction({ type: 'STATUS_CHANGE', status: newStatus });
-    setRemarks(''); // Clear previous remarks for the new action
-    setRemarksModal(true);
-  };
-
-  const assignTo = (staffId: string | null) => {
-    if (!item) return;
-    setPendingWorkflowAction({ type: 'ASSIGNMENT', staffId });
-    setRemarks('');
-    setRemarksModal(true);
-  };
-
-  const saveRemarks = async () => {
-    if (!item) return;
-
-    if (pendingWorkflowAction && !remarks.trim()) {
-      return showToast('Remarks are mandatory when changing the complaint status.', 'error');
+    if (status === 'Cancelled' || status === 'Rejected' || status === 'Resolved') {
+      setPendingWorkflowAction({ type: 'STATUS_CHANGE', status });
+      setRemarks('');
+      setRemarksModal(true);
+      return;
     }
 
     setSaving(true);
     try {
+      const updated = await adminUpdateStatus(item.complaint_id, { status });
+      setItem(updated);
+      const transitions = workflowApi.getAllowedTransitions(user!, updated);
+      setAllowedNextStatuses(transitions);
+      setStatusSheet(false);
+      showToast(`Status updated to ${status}`, 'success');
+    } catch (e: any) {
+      showToast(e.message || 'Failed to update status', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const assignTo = async (staffId: string | null) => {
+    if (!item) return;
+    setSaving(true);
+    try {
+      const updated = await assignComplaint(item.complaint_id, staffId);
+      setItem(updated);
+      showToast(staffId ? 'Service provider assigned successfully' : 'Assignment cleared', 'success');
+      setAssignSheet(false);
+    } catch (e: any) {
+      showToast(e.message || 'Assignment failed', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveRemarks = async () => {
+    if (!item) return;
+    setSaving(true);
+    try {
       let updated;
       if (pendingWorkflowAction?.type === 'STATUS_CHANGE') {
-        updated = await adminUpdateStatus(item.complaint_id, {
-          status: pendingWorkflowAction.status,
-          remarks: remarks.trim()
-        });
-        showToast('Status updated', 'success');
+        updated = await adminUpdateStatus(item.complaint_id, { status: pendingWorkflowAction.status, remarks: remarks.trim() });
       } else if (pendingWorkflowAction?.type === 'REOPEN') {
         updated = await reopenComplaint(item.complaint_id, remarks.trim());
-        showToast('Reopened', 'success');
       } else if (pendingWorkflowAction?.type === 'ASSIGNMENT') {
         updated = await assignComplaint(item.complaint_id, pendingWorkflowAction.staffId, remarks.trim());
-        showToast(pendingWorkflowAction.staffId ? 'Staff assigned' : 'Assignment cleared', 'success');
       } else {
-        // Standard remarks update (existing functionality)
-        updated = await adminUpdateStatus(item.complaint_id, {
-          status: item.status,
-          remarks: remarks.trim(),
-        });
-        showToast('Remarks saved', 'success');
+        updated = await adminUpdateStatus(item.complaint_id, { status: item.status, remarks: remarks.trim() });
       }
-
       setItem(updated);
       setRemarksModal(false);
       setPendingWorkflowAction(null);
-      setRemarks('');
-      if (pendingWorkflowAction) load(); // Refresh lists if status changed
+      showToast('Service request updated', 'success');
     } catch (e: any) {
-      showToast(e.message || 'Failed', 'error');
+      showToast(e.message, 'error');
     } finally {
       setSaving(false);
     }
@@ -274,21 +223,13 @@ export default function ComplaintDetail() {
     setSaving(true);
     try {
       const updates: any = {};
-      if (overrideWard && overrideWard !== item.wardNumber) {
-         updates.wardNumber = overrideWard;
-         const w = allWards.find(x => x.wardNumber === overrideWard);
-         if (w) updates.wardName = w.name;
-      }
-      if (overrideCat && overrideCat !== item.categoryName) {
-         updates.categoryName = overrideCat;
-      }
+      if (overrideWard !== item.wardNumber) updates.wardNumber = overrideWard;
+      if (overrideCat !== item.categoryName) updates.categoryName = overrideCat;
 
-      if (Object.keys(updates).length > 0) {
-        const updated = await updateComplaintFields(item.complaint_id, updates);
-        setItem(updated);
-        showToast('Complaint data overridden', 'success');
-      }
+      const updated = await updateComplaintFields(item.complaint_id, updates);
+      setItem(updated);
       setShowOverrideModal(false);
+      showToast('Service request data overridden', 'success');
     } catch (e: any) {
       showToast(e.message, 'error');
     } finally {
@@ -302,7 +243,6 @@ export default function ComplaintDetail() {
      const performDelete = async () => {
        setSaving(true);
        try {
-         // Note: Use local name to avoid collision if necessary, but here it's fine
          await deleteComplaintApi(item.complaint_id);
          showToast('Deleted', 'success');
          router.back();
@@ -318,7 +258,7 @@ export default function ComplaintDetail() {
      }
 
      Alert.alert(
-       'Delete Complaint',
+       'Delete Service Request',
        'Are you sure? This will soft-delete the record.',
        [
          { text: 'Cancel', style: 'cancel' },
@@ -334,6 +274,43 @@ export default function ComplaintDetail() {
     </View>
   );
 
+  const filteredTimeline = useMemo(() => {
+    if (!item?.timeline) return [];
+    let list = item.timeline;
+    if (timelineFilter === 'COMMENTS') list = list.filter(t => t.type.includes('COMMENT'));
+    else if (timelineFilter === 'STATUS') list = list.filter(t => t.type.includes('STATUS') || t.type.includes('CREATED'));
+    else if (timelineFilter === 'ASSIGNMENTS') list = list.filter(t => t.type.includes('ASSIGN'));
+
+    if (timelineSearch.trim()) {
+       const q = timelineSearch.toLowerCase();
+       list = list.filter(t => t.title.toLowerCase().includes(q) || t.performedByName.toLowerCase().includes(q));
+    }
+    return list;
+  }, [item?.timeline, timelineFilter, timelineSearch]);
+
+  const recommendedStaff = useMemo(() => {
+    if (!item || !staffList.length) return [];
+    return assignmentUtils.getRecommendedStaff(item, staffList, staffSearch);
+  }, [item, staffList, staffSearch]);
+
+  const otherEligible = useMemo(() => {
+    if (!item || !staffList.length) return [];
+    const recIds = new Set(recommendedStaff.map(s => s.uid));
+    return staffList.filter(s => !recIds.has(s.uid) && (
+      !staffSearch || s.fullName.toLowerCase().includes(staffSearch.toLowerCase()) || s.employeeId?.toLowerCase().includes(staffSearch.toLowerCase())
+    ));
+  }, [item, staffList, recommendedStaff, staffSearch]);
+
+  const goHome = () => {
+    if (user?.role === 'super_admin' || user?.role === 'readonly_super_admin') {
+      router.replace('/admin/super');
+    } else if (user?.role === 'taluk_admin' || user?.role === 'staff') {
+      router.replace('/admin');
+    } else {
+      router.replace('/(tabs)/home');
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
@@ -348,7 +325,7 @@ export default function ComplaintDetail() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Complaint</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Service Request</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={{ padding: 40, alignItems: 'center', marginTop: 40 }}>
@@ -357,7 +334,7 @@ export default function ComplaintDetail() {
             {loadError === 'forbidden' ? 'Access Denied' : 'Not Found'}
           </Text>
           <Text style={{ color: colors.textSecondary, marginTop: 8, textAlign: 'center' }}>
-            {loadError === 'forbidden' ? 'Unauthorized to view this complaint.' : "Couldn't find this complaint."}
+            {loadError === 'forbidden' ? 'Unauthorized to view this service request.' : "Couldn't find this service request."}
           </Text>
         </View>
       </SafeAreaView>
@@ -396,7 +373,7 @@ export default function ComplaintDetail() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: colors.text, fontWeight: '700', fontSize: 15 }}>{item.citizenName}</Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Ward {item.wardNumber} · {item.wardName}</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{item.district} · {item.taluk} Taluk</Text>
             </View>
           </AppCard>
         )}
@@ -416,9 +393,9 @@ export default function ComplaintDetail() {
 
         {(isOwner || isSuperOrAdmin) && staff && (
           <View style={{ marginTop: 24 }}>
-            <Text style={[styles.section, { color: colors.textSecondary }]}>STAFF CONTACT INFO</Text>
+            <Text style={[styles.section, { color: colors.textSecondary }]}>PROVIDER CONTACT INFO</Text>
             <AppCard padding="none">
-              <MetaRow label="Staff Name" value={staff.fullName} color={colors} />
+              <MetaRow label="Provider Name" value={staff.fullName} color={colors} />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
               <MetaRow label="Mobile Number" value={staff.mobile || 'Not Provided'} color={colors} />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -436,7 +413,7 @@ export default function ComplaintDetail() {
         {/* Assignment card */}
         {(isSuperOrAdmin || (isOwner && item.assignedStaffName) || isStaff) && (
           <View style={{ marginTop: 24 }}>
-            <Text style={[styles.section, { color: colors.textSecondary }]}>ASSIGNED STAFF</Text>
+            <Text style={[styles.section, { color: colors.textSecondary }]}>ASSIGNED SERVICE PROVIDER</Text>
             <AppCard style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }} elevation="sm" padding="md">
               <View style={[styles.assignIcon, { backgroundColor: item.assignedStaffName ? colors.primary + '15' : colors.danger + '15' }]}>
                 <Ionicons name={item.assignedStaffName ? 'person' : 'alert-circle'} size={20} color={item.assignedStaffName ? colors.primary : colors.danger} />
@@ -534,7 +511,7 @@ export default function ComplaintDetail() {
 
           {canReopen && canModify() && (
             <AppButton
-              title="Reopen Complaint"
+              title="Reopen Service Request"
               onPress={() => {
                 setPendingWorkflowAction({ type: 'REOPEN' });
                 setRemarks('');
@@ -558,7 +535,7 @@ export default function ComplaintDetail() {
                   style={{ borderStyle: 'dashed' }}
                 />
                 <AppButton
-                  title="Soft Delete Complaint"
+                  title="Soft Delete Service Request"
                   onPress={deleteComplaint}
                   variant="outline"
                   style={{ borderColor: colors.danger, borderStyle: 'dashed' }}
@@ -725,15 +702,9 @@ export default function ComplaintDetail() {
          <Pressable style={styles.modalBackdrop} onPress={() => setShowOverrideModal(false)}>
             <Pressable style={[styles.modalCard, { backgroundColor: colors.surface }]}>
                <Text style={[styles.modalTitle, { color: colors.text }]}>Administrative Override</Text>
-               <Text style={{ color: colors.textSecondary, fontSize: 12, marginBottom: 16 }}>Force update basic complaint properties.</Text>
+               <Text style={{ color: colors.textSecondary, fontSize: 12, marginBottom: 16 }}>Force update service request properties.</Text>
 
-               <Text style={styles.label}>WARD JURISDICTION</Text>
-               <TouchableOpacity onPress={() => setShowOverrideWardPicker(true)} style={[styles.selector, { borderColor: colors.border }]}>
-                  <Text style={{ color: colors.text }}>Ward {overrideWard} - {allWards.find(x => x.wardNumber === overrideWard)?.name}</Text>
-                  <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
-               </TouchableOpacity>
-
-               <Text style={[styles.label, { marginTop: 12 }]}>SERVICE CATEGORY</Text>
+               <Text style={styles.label}>SERVICE CATEGORY</Text>
                <TouchableOpacity onPress={() => setShowOverrideCatPicker(true)} style={[styles.selector, { borderColor: colors.border }]}>
                   <Text style={{ color: colors.text }}>{overrideCat}</Text>
                   <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
@@ -748,18 +719,6 @@ export default function ComplaintDetail() {
             </Pressable>
          </Pressable>
       </Modal>
-
-      <PickerSheet
-         visible={showOverrideWardPicker}
-         title="Select Ward"
-         options={(allWards || []).map(w => `Ward ${w.wardNumber} - ${w.name}`)}
-         onSelect={(val) => {
-            const num = parseInt(val.split(' ')[1]);
-            setOverrideWard(num);
-            setShowOverrideWardPicker(false);
-         }}
-         onClose={() => setShowOverrideWardPicker(false)}
-      />
 
       <PickerSheet
          visible={showOverrideCatPicker}
@@ -777,11 +736,11 @@ export default function ComplaintDetail() {
         <Pressable style={styles.modalBackdrop} onPress={() => setAssignSheet(false)}>
           <Pressable style={[styles.assignSheet, { backgroundColor: colors.surface }]}>
             <View style={styles.assignHandle} />
-            <Text style={[styles.modalTitle, { color: colors.text, textAlign: 'center', marginBottom: 8 }]}>{item.assignedStaffId ? 'Reassign Resource' : 'Assign Resource'}</Text>
+            <Text style={[styles.modalTitle, { color: colors.text, textAlign: 'center', marginBottom: 8 }]}>{item.assignedStaffId ? 'Reassign Provider' : 'Assign Provider'}</Text>
 
             <View style={[styles.searchBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
               <Ionicons name="search" size={18} color={colors.textSecondary} />
-              <TextInput placeholder="Search global staff pool..." placeholderTextColor={colors.textSecondary} value={staffSearch} onChangeText={setStaffSearch} style={{ flex: 1, color: colors.text, fontSize: 14 }} />
+              <TextInput placeholder="Search service provider pool..." placeholderTextColor={colors.textSecondary} value={staffSearch} onChangeText={setStaffSearch} style={{ flex: 1, color: colors.text, fontSize: 14 }} />
               {staffSearch.length > 0 && (
                 <TouchableOpacity onPress={() => setStaffSearch('')}>
                   <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
@@ -794,10 +753,10 @@ export default function ComplaintDetail() {
                 <View style={{ padding: 40, alignItems: 'center' }}>
                   <Ionicons name="people-outline" size={48} color={colors.textSecondary} />
                   <Text style={{ color: colors.text, fontWeight: '700', marginTop: 16, textAlign: 'center' }}>
-                    No eligible staff available for this ward and department.
+                    No eligible service providers available for this taluk and department.
                   </Text>
                   <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 8, textAlign: 'center' }}>
-                    Staff must be active and assigned to Ward {item.wardNumber} in the {item.departmentName} department.
+                    Providers must be active and verified in the {item.departmentName} department.
                   </Text>
                 </View>
               )}
@@ -805,7 +764,7 @@ export default function ComplaintDetail() {
               {recommendedStaff.length > 0 && (
                 <View style={styles.sectionHeader}>
                   <Ionicons name="star" size={14} color="#F59E0B" />
-                  <Text style={styles.sectionText}>RECOMMENDED RESOURCES</Text>
+                  <Text style={styles.sectionText}>RECOMMENDED PROVIDERS</Text>
                 </View>
               )}
               {recommendedStaff.map((s, idx) => (
@@ -819,7 +778,7 @@ export default function ComplaintDetail() {
               ))}
 
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionText}>OTHER ELIGIBLE STAFF</Text>
+                <Text style={styles.sectionText}>OTHER ELIGIBLE PROVIDERS</Text>
               </View>
               {otherEligible.map(s => (
                 <StaffRow
@@ -850,12 +809,12 @@ export default function ComplaintDetail() {
                 {pendingWorkflowAction?.type === 'STATUS_CHANGE'
                   ? `Update Status: ${pendingWorkflowAction.status}`
                   : pendingWorkflowAction?.type === 'REOPEN'
-                    ? 'Reopen Complaint'
+                    ? 'Reopen Service Request'
                     : pendingWorkflowAction?.type === 'ASSIGNMENT'
-                      ? (pendingWorkflowAction.staffId ? 'Assign Resource' : 'Clear Assignment')
+                      ? (pendingWorkflowAction.staffId ? 'Assign Provider' : 'Clear Assignment')
                       : 'Edit Remarks'}
               </Text>
-              <TextInput value={remarks} onChangeText={setRemarks} autoFocus multiline numberOfLines={5} placeholder={pendingWorkflowAction ? "Why are you making this change?" : "Internal or citizen-facing updates..."} placeholderTextColor={colors.textSecondary} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, marginTop: 12, minHeight: 120, color: colors.text, textAlignVertical: 'top' }} />
+              <TextInput value={remarks} onChangeText={setRemarks} autoFocus multiline numberOfLines={5} placeholder={pendingWorkflowAction ? "Why are you making this change?" : "Internal or customer-facing updates..."} placeholderTextColor={colors.textSecondary} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, marginTop: 12, minHeight: 120, color: colors.text, textAlignVertical: 'top' }} />
               <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
                 <TouchableOpacity onPress={() => { setRemarksModal(false); setPendingWorkflowAction(null); }} style={[styles.modalBtn, { borderColor: colors.border, borderWidth: 1 }]}><Text style={{ fontWeight: '700', color: colors.text }}>Cancel</Text></TouchableOpacity>
                 <TouchableOpacity onPress={saveRemarks} disabled={saving} style={[styles.modalBtn, { backgroundColor: colors.primary }]}>{saving ? <ActivityIndicator color="#fff" /> : <Text style={{ fontWeight: '800', color: '#fff' }}>Confirm</Text>}</TouchableOpacity>
@@ -885,7 +844,7 @@ function StaffRow({ staff, isBestMatch, selected, onSelect }: any) {
             </View>
           )}
         </View>
-        <Text style={{ color: colors.textSecondary, fontSize: 11 }}>{staff.designation || 'Field Staff'}</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 11 }}>{staff.designation || 'Service Provider'}</Text>
 
         <View style={styles.metricsRow}>
           <MetricBox label="LOAD" value={staff.activeComplaintCount} color={colors.text} />
@@ -893,286 +852,60 @@ function StaffRow({ staff, isBestMatch, selected, onSelect }: any) {
           <MetricBox label="SPEED" value={`${Math.round(staff.averageResolutionTime || 0)}h`} color={colors.primary} />
           <MetricBox label="RATING" value={staff.rating?.toFixed(1)} color="#F59E0B" />
         </View>
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-          {staff.hasAllWardAccess ? (
-            <View style={{ backgroundColor: colors.primary + '10', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 }}>
-              <Text style={{ fontSize: 8, color: colors.primary, fontWeight: '800' }}>ALL WARDS</Text>
-            </View>
-          ) : (
-            (staff.assignedWardNumbers || []).map((n: number) => (
-              <View key={n} style={{ backgroundColor: colors.surfaceTint, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, borderWidth: 0.5, borderColor: colors.border }}>
-                <Text style={{ fontSize: 8, color: colors.textSecondary, fontWeight: '700' }}>W{n}</Text>
-              </View>
-            ))
-          )}
-          {staff.departments?.slice(0, 2).map((d: string) => (
-            <View key={d} style={{ backgroundColor: colors.surfaceTint, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, borderWidth: 0.5, borderColor: colors.border }}>
-              <Text style={{ fontSize: 8, color: colors.textSecondary, fontWeight: '700' }}>{d.toUpperCase()}</Text>
-            </View>
-          ))}
-        </View>
       </View>
       {selected && <Ionicons name="checkmark-circle" size={22} color={colors.primary} />}
     </TouchableOpacity>
   );
 }
 
-function MetricBox({ label, value, color }: any) {
+function MetricBox({ label, value, color }: { label: string; value: any; color: string }) {
   return (
-    <View style={{ alignItems: 'flex-start', minWidth: 40 }}>
-      <Text style={{ fontSize: 7, fontWeight: '800', color: '#94A3B8' }}>{label}</Text>
-      <Text style={{ fontSize: 12, fontWeight: '800', color }}>{value}</Text>
+    <View style={styles.metricBox}>
+      <Text style={{ fontSize: 9, color: '#64748B', fontWeight: '800' }}>{label}</Text>
+      <Text style={{ fontSize: 13, color, fontWeight: '800', marginTop: 1 }}>{value ?? 0}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerIconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    flex: 1,
-    textAlign: 'center',
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  cid: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    lineHeight: 30,
-  },
-  date: {
-    fontSize: 12,
-    marginTop: 8,
-  },
-  userAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  section: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    marginBottom: 10,
-    textTransform: 'uppercase',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  divider: {
-    height: 1,
-    marginHorizontal: 16,
-  },
-  desc: {
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  thumb: {
-    width: 100,
-    height: 100,
-  },
-  assignIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  historyToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  ahRow: {
-    padding: 14,
-  },
-  commentHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  commentAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  commentInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    gap: 12,
-  },
-  commentSend: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  timelineHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
-  filterBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  timelineSearch: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 24,
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewerClose: {
-    position: 'absolute',
-    top: 60,
-    right: 24,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    borderRadius: 28,
-    padding: 24,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  modalBtn: {
-    flex: 1,
-  },
-  assignSheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    padding: 24,
-    maxHeight: '85%',
-  },
-  assignHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#CBD5E1',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 20,
-    marginBottom: 12,
-  },
-  sectionText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#64748B',
-    letterSpacing: 1,
-  },
-  assignRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 14,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  assignRowIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#64748B',
-    marginBottom: 8,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  selector: {
-    height: 52,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 64 },
+  headerIconBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '800' },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  cid: { fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  title: { fontSize: 22, fontWeight: '800', marginTop: 4, lineHeight: 28 },
+  date: { fontSize: 12, marginTop: 8 },
+  userAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  section: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
+  metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
+  divider: { height: 1 },
+  assignIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  desc: { fontSize: 15, lineHeight: 22 },
+  thumb: { width: 80, height: 80 },
+  historyToggle: { flexDirection: 'row', alignItems: 'center', padding: 14, borderWidth: 1, borderRadius: 16, gap: 10 },
+  ahRow: { padding: 12 },
+  commentHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  commentAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  commentInputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 6, gap: 12 },
+  commentSend: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  timelineHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  filterBtn: { paddingHorizontal: 8, paddingVertical: 4 },
+  timelineSearch: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, marginBottom: 16, gap: 8 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'center', alignItems: 'center' },
+  viewerClose: { position: 'absolute', top: 40, right: 20, padding: 10 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalCard: { padding: 24, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+  modalTitle: { fontSize: 20, fontWeight: '800' },
+  label: { fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: 6, color: '#64748B' },
+  selector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, height: 48 },
+  modalBtn: { flex: 1, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  assignSheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '85%' },
+  assignHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#CBD5E1', alignSelf: 'center', marginBottom: 12 },
+  searchBox: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, height: 46, marginBottom: 16, gap: 8 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 16, marginBottom: 8 },
+  sectionText: { fontSize: 10, fontWeight: '800', letterSpacing: 1, color: '#64748B' },
+  assignRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 8, borderBottomWidth: 1, gap: 12 },
+  assignRowIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  metricsRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
+  metricBox: { backgroundColor: '#F8FAFC', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
 });

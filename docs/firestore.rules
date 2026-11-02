@@ -32,16 +32,19 @@ service cloud.firestore {
     function isTalukAdmin() { return actorExists() && actorData().role == 'taluk_admin'; }
     function isSuperLevel() { return isSuperAdmin() || isReadOnlyAdmin(); }
 
-    // --- Master Data (Viewable by all auth users, writable only by primary Super Admin) ---
+    // --- Master Data (Viewable publicly for catalog browsing, writable only by Super Admin) ---
 
-    match /roles/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /permissions/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /taluks/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /departments/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /complaintCategories/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /complaintStatuses/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /metadata/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
-    match /settings/{id} { allow read: if isAuthenticated(); allow write: if isSuperAdmin(); }
+    match /roles/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /permissions/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /taluks/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /departments/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /complaintCategories/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /serviceCategories/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /complaintStatuses/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /serviceStatuses/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /servicePriorities/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /metadata/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /settings/{id} { allow read: if true; allow write: if isSuperAdmin(); }
 
     // --- Functional Collections ---
 
@@ -54,11 +57,7 @@ service cloud.firestore {
     // 2. Service Requests
     match /serviceRequests/{id} {
       allow create: if isAuthenticated();
-
-      allow list: if isSuperLevel() ||
-                  (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
-                  (resource.data.assignedStaffId == request.auth.uid) ||
-                  (isAuthenticated() && resource.data.citizenId == request.auth.uid);
+      allow list: if isAuthenticated();
 
       allow get: if isAuthenticated() && (
         isSuperLevel() ||

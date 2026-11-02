@@ -507,7 +507,7 @@ export default function AdminDashboard() {
           renderItem={({ item }) => (
             <ComplaintListItem
               item={item}
-              onPress={() => router.push(`/complaint/${item.complaint_id}`)}
+              onPress={() => router.push(`/service/${item.complaint_id}`)}
             />
           )}
         />

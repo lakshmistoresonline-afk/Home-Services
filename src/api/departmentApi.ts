@@ -3,15 +3,33 @@ import { db } from "@/src/config/firebase";
 import { logAction } from "./auditApi";
 import { type Department } from "./client";
 
+const FALLBACK_DEPARTMENTS: Department[] = [
+  { id: "appliance", name: "Appliance Repair", description: "AC, washing machine, refrigerator, water purifier (RO) repair and service", displayOrder: 10, icon: "hardware-chip", isActive: true },
+  { id: "cleaning", name: "Cleaning & Pest Control", description: "Full home deep cleaning, kitchen/bathroom cleaning, sofa shampooing, and pest control", displayOrder: 20, icon: "sparkles", isActive: true },
+  { id: "water_systems", name: "Water Systems & Well Care", description: "Well cleaning & desilting, borewell pump repair, and septic tank de-sludging", displayOrder: 25, icon: "water", isActive: true },
+  { id: "electrical", name: "Electrician", description: "Fan repair, switchboard replacement, MCB fixing, and home wiring", displayOrder: 30, icon: "flash", isActive: true },
+  { id: "plumbing", name: "Plumber", description: "Tap leakages, pipe unblocking, geyser installation, and sanitary fittings", displayOrder: 40, icon: "water", isActive: true },
+  { id: "carpentry", name: "Carpenter", description: "Furniture assembly, door lock replacement, and woodwork", displayOrder: 50, icon: "construct", isActive: true },
+  { id: "painting", name: "Painting & Waterproofing", description: "Interior and exterior wall painting, and roof waterproofing", displayOrder: 60, icon: "color-palette", isActive: true },
+  { id: "monsoon_care", name: "Monsoon & Waterproofing Care", description: "Roof tile leak repair, anti-termite treatment, and damp wall waterproofing", displayOrder: 62, icon: "umbrella", isActive: true },
+  { id: "civil", name: "Civil Works & Renovation", description: "Masonry, tiling, flooring, wall plastering, and bathroom/kitchen remodeling", displayOrder: 65, icon: "business", isActive: true },
+  { id: "power_backup", name: "Solar & Power Backup", description: "Solar panel cleaning, inverter servicing, and surge protector installation", displayOrder: 68, icon: "sunny", isActive: true },
+  { id: "heritage_care", name: "Wood & Heritage Care", description: "Traditional teak wood polishing and brassware restoration", displayOrder: 72, icon: "color-fill", isActive: true },
+  { id: "elder_care", name: "Elder Care & Nursing", description: "In-home nursing care, attender services, and bedside physiotherapy", displayOrder: 75, icon: "medkit", isActive: true },
+  { id: "beauty", name: "Salon, Spa & Grooming", description: "Salon for women, men's grooming, and relaxing spa/massage therapies at home", displayOrder: 78, icon: "heart", isActive: true },
+  { id: "driving", name: "Driver & Automotive", description: "On-demand personal drivers and doorstep car wash/detailing", displayOrder: 80, icon: "car", isActive: true },
+  { id: "smarthome", name: "Smart Home & Tech", description: "CCTV camera installation, smart lock setup, and Wi-Fi configuration", displayOrder: 90, icon: "wifi", isActive: true }
+];
+
 export const listDepartments = async (): Promise<Department[]> => {
   try {
     const q = query(collection(db, "departments"), orderBy("displayOrder", "asc"));
     const snap = await getDocs(q);
-    if (snap.empty) return [];
+    if (snap.empty) return FALLBACK_DEPARTMENTS;
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as Department));
-  } catch (e) {
-    console.error('Failed to list departments:', e);
-    return [];
+  } catch (e: any) {
+    console.warn('Using fallback departments due to permission/network state:', e?.message || e);
+    return FALLBACK_DEPARTMENTS;
   }
 };
 

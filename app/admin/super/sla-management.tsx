@@ -152,7 +152,7 @@ export default function SuperSlaManagement() {
                 return (
                   <TouchableOpacity
                     key={item.id}
-                    onPress={() => router.push(`/complaint/${item.complaint_id}`)}
+                    onPress={() => router.push(`/service/${item.complaint_id}`)}
                     activeOpacity={0.85}
                     style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: 12 }]}
                   >

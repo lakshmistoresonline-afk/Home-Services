@@ -60,17 +60,19 @@ export function PickerSheet({
           </View>
           <ScrollView style={{ maxHeight: 450 }} showsVerticalScrollIndicator={false}>
             <View style={{ paddingBottom: spacing.xl }}>
-              {options.map((opt) => {
-                const selected = value === opt;
+              {options.map((opt: any) => {
+                const label = typeof opt === 'string' ? opt : (opt.label || opt.name || String(opt));
+                const val = typeof opt === 'string' ? opt : (opt.value || opt.id || label);
+                const selected = value === val || value === label;
                 return (
                   <TouchableOpacity
-                    key={opt}
+                    key={String(val)}
                     activeOpacity={0.6}
                     onPress={() => {
-                      onSelect(opt);
+                      onSelect(val);
                       onClose();
                     }}
-                    testID={`${testIDPrefix}-option-${opt.toLowerCase().replace(/\s+/g, '-')}`}
+                    testID={`${testIDPrefix}-option-${String(label).toLowerCase().replace(/\s+/g, '-')}`}
                     style={[
                       styles.row,
                       { borderBottomColor: colors.border + '50' },
@@ -85,7 +87,7 @@ export function PickerSheet({
                         fontWeight: selected ? '700' : '500'
                       }
                     ]}>
-                      {opt}
+                      {label}
                     </Text>
                     {selected && <Ionicons name="checkmark-circle" size={22} color={colors.primary} />}
                   </TouchableOpacity>

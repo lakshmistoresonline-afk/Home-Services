@@ -41,7 +41,7 @@ export default function TabsLayout() {
   if (user.role === 'super_admin' || user.role === 'readonly_super_admin') {
     return <Redirect href="/admin/super" />;
   }
-  if (user.role === 'staff' || user.role === 'ward_admin') {
+  if (user.role === 'staff' || user.role === 'taluk_admin' || user.role === 'ward_admin') {
     return <Redirect href="/admin" />;
   }
 
@@ -80,12 +80,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="complaints"
+        name="bookings"
         options={{
           title: 'History',
           tabBarIcon: ({ color, size }) => <Ionicons name="document-text-sharp" size={size} color={color} />,
           href: user?.role === 'citizen' ? null : (hasPermission('view_own_complaints') ? undefined : null),
-          tabBarButtonTestID: 'tab-complaints',
+          tabBarButtonTestID: 'tab-bookings',
         }}
       />
       <Tabs.Screen

@@ -37,7 +37,7 @@ type PendingFile = {
 const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB for Plan B stability
 const MAX_PHOTOS = 3;
 
-export default function NewComplaintScreen() {
+export default function NewServiceRequestScreen() {
   const { colors, typography, spacing, radius } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
@@ -140,7 +140,7 @@ export default function NewComplaintScreen() {
       }
       result = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
-        quality: 0.8, // Higher initial quality, manipulator will compress
+        quality: 0.8,
       });
     } else {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -166,7 +166,6 @@ export default function NewComplaintScreen() {
 
     const validByTypes = assets.filter(a => !a.mimeType || a.mimeType.startsWith('image/'));
 
-    // Process images through the Rescaling Engine
     const processedFiles: PendingFile[] = [];
     for (const asset of validByTypes) {
       const processed = await processImage(asset.uri);
@@ -191,7 +190,7 @@ export default function NewComplaintScreen() {
     try {
       const result = await ImageManipulator.manipulateAsync(
         uri,
-        [{ resize: { width: 1200 } }], // Resize to professional standard
+        [{ resize: { width: 1200 } }],
         { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
       return { uri: result.uri, base64: result.base64 };
@@ -218,12 +217,11 @@ export default function NewComplaintScreen() {
           continue;
         }
 
-        // Plan B: Convert local base64 to attachment format
         uploadedAttachments.push({
           id: `b64-${Date.now()}-${i}`,
           filename: file.name,
           url: `data:${file.type};base64,${file.base64}`,
-          size: file.base64.length, // approximation
+          size: file.base64.length,
           contentType: file.type,
           uploadedBy: user!.uid,
           uploadedAt: new Date().toISOString(),
@@ -243,8 +241,8 @@ export default function NewComplaintScreen() {
         attachments: uploadedAttachments,
       });
 
-      showToast(`Complaint filed: ${c.complaint_id}`, 'success');
-      router.replace(`/complaint/${c.complaint_id}`);
+      showToast(`Service request submitted: ${c.complaint_id}`, 'success');
+      router.replace(`/service/${c.complaint_id}`);
     } catch (e: any) {
       console.error("Submission failed:", e);
       showToast(e.message || 'Failed to submit', 'error');
@@ -266,7 +264,7 @@ export default function NewComplaintScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} testID="new-complaint-back" style={styles.backBtn}>
+        <TouchableOpacity onPress={() => router.back()} testID="new-service-back" style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[typography.title.large, { color: colors.text, fontWeight: '800', flex: 1 }]}>Raise Service Request</Text>
@@ -315,7 +313,7 @@ export default function NewComplaintScreen() {
 
           <AppInput
             label="SERVICE TITLE"
-            testID="complaint-title-input"
+            testID="service-title-input"
             value={title}
             onChangeText={setTitle}
             placeholder="Brief summary of the service needed"
@@ -324,7 +322,7 @@ export default function NewComplaintScreen() {
 
           <AppInput
             label="DETAILED DESCRIPTION"
-            testID="complaint-description-input"
+            testID="service-description-input"
             value={description}
             onChangeText={setDescription}
             multiline
@@ -378,7 +376,7 @@ export default function NewComplaintScreen() {
             title={busy ? "Submitting..." : "Submit Service Request"}
             onPress={submit}
             loading={busy}
-            testID="submit-complaint-button"
+            testID="submit-service-button"
             style={{ marginTop: spacing.md }}
           />
         </ScrollView>
@@ -422,4 +420,3 @@ const styles = StyleSheet.create({
   photoImg: { width: '100%', height: '100%' },
   removePhoto: { position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
 });
-

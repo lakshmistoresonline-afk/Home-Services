@@ -144,7 +144,7 @@ export type Department = {
   isActive: boolean;
 };
 
-export type ComplaintCategory = {
+export type ServiceCategory = {
   id: string;
   name: string;
   departmentId: string;
@@ -157,8 +157,9 @@ export type ComplaintCategory = {
   slaHours: number;
   isActive: boolean;
 };
+export type ComplaintCategory = ServiceCategory;
 
-export type ComplaintComment = {
+export type ServiceComment = {
   id: string;
   author_id: string;
   author_name: string;
@@ -166,8 +167,16 @@ export type ComplaintComment = {
   text: string;
   created_at: string;
 };
+export type ComplaintComment = ServiceComment;
 
 export type TimelineActivityType =
+  | 'REQUEST_CREATED'
+  | 'REQUEST_ASSIGNED'
+  | 'REQUEST_REASSIGNED'
+  | 'REQUEST_RESOLVED'
+  | 'REQUEST_CLOSED'
+  | 'REQUEST_REOPENED'
+  | 'REQUEST_CANCELLED'
   | 'COMPLAINT_CREATED'
   | 'COMPLAINT_ASSIGNED'
   | 'COMPLAINT_REASSIGNED'
@@ -229,7 +238,7 @@ export type HistoryEntry = {
   at: string;
 };
 
-export type ComplaintStatusRecord = {
+export type ServiceStatusRecord = {
   id: string;
   name: string;
   displayOrder: number;
@@ -237,6 +246,7 @@ export type ComplaintStatusRecord = {
   icon: string;
   isActive: boolean;
 };
+export type ComplaintStatusRecord = ServiceStatusRecord;
 
 export type AssignmentEntry = {
   previousStaffId: string | null;
@@ -249,21 +259,25 @@ export type AssignmentEntry = {
 };
 
 export type ComplaintStatus = string;
+export type ServiceStatus = string;
 
-export type Complaint = {
+export type ServiceRequest = {
   id: string;
   complaint_id: string;
+  request_id?: string;
   citizenId: string;
   citizenName: string;
-  wardNumber: number;
-  wardName: string;
+  district?: string;
+  taluk?: string;
+  wardNumber?: number;
+  wardName?: string;
   departmentId: string;
   departmentName: string;
   categoryId: string;
   categoryName: string;
   title: string;
   description: string;
-  status: ComplaintStatus;
+  status: ServiceStatus;
   photos: string[];
   attachments: TimelineAttachment[];
   assignedStaffId: string | null;
@@ -279,7 +293,7 @@ export type Complaint = {
   slaDueAt?: any | null;
   slaBreached?: boolean;
   history: HistoryEntry[];
-  comments: ComplaintComment[];
+  comments: ServiceComment[];
   timeline: TimelineActivity[];
   createdAt: any;
   updatedAt: any;
@@ -291,6 +305,7 @@ export type Complaint = {
   createdAtDate?: Date;
   updatedAtDate?: Date;
 };
+export type Complaint = ServiceRequest;
 
 export type Meta = {
   departments: string[];

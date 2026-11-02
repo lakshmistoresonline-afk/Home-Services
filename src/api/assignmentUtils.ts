@@ -1,64 +1,54 @@
-import { type User, type Complaint } from "./client";
+import { type User, type ServiceRequest } from "./client";
 
 /**
- * Checks if a staff member is eligible to handle a specific complaint.
+ * Checks if a service provider is eligible to handle a specific request.
  */
-export const isStaffEligible = (staff: User, complaint: Complaint): boolean => {
-  if (!staff.isActive || staff.role !== 'staff') return false;
-
-  // Type-resilient ward matching (handles both numbers and strings)
-  const targetWard = Number(complaint.wardNumber);
-  const hasWardMatch =
-    staff.hasAllWardAccess ||
-    (staff.assignedWardNumbers && staff.assignedWardNumbers.map(Number).includes(targetWard)) ||
-    Number(staff.wardNumber) === targetWard;
+export const isProviderEligible = (provider: User, request: ServiceRequest): boolean => {
+  if (!provider.isActive || provider.role !== 'staff') return false;
 
   const hasDeptMatch =
-    staff.departmentIds?.includes(complaint.departmentId) ||
-    staff.departments?.includes(complaint.departmentId) ||
-    staff.departments?.some(
-      (d) => d.toLowerCase() === complaint.departmentName.toLowerCase()
+    provider.departmentIds?.includes(request.departmentId) ||
+    provider.departments?.includes(request.departmentId) ||
+    provider.departments?.some(
+      (d) => d.toLowerCase() === request.departmentName.toLowerCase()
     );
 
-  return !!(hasWardMatch && hasDeptMatch);
+  return !!hasDeptMatch;
 };
+export const isStaffEligible = isProviderEligible;
 
 /**
- * Ranks a list of staff members for a specific complaint using the system strategy.
+ * Ranks a list of service providers for a specific request.
  */
-export const rankStaff = <T extends User>(staffList: T[], complaint: Complaint): T[] => {
-  const scoreStaff = (s: T) => {
+export const rankProviders = <T extends User>(providerList: T[], request: ServiceRequest): T[] => {
+  const scoreProvider = (s: T) => {
     let score = 0;
-    // categoryName is used for matching skills
-    if (s.categories?.includes(complaint.categoryName)) {
-      score += 100; // Major boost for specific skill match
+    if (s.categories?.includes(request.categoryName)) {
+      score += 100;
     }
     return score;
   };
 
-  const poolWithScores = staffList.map((s) => ({
+  const poolWithScores = providerList.map((s) => ({
     ...s,
-    recommendationScore: scoreStaff(s),
+    recommendationScore: scoreProvider(s),
   }));
 
   return poolWithScores.sort((a, b) => {
-    // 1. Recommendation Score (DESC)
     if (a.recommendationScore !== b.recommendationScore) {
       return b.recommendationScore - a.recommendationScore;
     }
-    // 2. Workload: Active complaint count (ASC)
     if (a.activeComplaintCount !== b.activeComplaintCount) {
       return a.activeComplaintCount - b.activeComplaintCount;
     }
-    // 3. Efficiency: Average resolution time (ASC)
     if (a.averageResolutionTime !== b.averageResolutionTime) {
       return a.averageResolutionTime - b.averageResolutionTime;
     }
-    // 4. Quality: Rating (DESC)
     return (b.rating || 0) - (a.rating || 0);
   });
 };
+export const rankStaff = rankProviders;
 
 export const assignmentUtils = {
-  isStaffEligible, rankStaff
+  isProviderEligible, isStaffEligible, rankProviders, rankStaff, getRecommendedStaff: rankProviders
 };

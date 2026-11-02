@@ -57,13 +57,13 @@ export default function NotificationsScreen() {
 
   const markRead = async (item: AppNotification) => {
     if (item.read) {
-       if (item.complaintId) router.push(`/complaint/${item.complaintId}`);
+       if (item.complaintId) router.push(`/service/${item.complaintId}`);
        return;
     }
     try {
       await markNotificationRead(item.id);
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, read: true } : i));
-      if (item.complaintId) router.push(`/complaint/${item.complaintId}`);
+      if (item.complaintId) router.push(`/service/${item.complaintId}`);
     } catch (e) {
       /* ignore */
     }

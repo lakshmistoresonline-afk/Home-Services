@@ -1,5 +1,6 @@
 export * from "./authApi";
 export * from "./complaintApi";
+export * from "./serviceRequestApi";
 export * from "./staffApi";
 export * from "./wardAdminApi";
 export * from "./talukAdminApi";

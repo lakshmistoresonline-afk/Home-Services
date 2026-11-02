@@ -7,9 +7,9 @@ const roles = require("./roles.json");
 const permissions = require("./permissions.json");
 const departments = require("./departments.json");
 const taluks = require("./taluks.json");
-const categories = require("./complaintCategories.json");
-const priorities = require("./complaintPriorities.json");
-const statuses = require("./complaintStatuses.json");
+const categories = require("./serviceCategories.json");
+const priorities = require("./servicePriorities.json");
+const statuses = require("./serviceStatuses.json");
 const workflowRules = require("./workflowRules.json");
 const slaRules = require("./slaRules.json");
 const notificationTemplates = require("./notificationTemplates.json");
@@ -133,9 +133,9 @@ async function runSeeder() {
         await seedCollection("permissions", permissions);
         await seedCollection("departments", departments);
         await seedCollection("taluks", taluks, "id");
-        await seedCollection("complaintCategories", categories);
-        await seedCollection("complaintPriorities", priorities);
-        await seedCollection("complaintStatuses", statuses);
+        await seedCollection("serviceCategories", categories);
+        await seedCollection("servicePriorities", priorities);
+        await seedCollection("serviceStatuses", statuses);
         await seedCollection("slaRules", slaRules, "categoryId");
         await seedCollection("notificationTemplates", notificationTemplates, "type");
 

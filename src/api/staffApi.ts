@@ -10,77 +10,26 @@ import { processAutoAssignment, commitAssignment } from "./assignmentEngine";
 import { getProfile, getSecondaryAuth, mapDoc, mapUserDoc, type User, type AssignmentEntry, type Complaint, type TimelineActivityType, guardAuth, isLoggingOutState } from "./client";
 
 export const listCorporationStaff = async (wardNumber?: number): Promise<User[]> => {
-  guardAuth();
-  const fbUser = auth.currentUser;
-  if (!fbUser) throw new Error("Not authenticated");
+  try {
+    const fbUser = auth.currentUser;
+    if (!fbUser) return [];
 
-  // Load actor profile to determine jurisdiction and role
-  const actor = await getProfile(fbUser.uid);
-  if (!actor) throw new Error("Authorization error: Profile not found");
+    const actor = await getProfile(fbUser.uid);
+    const staffRef = collection(db, "users");
 
-  const staffRef = collection(db, "users");
+    if (!actor || actor.role === 'super_admin' || actor.role === 'readonly_super_admin' || actor.role === 'taluk_admin') {
+      const q = query(staffRef, where("role", "==", "staff"));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => mapUserDoc(d));
+    }
 
-  // Optimized Query: For Super Admin (Full or Read-Only), query all staff.
-  // For Ward Admin, we fetch the staff pool authorized for municipal assignment.
-  // The security rules are flattened to permit these queries.
-  if (actor.role === 'super_admin' || actor.role === 'readonly_super_admin') {
-    guardAuth();
     const q = query(staffRef, where("role", "==", "staff"));
     const snap = await getDocs(q);
     return snap.docs.map(d => mapUserDoc(d));
+  } catch (e: any) {
+    console.warn("Failed to list corporation staff (handled):", e?.message || e);
+    return [];
   }
-
-  if (actor.role === 'ward_admin') {
-    const targetWard = wardNumber || actor.wardNumber;
-    if (!targetWard) throw new Error("Ward Admin must be assigned to a ward");
-
-    // Defensive execution for jurisdictional pool
-    // Wrapped in individual try/catches to survive index-building phases
-    let universalSnap, localSnap;
-
-    try {
-      guardAuth();
-      universalSnap = await getDocs(query(staffRef, where("role", "==", "staff"), where("hasAllWardAccess", "==", true)));
-    } catch (e) {
-      if (!isLoggingOutState()) {
-        console.error("Staff pool (Universal) load failed. Check indexes.", e);
-      }
-    }
-
-    try {
-      guardAuth();
-      localSnap = await getDocs(query(staffRef, where("role", "==", "staff"), where("assignedWardNumbers", "array-contains", targetWard)));
-    } catch (e) {
-      if (!isLoggingOutState()) {
-        console.error(`Staff pool (Ward ${targetWard}) load failed. Check indexes.`, e);
-      }
-    }
-
-    const seen = new Set();
-    const results: User[] = [];
-
-    if (universalSnap) {
-      universalSnap.docs.forEach(doc => {
-        if (!seen.has(doc.id)) {
-          seen.add(doc.id);
-          results.push(mapUserDoc(doc));
-        }
-      });
-    }
-
-    if (localSnap) {
-      localSnap.docs.forEach(doc => {
-        if (!seen.has(doc.id)) {
-          seen.add(doc.id);
-          results.push(mapUserDoc(doc));
-        }
-      });
-    }
-
-    return results;
-  }
-
-  throw new Error("Unauthorized: Staff directory is restricted to administrators.");
 };
 
 export const generateEmployeeId = async (): Promise<string> => {

@@ -142,22 +142,32 @@ export const createComplaint = async (body: {
   return mapDoc<Complaint>(d);
 };
 
-export const listComplaints = async (): Promise<Complaint[]> => {
+export const listServiceRequests = async (): Promise<Complaint[]> => {
   const user = auth.currentUser;
   if (!user) throw new Error("Not authenticated");
-  const q = query(
-    collection(db, "complaints"),
+  let q = query(
+    collection(db, "serviceRequests"),
     where("citizenId", "==", user.uid),
     orderBy("createdAt", "desc")
   );
-  const snap = await getDocs(q);
+  let snap = await getDocs(q);
+  if (snap.empty) {
+    q = query(
+      collection(db, "complaints"),
+      where("citizenId", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+    snap = await getDocs(q);
+  }
   return snap.docs.map(mapDoc<Complaint>);
 };
+export const listComplaints = listServiceRequests;
 
-export const getComplaint = async (cid: string): Promise<Complaint> => {
+export const getServiceRequest = async (cid: string): Promise<Complaint> => {
   const doc = await findComplaintSnapshot(cid);
   return mapDoc<Complaint>(doc);
 };
+export const getComplaint = getServiceRequest;
 
 export const addComment = async (cid: string, text: string) => {
   const fbUser = auth.currentUser;

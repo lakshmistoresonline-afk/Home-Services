@@ -145,7 +145,7 @@ export default function WardSlaBreaches() {
             const sla = slaUtils.getSLADetails(item);
             return (
               <TouchableOpacity
-                onPress={() => router.push(`/complaint/${item.complaint_id}`)}
+                onPress={() => router.push(`/service/${item.complaint_id}`)}
                 activeOpacity={0.85}
               >
                 <AppCard padding="md" elevation="sm">

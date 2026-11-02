@@ -170,10 +170,10 @@ export default function SuperAdminDashboard() {
   };
 
   const menuItems = [
-    { id: 'complaints', title: 'Complaint Management', icon: 'megaphone', color: '#DC2626', perm: 'assign_complaints' },
-    { id: 'ward-admins', title: 'Ward Management', icon: 'map', color: '#7C3AED', perm: 'manage_wards' },
-    { id: 'staff', title: 'Staff Directory', icon: 'construct', color: '#6366F1', perm: 'manage_staff' },
-    { id: 'statuses', title: 'Complaint Workflow', icon: 'git-network', color: '#F59E0B', perm: 'manage_settings' },
+    { id: 'complaints', title: 'Service Request Management', icon: 'clipboard', color: '#DC2626', perm: 'assign_complaints' },
+    { id: 'ward-admins', title: 'Taluk & District Management', icon: 'map', color: '#7C3AED', perm: 'manage_wards' },
+    { id: 'staff', title: 'Service Provider Directory', icon: 'construct', color: '#6366F1', perm: 'manage_staff' },
+    { id: 'statuses', title: 'Service Request Workflow', icon: 'git-network', color: '#F59E0B', perm: 'manage_settings' },
     { id: 'categories', title: 'Manage Categories', icon: 'list', color: '#10B981', perm: 'manage_categories' },
     { id: 'departments', title: 'Manage Departments', icon: 'business', color: '#F59E0B', perm: 'manage_departments' },
     { id: 'reports', title: 'View Reports', icon: 'bar-chart', color: '#EC4899', perm: 'view_reports' },
@@ -213,14 +213,14 @@ export default function SuperAdminDashboard() {
         <Text style={[typography.title.medium, { color: colors.text, fontWeight: '700', marginBottom: spacing.md }]}>Dashboard Summary</Text>
         <View style={styles.statsGrid}>
           <StatCard label="Total Users" value={stats.totalUsers} icon="people-outline" color={colors.primary} />
-          <StatCard label="Complaints" value={stats.totalComplaints} icon="megaphone-outline" color="#7C3AED" />
+          <StatCard label="Service Requests" value={stats.totalComplaints} icon="clipboard-outline" color="#7C3AED" />
           <StatCard label="SLA Breaches" value={stats.slaBreachedCount} icon="alert-circle-outline" color={colors.danger} />
           <StatCard label="Resolved" value={stats.resolvedComplaints} icon="checkmark-circle-outline" color={colors.success} />
         </View>
 
         <View style={{ flexDirection: 'row', gap: 12, marginTop: spacing.md }}>
           <StatMini label="Citizens" value={stats.totalCitizens} color={colors.textSecondary} />
-          <StatMini label="W.Admins" value={stats.totalWardAdmins} color={colors.textSecondary} />
+          <StatMini label="T.Admins" value={stats.totalWardAdmins} color={colors.textSecondary} />
           <StatMini label="Open" value={stats.openComplaints} color={colors.warning} />
         </View>
 
@@ -238,7 +238,7 @@ export default function SuperAdminDashboard() {
           </View>
         </AppCard>
 
-        <Text style={[typography.title.medium, { color: colors.text, marginTop: spacing.xl, fontWeight: '700', marginBottom: spacing.md }]}>Top Performing Staff</Text>
+        <Text style={[typography.title.medium, { color: colors.text, marginTop: spacing.xl, fontWeight: '700', marginBottom: spacing.md }]}>Top Performing Service Providers</Text>
         <View style={styles.staffList}>
           {stats.topStaff.map((s, idx) => (
              <AppCard key={s.uid} padding="md" elevation="sm" style={styles.staffRow}>
@@ -254,7 +254,7 @@ export default function SuperAdminDashboard() {
           ))}
         </View>
 
-        <Text style={[typography.title.medium, { color: colors.text, marginTop: spacing.xl, fontWeight: '700', marginBottom: spacing.md }]}>Department Performance</Text>
+        <Text style={[typography.title.medium, { color: colors.text, marginTop: spacing.xl, fontWeight: '700', marginBottom: spacing.md }]}>Service Vertical Performance</Text>
         <AppCard elevation="sm" padding="lg">
           {stats.deptDistribution.map((item, idx) => {
             const max = stats.deptDistribution[0]?.count || 1;
@@ -298,7 +298,7 @@ export default function SuperAdminDashboard() {
               activeOpacity={0.7}
               onPress={() => {
                 if (item.id === 'complaints') router.push('/admin');
-                else if (item.id === 'ward-admins') router.push('/admin/super/wards');
+                else if (item.id === 'ward-admins') router.push('/admin/super/taluks');
                 else if (item.id === 'staff') router.push('/admin/super/staff');
                 else if (item.id === 'departments') router.push('/admin/super/departments');
                 else if (item.id === 'statuses') router.push('/admin/super/statuses');

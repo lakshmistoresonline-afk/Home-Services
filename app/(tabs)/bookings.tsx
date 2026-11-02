@@ -23,7 +23,7 @@ import { AppCard } from '@/src/components/AppCard';
 import { Skeleton } from '@/src/components/Skeleton';
 import { AppButton } from '@/src/components/AppButton';
 
-export default function ComplaintsListScreen() {
+export default function BookingsListScreen() {
   const { colors, typography, spacing, radius } = useTheme();
   const { user, isLoggingOut } = useAuth();
   const router = useRouter();
@@ -79,8 +79,8 @@ export default function ComplaintsListScreen() {
           <Text style={[typography.headline.small, { color: colors.text, fontWeight: '800' }]}>My Service Requests</Text>
         </View>
         <TouchableOpacity
-          testID="new-complaint-fab"
-          onPress={() => router.push('/complaint/new')}
+          testID="new-booking-fab"
+          onPress={() => router.push('/service/new')}
           style={[styles.iconBtn, { backgroundColor: colors.primary }]}
         >
           <Ionicons name="add" size={24} color="#FFFFFF" />
@@ -106,7 +106,7 @@ export default function ComplaintsListScreen() {
             />
           }
           ListEmptyComponent={
-            <View style={styles.empty} testID="complaints-empty">
+            <View style={styles.empty} testID="bookings-empty">
               <View style={[styles.emptyIconContainer, { backgroundColor: colors.surfaceTint }]}>
                 <Ionicons name="document-text-outline" size={64} color={colors.textSecondary} />
               </View>
@@ -116,16 +116,16 @@ export default function ComplaintsListScreen() {
               </Text>
               <AppButton
                 title="Raise Service Request"
-                onPress={() => router.push('/complaint/new')}
+                onPress={() => router.push('/service/new')}
                 style={{ width: '100%' }}
               />
             </View>
           }
           renderItem={({ item }) => (
             <TouchableOpacity
-              testID={`complaint-card-${item.complaint_id}`}
+              testID={`booking-card-${item.complaint_id}`}
               activeOpacity={0.8}
-              onPress={() => router.push(`/complaint/${item.complaint_id}`)}
+              onPress={() => router.push(`/service/${item.complaint_id}`)}
             >
               <AppCard padding="md" style={styles.card}>
                 <View style={styles.cardTopRow}>
@@ -183,4 +183,3 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, paddingTop: 60 },
   emptyIconContainer: { width: 120, height: 120, borderRadius: 60, alignItems: 'center', justifyContent: 'center' },
 });
-
