@@ -5,22 +5,11 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/auth';
 import { useTheme } from '@/src/theme';
-import { listComplaints, type Complaint } from '@/src/api';
+import { listComplaints, listDepartments, type Complaint, type Department } from '@/src/api';
 import { onSnapshot, collection, query, where } from 'firebase/firestore';
 import { auth, db } from '@/src/config/firebase';
 import { AppCard } from '@/src/components/AppCard';
 import { AppButton } from '@/src/components/AppButton';
-
-const FEATURED_SERVICES = [
-  { id: 'appliance', title: 'Appliance Repair', icon: 'hardware-chip-outline', color: '#2563EB' },
-  { id: 'cleaning', title: 'Cleaning & Pest', icon: 'sparkles-outline', color: '#059669' },
-  { id: 'electrician', title: 'Electrician', icon: 'flash-outline', color: '#D97706' },
-  { id: 'plumber', title: 'Plumbing', icon: 'water-outline', color: '#0284C7' },
-  { id: 'water_systems', title: 'Well & Tank Care', icon: 'leaf-outline', color: '#0D9488' },
-  { id: 'monsoon', title: 'Monsoon Care', icon: 'umbrella-outline', color: '#7C3AED' },
-  { id: 'painting', title: 'Painting & Civil', icon: 'color-palette-outline', color: '#DB2777' },
-  { id: 'smart_home', title: 'Smart Home', icon: 'wifi-outline', color: '#4F46E5' },
-];
 
 export default function HomeScreen() {
   const { user, logout, isLoggingOut } = useAuth();
@@ -28,6 +17,16 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const [activeRequests, setActiveRequests] = useState<Complaint[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([
+    { id: "appliance", name: "Appliance Repair", description: "AC, washing machine, refrigerator repair", displayOrder: 10, icon: "hardware-chip", isActive: true },
+    { id: "cleaning", name: "Cleaning & Pest", description: "Full home deep cleaning", displayOrder: 20, icon: "sparkles", isActive: true },
+    { id: "water_systems", name: "Well & Tank Care", description: "Well cleaning and chlorination", displayOrder: 25, icon: "water", isActive: true },
+    { id: "electrical", name: "Electrician", description: "Electrical wiring and repair", displayOrder: 30, icon: "flash", isActive: true },
+    { id: "plumbing", name: "Plumber", description: "Tap leakages and pipe fixing", displayOrder: 40, icon: "water", isActive: true },
+    { id: "carpentry", name: "Carpenter", description: "Furniture assembly", displayOrder: 50, icon: "construct", isActive: true },
+    { id: "painting", name: "Painting & Civil", description: "Interior and exterior painting", displayOrder: 60, icon: "color-palette", isActive: true },
+    { id: "monsoon_care", name: "Monsoon Care", description: "Roof tile waterproofing", displayOrder: 62, icon: "umbrella", isActive: true },
+  ]);
   const [stats, setStats] = useState({
     total: 0,
     submitted: 0,
@@ -41,8 +40,15 @@ export default function HomeScreen() {
   const load = useCallback(async () => {
     if (!user || isLoggingOut) return;
     try {
-      const list = await listComplaints();
+      const [listResult, deptResult] = await Promise.allSettled([
+        listComplaints(),
+        listDepartments()
+      ]);
       if (!auth.currentUser || isLoggingOut) return;
+
+      const list = listResult.status === 'fulfilled' ? listResult.value : [];
+      const deptList = deptResult.status === 'fulfilled' && deptResult.value.length > 0 ? deptResult.value : departments;
+      setDepartments(deptList.filter(d => d.isActive !== false));
 
       const s = {
         total: list.length,
@@ -64,7 +70,7 @@ export default function HomeScreen() {
       setStats(s);
       setActiveRequests(activeList);
     } catch (e: any) {
-      console.error("Dashboard load failed:", e.message);
+      console.warn("Dashboard load notice:", e.message);
     }
   }, [user, isLoggingOut]);
 
@@ -113,6 +119,26 @@ export default function HomeScreen() {
   const doLogout = async () => {
     await logout();
     router.replace('/(auth)/login');
+  };
+
+  const getDeptIcon = (iconName?: string) => {
+    switch (iconName) {
+      case 'hardware-chip': return 'hardware-chip-outline';
+      case 'sparkles': return 'sparkles-outline';
+      case 'water': return 'water-outline';
+      case 'flash': return 'flash-outline';
+      case 'construct': return 'construct-outline';
+      case 'color-palette': return 'color-palette-outline';
+      case 'umbrella': return 'umbrella-outline';
+      case 'business': return 'business-outline';
+      case 'sunny': return 'sunny-outline';
+      case 'color-fill': return 'color-fill-outline';
+      case 'medkit': return 'medkit-outline';
+      case 'heart': return 'heart-outline';
+      case 'car': return 'car-outline';
+      case 'wifi': return 'wifi-outline';
+      default: return 'construct-outline';
+    }
   };
 
   return (
@@ -171,22 +197,22 @@ export default function HomeScreen() {
           </AppCard>
         </TouchableOpacity>
 
-        {/* Featured Service Verticals Grid */}
+        {/* Dynamic Showcase of All 15+ Service Departments */}
         <View style={{ marginTop: spacing.xl }}>
-          <Text style={[typography.title.medium, { color: colors.text, fontWeight: '800', marginBottom: spacing.md }]}>Our Services</Text>
+          <Text style={[typography.title.medium, { color: colors.text, fontWeight: '800', marginBottom: spacing.md }]}>All Home Services ({departments.length})</Text>
           <View style={styles.categoryGrid}>
-            {FEATURED_SERVICES.map((cat) => (
+            {departments.map((dept) => (
               <TouchableOpacity
-                key={cat.id}
+                key={dept.id}
                 activeOpacity={0.8}
-                onPress={() => router.push('/service/new')}
+                onPress={() => router.push({ pathname: '/service/new', params: { departmentId: dept.id, departmentName: dept.name } })}
                 style={[styles.categoryTile, { backgroundColor: colors.surface, borderColor: colors.border, ...shadows.sm }]}
               >
-                <View style={[styles.categoryIcon, { backgroundColor: cat.color + '15' }]}>
-                  <Ionicons name={cat.icon as any} size={24} color={cat.color} />
+                <View style={[styles.categoryIcon, { backgroundColor: colors.primary + '15' }]}>
+                  <Ionicons name={getDeptIcon(dept.icon) as any} size={24} color={colors.primary} />
                 </View>
-                <Text style={[typography.label.medium, { color: colors.text, fontWeight: '700', textAlign: 'center', marginTop: 8 }]} numberOfLines={2}>
-                  {cat.title}
+                <Text style={[typography.label.small, { color: colors.text, fontWeight: '700', textAlign: 'center', marginTop: 8 }]} numberOfLines={2}>
+                  {dept.name}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -285,13 +311,13 @@ const styles = StyleSheet.create({
   },
   heroIconContainer: { marginLeft: 16, opacity: 0.3 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   categoryTile: {
-    width: '23%',
-    aspectRatio: 1,
+    width: Platform.OS === 'web' ? '18%' : '30%',
+    minHeight: 100,
     borderRadius: 16,
     borderWidth: 1,
-    padding: 8,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

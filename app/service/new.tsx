@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -41,6 +41,7 @@ export default function NewServiceRequestScreen() {
   const { colors, typography, spacing, radius } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams<{ departmentName?: string; departmentId?: string }>();
 
   const [categories, setCategories] = useState<ComplaintCategory[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -72,10 +73,23 @@ export default function NewServiceRequestScreen() {
     }
 
     Promise.all([listDepartments(), listCategories()]).then(([deptList, catList]) => {
-      setDepartments(deptList.filter(d => d.isActive));
-      setCategories(catList.filter(c => c.isActive));
+      const activeDepts = deptList.filter(d => d.isActive);
+      const activeCats = catList.filter(c => c.isActive);
+      setDepartments(activeDepts);
+      setCategories(activeCats);
+
+      if (params.departmentName || params.departmentId) {
+        const found = activeDepts.find(d =>
+          (params.departmentName && d.name.toLowerCase() === params.departmentName.toLowerCase()) ||
+          (params.departmentId && d.id === params.departmentId)
+        );
+        if (found) {
+          setSelectedDepartment(found);
+          setDepartmentName(found.name);
+        }
+      }
     });
-  }, [user, router]);
+  }, [user, router, params.departmentName, params.departmentId]);
 
   const onSelectDepartment = (name: string) => {
     const dept = departments.find(d => d.name === name);

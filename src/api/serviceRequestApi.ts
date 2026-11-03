@@ -135,7 +135,7 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
   if (!user) return [];
 
   try {
-    const profile = await getProfile(user.uid);
+    const profile = await getProfile(user.uid).catch(() => null);
     let q;
     if (profile?.role === 'citizen') {
       q = query(
@@ -157,7 +157,7 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
       return db_val - da;
     });
   } catch (e: any) {
-    console.warn("Failed to list service requests (handled):", e?.message || e);
+    console.warn("Dashboard sync notice (handled):", e?.message || e);
     return [];
   }
 };

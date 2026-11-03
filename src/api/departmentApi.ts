@@ -26,7 +26,9 @@ export const listDepartments = async (): Promise<Department[]> => {
     const q = query(collection(db, "departments"), orderBy("displayOrder", "asc"));
     const snap = await getDocs(q);
     if (snap.empty) return FALLBACK_DEPARTMENTS;
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as Department));
+    const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as Department));
+    const filtered = list.filter(d => d.isActive !== false);
+    return filtered.length > 0 ? filtered : FALLBACK_DEPARTMENTS;
   } catch (e: any) {
     console.warn('Using fallback departments due to permission/network state:', e?.message || e);
     return FALLBACK_DEPARTMENTS;

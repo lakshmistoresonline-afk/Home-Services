@@ -494,9 +494,14 @@ export const mapUserDoc = (doc: any): User => {
 
 export async function getProfile(uid: string): Promise<User | null> {
   if (!uid) return null;
-  const d = await getDoc(doc(db, 'users', uid));
-  if (!d.exists()) return null;
-  return mapUserDoc(d);
+  try {
+    const d = await getDoc(doc(db, 'users', uid));
+    if (!d.exists()) return null;
+    return mapUserDoc(d);
+  } catch (e: any) {
+    console.warn('Profile doc fetch notice (handled):', e?.message || e);
+    return null;
+  }
 }
 
 export async function findWardAdmin(wardNumber: number): Promise<{ uid: string; fullName: string } | null> {

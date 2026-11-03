@@ -30,7 +30,9 @@ export const listCategories = async (): Promise<ComplaintCategory[]> => {
       snap = await getDocs(q);
     }
     if (snap.empty) return FALLBACK_CATEGORIES;
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ComplaintCategory));
+    const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as ComplaintCategory));
+    const filtered = list.filter(c => c.isActive !== false);
+    return filtered.length > 0 ? filtered : FALLBACK_CATEGORIES;
   } catch (e: any) {
     console.warn('Using fallback categories due to permission/network state:', e?.message || e);
     return FALLBACK_CATEGORIES;

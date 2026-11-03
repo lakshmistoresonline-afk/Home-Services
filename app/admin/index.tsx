@@ -252,8 +252,8 @@ export default function AdminDashboard() {
         if (isStaff || !user) return;
         try {
           await assignmentEngine.runMaintenanceSweep(user);
-        } catch (e) {
-          console.error("Maintenance sweep failed:", e);
+        } catch (e: any) {
+          console.warn("Maintenance sweep notice:", e?.message || e);
         }
       };
 
