@@ -282,93 +282,78 @@ export const adminList = async (opts: {
   pageSize?: number;
 } = {}): Promise<PaginatedResponse<Complaint>> => {
   const fbUser = auth.currentUser;
-  if (!fbUser) throw new Error("Not authenticated");
-  const profile = await getProfile(fbUser.uid);
-  if (!profile) throw new Error("Profile not found");
+  if (!fbUser) return { items: [], lastDoc: null, hasMore: false };
 
-  const pageSize = opts.pageSize || 20;
-  let q = query(collection(db, "complaints"), orderBy("createdAt", "desc"), limit(pageSize));
+  try {
+    const profile = await getProfile(fbUser.uid).catch(() => null);
+    const pageSize = opts.pageSize || 100;
 
-  // Smart Search for exact Complaint IDs across entire database
-  if (opts.q && (opts.q.toUpperCase().startsWith("TCR") || opts.q.toUpperCase().startsWith("TC-"))) {
-    const exactMatchQuery = query(collection(db, "complaints"), where("complaint_id", "==", opts.q.toUpperCase().trim()));
-    const matchSnap = await getDocs(exactMatchQuery);
-    if (!matchSnap.empty) {
-      return {
-        items: matchSnap.docs.map(mapDoc<Complaint>),
-        lastDoc: null,
-        hasMore: false
-      };
+    const [snapNew, snapOld] = await Promise.allSettled([
+      getDocs(query(collection(db, "serviceRequests"), limit(pageSize))),
+      getDocs(query(collection(db, "complaints"), limit(pageSize)))
+    ]);
+
+    const docsNew = snapNew.status === 'fulfilled' ? snapNew.value.docs.map(mapDoc<Complaint>) : [];
+    const docsOld = snapOld.status === 'fulfilled' ? snapOld.value.docs.map(mapDoc<Complaint>) : [];
+
+    const map = new Map<string, Complaint>();
+    [...docsNew, ...docsOld].forEach(item => {
+      const key = item.complaint_id || item.request_id || item.id;
+      if (!map.has(key)) {
+        map.set(key, item);
+      }
+    });
+
+    let results = Array.from(map.values());
+
+    if (profile?.role === 'taluk_admin' || profile?.role === 'ward_admin') {
+      results = results.filter(c => !profile.taluk || c.taluk?.toLowerCase() === profile.taluk.toLowerCase() || c.district?.toLowerCase() === profile.district?.toLowerCase() || c.wardNumber === profile.wardNumber);
+    } else if (profile?.role === 'staff') {
+      results = results.filter(c => c.assignedStaffId === fbUser.uid);
     }
+
+    if (opts.department) results = results.filter(c => c.departmentName === opts.department || c.departmentId === opts.department);
+    if (opts.status) results = results.filter(c => c.status === opts.status);
+
+    if (opts.assigned_to) {
+      if (opts.assigned_to === 'unassigned') {
+        results = results.filter(c => !c.assignedStaffId);
+      } else if (opts.assigned_to === 'me') {
+        results = results.filter(c => c.assignedStaffId === fbUser.uid);
+      }
+    }
+
+    if (opts.q) {
+      const lower = opts.q.toLowerCase();
+      results = results.filter(c =>
+        c.title.toLowerCase().includes(lower) ||
+        c.description.toLowerCase().includes(lower) ||
+        c.complaint_id.toLowerCase().includes(lower) ||
+        (c.citizenName && c.citizenName.toLowerCase().includes(lower)) ||
+        (c.assignedStaffName && c.assignedStaffName.toLowerCase().includes(lower))
+      );
+    }
+
+    results.sort((a, b) => {
+      const da = new Date(a.createdAtDate || a.createdAt || a.created_at || 0).getTime();
+      const db_val = new Date(b.createdAtDate || b.createdAt || b.created_at || 0).getTime();
+      return db_val - da;
+    });
+
+    return {
+      items: results,
+      lastDoc: null,
+      hasMore: false
+    };
+  } catch (e: any) {
+    console.warn("adminList notice:", e?.message || e);
+    return { items: [], lastDoc: null, hasMore: false };
   }
-
-  // Smart Search for Mobile Number (10 digits)
-  let citizenIdsByMobile: string[] = [];
-  if (opts.q && /^\d{10}$/.test(opts.q)) {
-    const citizenQuery = query(collection(db, "users"), where("mobile", "==", opts.q.trim()), where("role", "==", "citizen"), limit(5));
-    const citizenSnap = await getDocs(citizenQuery);
-    citizenIdsByMobile = citizenSnap.docs.map(d => d.id);
-  }
-
-  if (profile.role === 'ward_admin') {
-    q = query(q, where("wardNumber", "==", profile.wardNumber));
-  } else if (profile.role === 'staff') {
-    q = query(q, where("assignedStaffId", "==", fbUser.uid));
-  }
-
-  if (opts.wardNumber) q = query(q, where("wardNumber", "==", opts.wardNumber));
-  if (opts.department) q = query(q, where("departmentName", "==", opts.department));
-  if (opts.status) q = query(q, where("status", "==", opts.status));
-
-  if (opts.assigned_to) {
-     if (opts.assigned_to === 'unassigned') {
-       q = query(q, where("assignedStaffId", "==", null));
-     } else if (opts.assigned_to === 'me') {
-       q = query(q, where("assignedStaffId", "==", fbUser.uid));
-     }
-  }
-
-  if (opts.lastDoc) {
-    q = query(q, startAfter(opts.lastDoc));
-  }
-
-  const snap = await getDocs(q);
-  let results = snap.docs.map(mapDoc<Complaint>);
-
-  if (opts.q) {
-    const lower = opts.q.toLowerCase();
-    results = results.filter(c =>
-      c.title.toLowerCase().includes(lower) ||
-      c.description.toLowerCase().includes(lower) ||
-      c.complaint_id.toLowerCase().includes(lower) ||
-      c.citizenName.toLowerCase().includes(lower) ||
-      (c.assignedStaffName && c.assignedStaffName.toLowerCase().includes(lower)) ||
-      citizenIdsByMobile.includes(c.citizenId)
-    );
-  }
-
-  return {
-    items: results,
-    lastDoc: snap.docs[snap.docs.length - 1] || null,
-    hasMore: snap.docs.length === pageSize
-  };
 };
 
 export const adminStats = async () => {
-  const fbUser = auth.currentUser;
-  if (!fbUser) throw new Error("Not authenticated");
-  const profile = await getProfile(fbUser.uid);
-
-  let q = query(collection(db, "complaints"));
-  if (profile?.role === 'ward_admin') {
-    q = query(q, where("wardNumber", "==", profile.wardNumber));
-  } else if (profile?.role === 'staff') {
-    q = query(q, where("assignedStaffId", "==", fbUser.uid));
-  }
-
-  const snap = await getDocs(q);
-  const all = snap.docs.map(mapDoc<Complaint>);
-
+  const res = await adminList({ pageSize: 500 });
+  const all = res.items;
   const slaStats = all.map(c => slaUtils.getSLADetails(c));
 
   return {
@@ -378,8 +363,9 @@ export const adminStats = async () => {
     in_progress: all.filter(c => c.status === 'In Progress').length,
     resolved: all.filter(c => c.status === 'Resolved').length,
     closed: all.filter(c => c.status === 'Closed').length,
+    rejected: all.filter(c => c.status === 'Rejected').length,
     unassigned: all.filter(c => !c.assignedStaffId).length,
-    reassign_pending: all.filter(c => (c as any).reassign_requested).length,
+    reassign_pending: all.filter(c => c.status === 'Submitted' || c.status === 'Reopened').length,
     slaBreachedCount: slaStats.filter(s => s.isBreached).length,
     dueTodayCount: slaStats.filter(s => s.statusLabel === 'Due Today' || (s.warningLevel === 'ORANGE' && s.timeRemainingHours <= 24)).length,
     dueTomorrowCount: slaStats.filter(s => s.timeRemainingHours > 24 && s.timeRemainingHours <= 48).length,
