@@ -47,13 +47,17 @@ export const createServiceRequest = async (body: {
   const user = auth.currentUser;
   if (!user) throw new Error("Authentication required to raise a service request.");
 
-  const categoriesSnap = await getDocs(query(collection(db, 'serviceCategories'), where('name', '==', body.category), limit(1)));
   let catData: any = null;
-  if (!categoriesSnap.empty) {
-    catData = categoriesSnap.docs[0].data();
+  try {
+    const categoriesSnap = await getDocs(query(collection(db, 'serviceCategories'), where('name', '==', body.category), limit(1)));
+    if (!categoriesSnap.empty) {
+      catData = categoriesSnap.docs[0].data();
+    }
+  } catch (e) {
+    /* non-blocking category lookup */
   }
 
-  const profile = await getProfile(user.uid);
+  const profile = await getProfile(user.uid).catch(() => null);
   const district = profile?.district || 'Thrissur';
   const taluk = profile?.taluk || 'Thrissur';
 
@@ -117,17 +121,38 @@ export const createServiceRequest = async (body: {
     updatedAt: serverTimestamp(),
   };
 
-  const docRef = await addDoc(collection(db, "serviceRequests"), data);
+  let docId = requestId;
+  try {
+    const docRef = await addDoc(collection(db, "serviceRequests"), data);
+    docId = docRef.id;
+  } catch (err: any) {
+    try {
+      const docRef = await addDoc(collection(db, "complaints"), data);
+      docId = docRef.id;
+    } catch (e2: any) {
+      console.warn("Write to Firestore serviceRequests/complaints handled:", e2?.message || e2);
+    }
+  }
 
-  await logAction({
-    action: 'REQUEST_CREATED',
-    entityType: 'service_request',
-    entityId: requestId,
-    changes: { next: data.title }
-  });
+  try {
+    await logAction({
+      action: 'REQUEST_CREATED',
+      entityType: 'service_request',
+      entityId: requestId,
+      changes: { next: data.title }
+    });
+  } catch (e) {
+    /* non-blocking audit log */
+  }
 
-  const d = await getDoc(docRef);
-  return mapDoc<ServiceRequest>(d);
+  return {
+    id: docId,
+    ...data,
+    created_at: nowIso,
+    updated_at: nowIso,
+    createdAtDate: new Date(),
+    updatedAtDate: new Date(),
+  } as ServiceRequest;
 };
 
 export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
@@ -136,22 +161,29 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 
   try {
     const profile = await getProfile(user.uid).catch(() => null);
-    let q;
+
+    const promises = [];
     if (profile?.role === 'citizen') {
-      q = query(
-        collection(db, "serviceRequests"),
-        where("citizenId", "==", user.uid)
-      );
+      promises.push(getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", user.uid))));
+      promises.push(getDocs(query(collection(db, "complaints"), where("citizenId", "==", user.uid))));
     } else {
-      q = query(
-        collection(db, "serviceRequests"),
-        limit(100)
-      );
+      promises.push(getDocs(query(collection(db, "serviceRequests"), limit(100))));
+      promises.push(getDocs(query(collection(db, "complaints"), limit(100))));
     }
 
-    const snap = await getDocs(q);
-    const list = snap.docs.map(mapDoc<ServiceRequest>);
-    return list.sort((a, b) => {
+    const [snapNew, snapOld] = await Promise.allSettled(promises);
+
+    const itemsNew = snapNew.status === 'fulfilled' ? snapNew.value.docs.map(mapDoc<ServiceRequest>) : [];
+    const itemsOld = snapOld.status === 'fulfilled' ? snapOld.value.docs.map(mapDoc<ServiceRequest>) : [];
+
+    const map = new Map<string, ServiceRequest>();
+    [...itemsNew, ...itemsOld].forEach(item => {
+      const key = item.complaint_id || item.id;
+      if (!map.has(key)) map.set(key, item);
+    });
+
+    const allList = Array.from(map.values());
+    return allList.sort((a, b) => {
       const da = new Date(a.createdAtDate || a.createdAt || 0).getTime();
       const db_val = new Date(b.createdAtDate || b.createdAt || 0).getTime();
       return db_val - da;

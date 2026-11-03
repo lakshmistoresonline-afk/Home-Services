@@ -153,6 +153,12 @@ export default function HomeScreen() {
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
+            onPress={() => router.push('/(tabs)/bookings')}
+            style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, marginRight: spacing.sm }]}
+          >
+            <Ionicons name="receipt-outline" size={22} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
             onPress={() => router.push('/notifications')}
             style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
@@ -219,16 +225,17 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Active Bookings Banner */}
-        {activeRequests.length > 0 && (
-          <View style={{ marginTop: spacing.xl }}>
-            <View style={styles.sectionHeader}>
-              <Text style={[typography.title.medium, { color: colors.text, fontWeight: '800' }]}>Active Bookings ({activeRequests.length})</Text>
-              <TouchableOpacity onPress={() => router.push('/(tabs)/bookings')}>
-                <Text style={[typography.label.large, { color: colors.primary, fontWeight: '700' }]}>View All</Text>
-              </TouchableOpacity>
-            </View>
-            {activeRequests.slice(0, 2).map((req) => (
+        {/* Bookings & History Section */}
+        <View style={{ marginTop: spacing.xl }}>
+          <View style={styles.sectionHeader}>
+            <Text style={[typography.title.medium, { color: colors.text, fontWeight: '800' }]}>My Bookings & History</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/bookings')}>
+              <Text style={[typography.label.large, { color: colors.primary, fontWeight: '700' }]}>View History ({stats.total})</Text>
+            </TouchableOpacity>
+          </View>
+
+          {activeRequests.length > 0 ? (
+            activeRequests.slice(0, 2).map((req) => (
               <TouchableOpacity
                 key={req.complaint_id}
                 onPress={() => router.push(`/service/${req.complaint_id}`)}
@@ -246,9 +253,25 @@ export default function HomeScreen() {
                   <Text style={[typography.body.small, { color: colors.textSecondary, marginTop: 4 }]}>{req.departmentName} · {req.categoryName}</Text>
                 </AppCard>
               </TouchableOpacity>
-            ))}
-          </View>
-        )}
+            ))
+          ) : (
+            <AppCard padding="md" elevation="sm">
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[typography.title.small, { color: colors.text, fontWeight: '700' }]}>No Active Bookings</Text>
+                  <Text style={[typography.body.small, { color: colors.textSecondary, marginTop: 2 }]}>View past bookings or request a new service above.</Text>
+                </View>
+                <AppButton
+                  title="View History"
+                  variant="outline"
+                  onPress={() => router.push('/(tabs)/bookings')}
+                  style={{ minHeight: 36, paddingHorizontal: 14 }}
+                  textStyle={{ fontSize: 12 }}
+                />
+              </View>
+            </AppCard>
+          )}
+        </View>
 
         {/* Customer Support & Help Care */}
         <View style={{ marginTop: spacing.xl }}>

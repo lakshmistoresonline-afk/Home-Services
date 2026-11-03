@@ -17,7 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useTheme } from '@/src/theme';
 import { useAuth } from '@/src/context/auth';
-import { listCategories, listDepartments, uploadFile, createComplaint, type ComplaintCategory, type Department, type TimelineAttachment } from '@/src/api';
+import { listCategories, listDepartments, uploadFile, createServiceRequest, type ComplaintCategory, type Department, type TimelineAttachment } from '@/src/api';
 import { showToast } from '@/src/components/Toast';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { AppInput } from '@/src/components/AppInput';
@@ -248,7 +248,7 @@ export default function NewServiceRequestScreen() {
         });
       }
 
-      const c = await createComplaint({
+      const c = await createServiceRequest({
         category,
         title: title.trim(),
         description: description.trim(),

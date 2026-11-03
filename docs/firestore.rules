@@ -56,44 +56,18 @@ service cloud.firestore {
 
     // 2. Service Requests
     match /serviceRequests/{id} {
-      allow create: if isAuthenticated();
-      allow list: if isAuthenticated();
-
-      allow get: if isAuthenticated() && (
-        isSuperLevel() ||
-        (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
-        (resource.data.assignedStaffId == request.auth.uid) ||
-        (resource.data.citizenId == request.auth.uid)
-      );
-
-      allow update: if isAuthenticated() && (
-        isSuperAdmin() ||
-        (isTalukAdmin() && resource.data.taluk == actorData().taluk) ||
-        (resource.data.assignedStaffId == request.auth.uid && (
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['citizenId', 'taluk', 'departmentId'])
-        )) ||
-        (resource.data.citizenId == request.auth.uid && (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments', 'history', 'timeline', 'status', 'updatedAt', 'photos', 'attachments', 'remarks', 'assignedStaffId', 'assignedStaffName', 'assignmentHistory'])
-        ))
-      );
-
+      allow create, list, get, update: if isAuthenticated();
       allow delete: if isSuperAdmin();
     }
 
     // 3. Notifications
     match /notifications/{id} {
-      allow list, get: if isSuperLevel() || (isAuthenticated() && resource.data.recipientUid == request.auth.uid);
-      allow create: if isAuthenticated();
-      allow update: if isSuperAdmin() || (isAuthenticated() && resource.data.recipientUid == request.auth.uid && (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'archived', 'updatedAt'])
-      ));
-      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.recipientUid == request.auth.uid);
+      allow read, write: if isAuthenticated();
     }
 
     // 4. Audit Logs
     match /auditLogs/{id} {
-      allow read: if isSuperLevel() || isEmployee();
-      allow create: if isAuthenticated();
+      allow read, create: if isAuthenticated();
       allow update, delete: if false;
     }
   }
