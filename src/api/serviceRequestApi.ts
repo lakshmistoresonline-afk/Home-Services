@@ -17,7 +17,34 @@ import { db, auth } from "@/src/config/firebase";
 import { logAction } from "./auditApi";
 import { getProfile, findTalukAdmin, mapDoc, type ServiceRequest, type TimelineAttachment } from "./client";
 
-const LOCAL_REQUESTS = new Map<string, ServiceRequest>();
+const STORAGE_KEY = 'hs_service_requests_v1';
+
+const getStoredLocalRequests = (): ServiceRequest[] => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const json = window.localStorage.getItem(STORAGE_KEY);
+      if (json) {
+        return JSON.parse(json);
+      }
+    }
+  } catch (e) { }
+  return [];
+};
+
+const saveStoredLocalRequest = (req: ServiceRequest) => {
+  try {
+    const list = getStoredLocalRequests();
+    const existingIdx = list.findIndex(r => r.complaint_id === req.complaint_id || r.id === req.id);
+    if (existingIdx >= 0) {
+      list[existingIdx] = req;
+    } else {
+      list.unshift(req);
+    }
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+  } catch (e) { }
+};
 
 export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocumentSnapshot> => {
   if (!auth.currentUser) throw new Error("Authentication required");
@@ -142,18 +169,19 @@ export const createServiceRequest = async (body: {
     updatedAtDate: new Date(),
   };
 
-  // Register in local session store immediately
-  LOCAL_REQUESTS.set(requestId, createdItem);
+  // 1. Immediately persist in local browser storage
+  saveStoredLocalRequest(createdItem);
 
+  // 2. Attempt Firestore remote persistence
   try {
     const docRef = await addDoc(collection(db, "serviceRequests"), data);
     createdItem.id = docRef.id;
-    LOCAL_REQUESTS.set(docRef.id, createdItem);
+    saveStoredLocalRequest(createdItem);
   } catch (err: any) {
     try {
       const docRef = await addDoc(collection(db, "complaints"), data);
       createdItem.id = docRef.id;
-      LOCAL_REQUESTS.set(docRef.id, createdItem);
+      saveStoredLocalRequest(createdItem);
     } catch (e2: any) {
       console.warn("Write to Firestore serviceRequests/complaints handled:", e2?.message || e2);
     }
@@ -175,7 +203,9 @@ export const createServiceRequest = async (body: {
 
 export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
   const user = auth.currentUser;
-  if (!user) return Array.from(new Set(LOCAL_REQUESTS.values()));
+  const storedList = getStoredLocalRequests();
+
+  if (!user) return storedList;
 
   try {
     const profile = await getProfile(user.uid).catch(() => null);
@@ -200,12 +230,14 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 
     const map = new Map<string, ServiceRequest>();
 
-    // Register local session requests first
-    LOCAL_REQUESTS.forEach((item, key) => {
+    // 1. Load stored local requests first
+    storedList.forEach(item => {
+      const key = item.complaint_id || item.request_id || item.id;
       map.set(key, item);
       if (item.complaint_id) map.set(item.complaint_id, item);
     });
 
+    // 2. Load Firestore network documents
     snaps.forEach(snap => {
       if (snap && !snap.empty) {
         snap.docs.map(mapDoc<ServiceRequest>).forEach((item: ServiceRequest) => {
@@ -225,17 +257,14 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
     });
   } catch (e: any) {
     console.warn("Dashboard sync notice (handled):", e?.message || e);
-    return Array.from(new Set(LOCAL_REQUESTS.values()));
+    return storedList;
   }
 };
 
 export const getServiceRequest = async (cid: string): Promise<ServiceRequest> => {
-  if (LOCAL_REQUESTS.has(cid)) return LOCAL_REQUESTS.get(cid)!;
-  for (const item of LOCAL_REQUESTS.values()) {
-    if (item.complaint_id === cid || item.request_id === cid || item.id === cid) {
-      return item;
-    }
-  }
+  const storedList = getStoredLocalRequests();
+  const localMatch = storedList.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
+  if (localMatch) return localMatch;
 
   const docSnap = await findServiceRequestSnapshot(cid);
   return mapDoc<ServiceRequest>(docSnap);
