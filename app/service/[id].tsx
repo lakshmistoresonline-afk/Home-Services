@@ -96,20 +96,22 @@ export default function ServiceRequestDetail() {
   const canReopen = !!(item && user && workflowApi.canReopen(user, item));
 
   const load = useCallback(async () => {
-    if (!id || !user || isLoggingOut) return;
+    if (!id || isLoggingOut) return;
     try {
       const c = await getComplaint(id);
-      if (!auth.currentUser || isLoggingOut) return;
+      if (isLoggingOut) return;
       setItem(c);
       setRemarks(c.remarks || '');
       setOverrideWard(c.wardNumber);
       setOverrideCat(c.categoryName);
       setLoadError(null);
 
-      const transitions = workflowApi.getAllowedTransitions(user!, c);
-      setAllowedNextStatuses(transitions);
+      if (user) {
+        const transitions = workflowApi.getAllowedTransitions(user, c);
+        setAllowedNextStatuses(transitions);
+      }
 
-      if (isAdminSide) {
+      if (isAdminSide && c.citizenId) {
          getProfile(c.citizenId)
            .then(p => setCitizen(p))
            .catch(e => console.warn("Citizen profile fetch failed:", e.message));
@@ -124,7 +126,7 @@ export default function ServiceRequestDetail() {
       if (isSuperOrAdmin) {
         try {
           const s = await listCorporationStaff();
-          if (!auth.currentUser || isLoggingOut) return;
+          if (isLoggingOut) return;
           setStaffList(s.filter((x) => x.isActive));
         } catch (e: any) {
           console.error("Failed to load staff directory:", e);
@@ -135,8 +137,8 @@ export default function ServiceRequestDetail() {
          listCategories().then(list => setAllCategories(list));
       }
     } catch (e: any) {
-      if (!isLoggingOut && auth.currentUser) {
-        const msg = String(e.message || '');
+      if (!isLoggingOut) {
+        const msg = String(e?.message || '');
         if (/Unauthorized|Access Denied/i.test(msg)) {
           setLoadError('forbidden');
         } else {

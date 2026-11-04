@@ -119,14 +119,36 @@ const getStoredLocalRequests = (): ServiceRequest[] => {
   return [];
 };
 
+const sanitizeForStorage = (req: ServiceRequest): ServiceRequest => {
+  const cleanAttachments = (req.attachments || []).map(a => ({
+    ...a,
+    url: a.url && a.url.startsWith('data:') ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80' : a.url
+  }));
+  const cleanPhotos = (req.photos || []).map(p => p && p.startsWith('data:') ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80' : p);
+
+  return {
+    ...req,
+    photos: cleanPhotos,
+    attachments: cleanAttachments,
+    timeline: (req.timeline || []).map(t => ({
+      ...t,
+      attachments: (t.attachments || []).map(ta => ({
+        ...ta,
+        url: ta.url && ta.url.startsWith('data:') ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80' : ta.url
+      }))
+    }))
+  };
+};
+
 const saveStoredLocalRequest = (req: ServiceRequest) => {
   try {
     const list = getStoredLocalRequests();
-    const existingIdx = list.findIndex(r => r.complaint_id === req.complaint_id || r.id === req.id);
+    const cleanReq = sanitizeForStorage(req);
+    const existingIdx = list.findIndex(r => r.complaint_id === cleanReq.complaint_id || r.id === cleanReq.id);
     if (existingIdx >= 0) {
-      list[existingIdx] = req;
+      list[existingIdx] = cleanReq;
     } else {
-      list.unshift(req);
+      list.unshift(cleanReq);
     }
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
