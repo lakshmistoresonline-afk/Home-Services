@@ -62,7 +62,9 @@ const DEFAULT_SEED_REQUESTS: ServiceRequest[] = [
         timestamp: "2026-10-24T08:00:00Z"
       }
     ],
+    createdAt: "2026-10-24T08:00:00Z",
     created_at: "2026-10-24T08:00:00Z",
+    updatedAt: "2026-10-24T08:00:00Z",
     updated_at: "2026-10-24T08:00:00Z",
     createdAtDate: new Date("2026-10-24T08:00:00Z"),
     updatedAtDate: new Date("2026-10-24T08:00:00Z"),
@@ -94,7 +96,9 @@ const DEFAULT_SEED_REQUESTS: ServiceRequest[] = [
     history: [],
     comments: [],
     timeline: [],
+    createdAt: "2026-10-24T09:30:00Z",
     created_at: "2026-10-24T09:30:00Z",
+    updatedAt: "2026-10-24T09:30:00Z",
     updated_at: "2026-10-24T09:30:00Z",
     createdAtDate: new Date("2026-10-24T09:30:00Z"),
     updatedAtDate: new Date("2026-10-24T09:30:00Z"),
@@ -251,13 +255,13 @@ export const createServiceRequest = async (body: {
     ...data,
     createdAt: nowIso,
     updatedAt: nowIso,
+    created_at: nowIso,
+    updated_at: nowIso,
   };
 
   const createdItem: ServiceRequest = {
     id: requestId,
     ...dataForStorage,
-    created_at: nowIso,
-    updated_at: nowIso,
     createdAtDate: new Date(),
     updatedAtDate: new Date(),
   };
@@ -323,7 +327,7 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 
     const map = new Map<string, ServiceRequest>();
 
-    // 1. Load stored local requests first
+    // 1. Load stored local requests
     storedList.forEach(item => {
       const key = item.complaint_id || item.request_id || item.id;
       map.set(key, item);
@@ -353,12 +357,24 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
       });
     }
 
+    const getTime = (item: ServiceRequest) => {
+      if (item.createdAtDate instanceof Date && !isNaN(item.createdAtDate.getTime())) {
+        return item.createdAtDate.getTime();
+      }
+      if (typeof item.createdAt === 'string' && !isNaN(new Date(item.createdAt).getTime())) {
+        return new Date(item.createdAt).getTime();
+      }
+      if (typeof item.created_at === 'string' && !isNaN(new Date(item.created_at).getTime())) {
+        return new Date(item.created_at).getTime();
+      }
+      if (typeof (item as any).createdAt === 'number') {
+        return (item as any).createdAt;
+      }
+      return 0;
+    };
+
     const allList = Array.from(new Set(map.values()));
-    return allList.sort((a, b) => {
-      const da = new Date(a.createdAtDate || a.createdAt || a.created_at || 0).getTime();
-      const db_val = new Date(b.createdAtDate || b.createdAt || b.created_at || 0).getTime();
-      return db_val - da;
-    });
+    return allList.sort((a, b) => getTime(b) - getTime(a));
   } catch (e: any) {
     console.warn("Dashboard sync notice (handled):", e?.message || e);
     return storedList.length > 0 ? storedList : DEFAULT_SEED_REQUESTS;
