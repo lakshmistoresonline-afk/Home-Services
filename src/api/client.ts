@@ -330,15 +330,36 @@ export type PaginatedResponse<T> = {
 export const mapDoc = <T>(doc: any): T => {
   if (!doc?.exists()) return {} as T;
   const data = doc.data() || {};
+
+  const parseDate = (val: any, fallbackStr?: string): Date => {
+    if (val?.toDate && typeof val.toDate === 'function') {
+      const d = val.toDate();
+      if (d instanceof Date && !isNaN(d.getTime())) return d;
+    }
+    if (val instanceof Date && !isNaN(val.getTime())) return val;
+    if (typeof val === 'string' && val.trim() !== '') {
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (typeof val === 'number' && !isNaN(val)) return new Date(val);
+    if (fallbackStr && typeof fallbackStr === 'string' && fallbackStr.trim() !== '') {
+      const d = new Date(fallbackStr);
+      if (!isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  };
+
+  const createdDate = parseDate(data.createdAt, data.created_at);
+  const updatedDate = parseDate(data.updatedAt, data.updated_at);
+
   const res: any = {
     id: doc.id,
     ...data,
-    created_at: data.createdAt?.toDate?.()?.toISOString() || data.createdAt?.toISOString?.() || data.createdAt || new Date().toISOString(),
-    updated_at: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt?.toISOString?.() || data.updatedAt || new Date().toISOString(),
+    created_at: createdDate.toISOString(),
+    updated_at: updatedDate.toISOString(),
     resolvedAt: data.resolvedAt?.toDate?.()?.toISOString() || data.resolvedAt || null,
-    // Reliable Date objects for dayjs
-    createdAtDate: data.createdAt?.toDate?.() || (data.createdAt ? new Date(data.createdAt) : new Date()),
-    updatedAtDate: data.updatedAt?.toDate?.() || (data.updatedAt ? new Date(data.updatedAt) : new Date()),
+    createdAtDate: createdDate,
+    updatedAtDate: updatedDate,
   };
 
   // Legacy mapping for Wards and Identifiers

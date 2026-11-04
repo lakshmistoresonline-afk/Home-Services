@@ -356,12 +356,21 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
       if (item.complaint_id) map.set(item.complaint_id, item);
     });
 
-    // 2. Load Firestore network documents
+    // 2. Load Firestore network documents (merging with existing local entries)
     snaps.forEach(snap => {
       if (snap && !snap.empty) {
         snap.docs.map(mapDoc<ServiceRequest>).forEach((item: ServiceRequest) => {
           const key = item.complaint_id || item.request_id || item.id;
-          map.set(key, item);
+          const existing = map.get(key);
+          if (existing) {
+            map.set(key, {
+              ...item,
+              created_at: existing.created_at || item.created_at || new Date().toISOString(),
+              createdAtDate: existing.createdAtDate || item.createdAtDate || new Date(),
+            });
+          } else {
+            map.set(key, item);
+          }
         });
       }
     });
@@ -392,7 +401,8 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
       if (typeof (item as any).createdAt === 'number') {
         return (item as any).createdAt;
       }
-      return 0;
+      // If timestamp is pending/null from Firestore, return current time so new requests sort to index 0!
+      return Date.now();
     };
 
     const allList = Array.from(new Set(map.values()));
