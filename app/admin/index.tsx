@@ -84,7 +84,7 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   const isSuper = user?.role === 'super_admin' || user?.role === 'readonly_super_admin';
-  const isWardAdmin = user?.role === 'ward_admin';
+  const isWardAdmin = user?.role === 'ward_admin' || user?.role === 'taluk_admin';
   const isStaff = user?.role === 'staff';
 
   const [searchQuery, setSearchQuery] = useState('');

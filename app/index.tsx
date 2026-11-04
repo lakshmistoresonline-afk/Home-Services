@@ -20,7 +20,7 @@ export default function Index() {
         router.replace('/login');
       } else if (user.role === 'super_admin' || user.role === 'readonly_super_admin') {
         router.replace('/admin/super');
-      } else if (user.role === 'staff' || user.role === 'ward_admin') {
+      } else if (user.role === 'staff' || user.role === 'ward_admin' || user.role === 'taluk_admin') {
         router.replace('/admin');
       } else {
         router.replace('/home');

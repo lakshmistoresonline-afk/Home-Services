@@ -36,7 +36,7 @@ export default function LoginScreen() {
     if (!loading && user) {
       if (user.role === 'super_admin' || user.role === 'readonly_super_admin') {
         router.replace('/admin/super');
-      } else if (user.role === 'ward_admin' || user.role === 'staff') {
+      } else if (user.role === 'ward_admin' || user.role === 'taluk_admin' || user.role === 'staff') {
         router.replace('/admin');
       } else {
         router.replace('/home');
@@ -67,7 +67,7 @@ export default function LoginScreen() {
       // Requirement 3: Role-based redirection
       if (u.role === 'super_admin' || u.role === 'readonly_super_admin') {
         router.replace('/admin/super');
-      } else if (u.role === 'ward_admin' || u.role === 'staff') {
+      } else if (u.role === 'ward_admin' || u.role === 'taluk_admin' || u.role === 'staff') {
         router.replace('/admin');
       } else {
         router.replace('/(tabs)/home');
