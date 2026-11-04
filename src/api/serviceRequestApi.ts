@@ -109,7 +109,9 @@ const getStoredLocalRequests = (): ServiceRequest[] => {
         return JSON.parse(json);
       }
     }
-  } catch (e) { }
+  } catch (e) {
+    console.warn("getStoredLocalRequests error:", e);
+  }
   return [];
 };
 
@@ -125,7 +127,9 @@ const saveStoredLocalRequest = (req: ServiceRequest) => {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }
-  } catch (e) { }
+  } catch (e: any) {
+    console.warn("saveStoredLocalRequest error:", e?.message || e);
+  }
 };
 
 export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocumentSnapshot> => {
@@ -242,16 +246,23 @@ export const createServiceRequest = async (body: {
     updatedAt: serverTimestamp(),
   };
 
+  // Clean JSON-serializable data copy for local browser storage
+  const dataForStorage = {
+    ...data,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+
   const createdItem: ServiceRequest = {
     id: requestId,
-    ...data,
+    ...dataForStorage,
     created_at: nowIso,
     updated_at: nowIso,
     createdAtDate: new Date(),
     updatedAtDate: new Date(),
   };
 
-  // 1. Immediately persist in local browser storage
+  // 1. Immediately persist clean object in local browser storage
   saveStoredLocalRequest(createdItem);
 
   // 2. Attempt Firestore remote persistence
@@ -312,7 +323,7 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 
     const map = new Map<string, ServiceRequest>();
 
-    // 1. Load stored local requests
+    // 1. Load stored local requests first
     storedList.forEach(item => {
       const key = item.complaint_id || item.request_id || item.id;
       map.set(key, item);
