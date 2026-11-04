@@ -46,17 +46,7 @@ export default function HomeScreen() {
       ]);
       if (isLoggingOut) return;
 
-      const rawList = listResult.status === 'fulfilled' ? listResult.value : [];
-      const list = rawList.length > 0 ? rawList : [
-        {
-          complaint_id: "SRV-2026-001",
-          title: "Split AC not cooling properly",
-          departmentName: "Appliance Repair",
-          categoryName: "AC Service & Repair",
-          status: "Submitted",
-          created_at: "2026-10-24T08:00:00Z"
-        }
-      ];
+      const list = listResult.status === 'fulfilled' ? listResult.value : [];
       const deptList = deptResult.status === 'fulfilled' && deptResult.value.length > 0 ? deptResult.value : departments;
       setDepartments(deptList.filter(d => d.isActive !== false));
 

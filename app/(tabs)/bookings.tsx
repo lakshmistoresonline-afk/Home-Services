@@ -34,30 +34,11 @@ export default function BookingsListScreen() {
   const load = useCallback(async () => {
     if (isLoggingOut) return;
     try {
-      const rawList = await listComplaints();
+      const list = await listComplaints();
       if (isLoggingOut) return;
-      const list = rawList.length > 0 ? rawList : [
-        {
-          complaint_id: "SRV-2026-001",
-          title: "Split AC not cooling properly",
-          departmentName: "Appliance Repair",
-          categoryName: "AC Service & Repair",
-          status: "Submitted",
-          created_at: "2026-10-24T08:00:00Z"
-        }
-      ];
       setItems(list as any);
     } catch {
-      setItems([
-        {
-          complaint_id: "SRV-2026-001",
-          title: "Split AC not cooling properly",
-          departmentName: "Appliance Repair",
-          categoryName: "AC Service & Repair",
-          status: "Submitted",
-          created_at: "2026-10-24T08:00:00Z"
-        }
-      ] as any);
+      setItems([]);
     } finally {
       setLoading(false);
     }

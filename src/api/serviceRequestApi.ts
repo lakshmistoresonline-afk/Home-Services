@@ -13,11 +13,27 @@ import {
   increment,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db, auth } from "@/src/config/firebase";
 import { logAction } from "./auditApi";
 import { getProfile, findTalukAdmin, mapDoc, type ServiceRequest, type TimelineAttachment } from "./client";
 
 const STORAGE_KEY = 'hs_service_requests_v1';
+
+// Global In-Memory Cache (Survives all route navigations and state transitions instantly)
+const IN_MEMORY_REQUESTS_CACHE: ServiceRequest[] = [];
+
+const syncToMemoryCache = (req: ServiceRequest) => {
+  const key = req.complaint_id || req.request_id || req.id;
+  const existingIdx = IN_MEMORY_REQUESTS_CACHE.findIndex(
+    r => (r.complaint_id && r.complaint_id === key) || (r.request_id && r.request_id === key) || r.id === key
+  );
+  if (existingIdx >= 0) {
+    IN_MEMORY_REQUESTS_CACHE[existingIdx] = { ...IN_MEMORY_REQUESTS_CACHE[existingIdx], ...req };
+  } else {
+    IN_MEMORY_REQUESTS_CACHE.unshift(req);
+  }
+};
 
 const DEFAULT_SEED_REQUESTS: ServiceRequest[] = [
   {
@@ -105,20 +121,6 @@ const DEFAULT_SEED_REQUESTS: ServiceRequest[] = [
   } as any
 ];
 
-const getStoredLocalRequests = (): ServiceRequest[] => {
-  try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const json = window.localStorage.getItem(STORAGE_KEY);
-      if (json) {
-        return JSON.parse(json);
-      }
-    }
-  } catch (e) {
-    console.warn("getStoredLocalRequests error:", e);
-  }
-  return [];
-};
-
 const sanitizeForStorage = (req: ServiceRequest): ServiceRequest => {
   const cleanAttachments = (req.attachments || []).map(a => ({
     ...a,
@@ -140,22 +142,55 @@ const sanitizeForStorage = (req: ServiceRequest): ServiceRequest => {
   };
 };
 
+const getStoredLocalRequests = (): ServiceRequest[] => {
+  const map = new Map<string, ServiceRequest>();
+
+  // A. Load from In-Memory Cache
+  IN_MEMORY_REQUESTS_CACHE.forEach(r => {
+    const key = r.complaint_id || r.request_id || r.id;
+    if (key) map.set(key, r);
+  });
+
+  // B. Load from window.localStorage
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const json = window.localStorage.getItem(STORAGE_KEY);
+      if (json) {
+        const parsed: ServiceRequest[] = JSON.parse(json);
+        parsed.forEach(r => {
+          const key = r.complaint_id || r.request_id || r.id;
+          if (key && !map.has(key)) map.set(key, r);
+          syncToMemoryCache(r);
+        });
+      }
+    }
+  } catch (e) {
+    console.warn("getStoredLocalRequests error:", e);
+  }
+
+  return Array.from(map.values());
+};
+
 const saveStoredLocalRequest = (req: ServiceRequest) => {
+  const cleanReq = sanitizeForStorage(req);
+
+  // 1. Immediately sync in-memory cache
+  syncToMemoryCache(cleanReq);
+
+  // 2. Persist in window.localStorage
   try {
     const list = getStoredLocalRequests();
-    const cleanReq = sanitizeForStorage(req);
-    const existingIdx = list.findIndex(r => r.complaint_id === cleanReq.complaint_id || r.id === cleanReq.id);
-    if (existingIdx >= 0) {
-      list[existingIdx] = cleanReq;
-    } else {
-      list.unshift(cleanReq);
-    }
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }
   } catch (e: any) {
-    console.warn("saveStoredLocalRequest error:", e?.message || e);
+    console.warn("saveStoredLocalRequest localStorage error:", e?.message || e);
   }
+
+  // 3. Async persist
+  try {
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(IN_MEMORY_REQUESTS_CACHE)).catch(() => {});
+  } catch (e) {}
 };
 
 export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocumentSnapshot> => {
@@ -288,7 +323,7 @@ export const createServiceRequest = async (body: {
     updatedAtDate: new Date(),
   };
 
-  // 1. Immediately persist clean object in local browser storage
+  // 1. Immediately persist clean object in local browser storage & memory cache
   saveStoredLocalRequest(createdItem);
 
   // 2. Attempt Firestore remote persistence
@@ -349,11 +384,10 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 
     const map = new Map<string, ServiceRequest>();
 
-    // 1. Load stored local requests
+    // 1. Load stored local requests & memory cache first
     storedList.forEach(item => {
       const key = item.complaint_id || item.request_id || item.id;
-      map.set(key, item);
-      if (item.complaint_id) map.set(item.complaint_id, item);
+      if (key) map.set(key, item);
     });
 
     // 2. Load Firestore network documents (merging with existing local entries)
@@ -361,6 +395,7 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
       if (snap && !snap.empty) {
         snap.docs.map(mapDoc<ServiceRequest>).forEach((item: ServiceRequest) => {
           const key = item.complaint_id || item.request_id || item.id;
+          if (!key) return;
           const existing = map.get(key);
           if (existing) {
             map.set(key, {
