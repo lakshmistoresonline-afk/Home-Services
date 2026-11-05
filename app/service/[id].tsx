@@ -291,8 +291,8 @@ export default function ServiceRequestDetail() {
 
   const recommendedStaff = useMemo(() => {
     if (!item || !staffList.length) return [];
-    return assignmentUtils.getRecommendedStaff(item, staffList, staffSearch);
-  }, [item, staffList, staffSearch]);
+    return assignmentUtils.getRecommendedStaff(staffList, item);
+  }, [item, staffList]);
 
   const otherEligible = useMemo(() => {
     if (!item || !staffList.length) return [];
