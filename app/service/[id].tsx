@@ -425,7 +425,7 @@ export default function ServiceRequestDetail() {
                   {item.assignedDepartment || (item.assignedStaffName ? 'Field Resource' : 'Awaiting assignment')}
                 </Text>
               </View>
-              {hasPermission('assign_complaints') && item && workflowApi.canAssign(user!, item) && canAssign() && (
+              {(canAssign() || isSuperOrAdmin) && item && workflowApi.canAssign(user!, item) && (
                 <AppButton
                   title={item.assignedStaffId ? 'CHANGE' : 'ASSIGN'}
                   variant="outline"

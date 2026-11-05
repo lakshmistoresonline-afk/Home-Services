@@ -305,7 +305,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const canAssign = useCallback(() => {
     if (!user) return false;
     if (user.role === 'readonly_super_admin') return false;
-    return user.role === 'super_admin' || user.role === 'ward_admin';
+    return user.role === 'super_admin' || user.role === 'taluk_admin' || user.role === 'ward_admin';
   }, [user]);
 
   const canClose = useCallback(() => {
