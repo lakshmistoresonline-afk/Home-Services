@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword, signOut as firebaseSignOut } from "fire
 import { auth, db } from "@/src/config/firebase";
 import { logAction } from "./auditApi";
 import { createActivity } from "./timelineApi";
-import { findComplaintSnapshot } from "./complaintApi";
+import { findServiceRequestSnapshot as findComplaintSnapshot } from "./serviceRequestApi";
 import { notificationService } from "@/src/services/notifications";
 import { isStaffEligible } from "./assignmentUtils";
 import { processAutoAssignment, commitAssignment } from "./assignmentEngine";

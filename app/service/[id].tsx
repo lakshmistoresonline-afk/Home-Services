@@ -24,11 +24,10 @@ import { useAuth } from '../../src/context/auth';
 import { AppCard } from '@/src/components/AppCard';
 import { AppButton } from '@/src/components/AppButton';
 import { AppInput } from '@/src/components/AppInput';
-import { getComplaint, getProfile, listCorporationStaff, listCategories, listWards, adminUpdateStatus, assignComplaint, updateComplaintFields, deleteComplaint as deleteComplaintApi, reopenComplaint, addComment, assignmentUtils, type Complaint, type Staff, type User, workflowApi } from '@/src/api';
+import { getComplaint, getProfile, listCorporationStaff, listCategories, adminUpdateStatus, assignComplaint, updateComplaintFields, deleteComplaint as deleteComplaintApi, reopenComplaint, addComment, assignmentUtils, type Complaint, type Staff, type User, workflowApi } from '@/src/api';
 import { StatusBadge } from '@/src/components/StatusBadge';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { Timeline } from '@/src/components/Timeline';
-import { SLAInfoPanel } from '@/src/components/SLAInfoPanel';
 import { showToast } from '@/src/components/Toast';
 import { auth } from '@/src/config/firebase';
 
@@ -446,8 +445,6 @@ export default function ServiceRequestDetail() {
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <MetaRow label="Last update" value={dayjs(item.updatedAtDate || item.updatedAt).format('MMM D · h:mm A')} color={colors} />
         </AppCard>
-
-        {isAdminSide && <SLAInfoPanel complaint={item} />}
 
         <View style={{ marginTop: 24 }}>
           <Text style={[styles.section, { color: colors.textSecondary }]}>DESCRIPTION</Text>

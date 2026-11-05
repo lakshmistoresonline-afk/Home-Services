@@ -20,10 +20,9 @@ import { onSnapshot, collection, query, where } from 'firebase/firestore';
 import { db, auth } from '@/src/config/firebase';
 import { useTheme } from '@/src/theme';
 import { useAuth } from '../../src/context/auth';
-import { adminList, adminStats, meta, listCorporationStaff, getPerformanceMetrics, slaUtils, assignmentEngine, type Complaint, type User } from '@/src/api';
+import { adminList, adminStats, meta, listCorporationStaff, getPerformanceMetrics, assignmentEngine, type Complaint, type User } from '@/src/api';
 import { StatusBadge } from '@/src/components/StatusBadge';
 import { AppCard } from '@/src/components/AppCard';
-import { SLAProgressBar } from '@/src/components/SLAProgressBar';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { Skeleton } from '@/src/components/Skeleton';
 import { EmptyState } from '@/src/components/EmptyState';
@@ -32,11 +31,9 @@ import { showToast } from '@/src/components/Toast';
 dayjs.extend(isToday);
 
 const STATUSES = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
-const SLA_FILTERS = ['Due Today', 'Near SLA', 'Breached', 'Critical'];
 
 const ComplaintListItem = React.memo(({ item, onPress }: { item: Complaint, onPress: () => void }) => {
   const { colors, typography, spacing } = useTheme();
-  const sla = slaUtils.getSLADetails(item);
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
       <AppCard padding="md" elevation="sm">
@@ -180,17 +177,6 @@ export default function AdminDashboard() {
           if (!auth.currentUser || isLoggingOut) return;
 
           let list = res?.items || [];
-
-          if (slaFilter) {
-            list = list.filter(c => {
-              const sla = slaUtils.getSLADetails(c);
-              if (slaFilter === 'Due Today') return dayjs(c.slaDueAt?.toDate?.() || c.slaDueAt).isToday();
-              if (slaFilter === 'Near SLA') return sla.warningLevel === 'ORANGE';
-              if (slaFilter === 'Breached') return sla.isBreached;
-              if (slaFilter === 'Critical') return sla.warningLevel === 'DARK_RED';
-              return true;
-            });
-          }
 
           if (isMore) {
             setItems(prev => [...prev, ...list]);

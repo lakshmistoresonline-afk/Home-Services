@@ -1,8 +1,6 @@
 export * from "./authApi";
-export * from "./complaintApi";
 export * from "./serviceRequestApi";
 export * from "./staffApi";
-export * from "./wardAdminApi";
 export * from "./talukAdminApi";
 export * from "./notificationApi";
 export * from "./departmentApi";
@@ -15,7 +13,5 @@ export * from "./storageApi";
 export * from "./reportApi";
 export * from "./assignmentUtils";
 export * from "./assignmentEngine";
-export * from "./wardApi";
-export * from "./slaUtils";
 export * from "./client";
 export * from "./seeder";

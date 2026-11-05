@@ -15,7 +15,7 @@ import { getDocs, collection, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/src/config/firebase';
 import { useTheme } from '@/src/theme';
 import { useAuth } from '../../../src/context/auth';
-import { adminStats, adminList, listCorporationStaff, listAuditLogs, slaUtils, type Complaint } from '@/src/api';
+import { adminStats, adminList, listCorporationStaff, listAuditLogs, type Complaint } from '@/src/api';
 import { AppCard } from '@/src/components/AppCard';
 import { showToast } from '@/src/components/Toast';
 import dayjs from 'dayjs';
@@ -90,7 +90,7 @@ export default function SuperAdminDashboard() {
 
           setStats(prev => ({
             ...prev,
-            slaBreachedCount: allComplaints.filter((c: Complaint) => slaUtils.isBreached(c)).length,
+            slaBreachedCount: 0,
             deptDistribution: deptList,
             statusDistribution: statusList
           }));

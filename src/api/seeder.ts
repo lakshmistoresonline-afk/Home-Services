@@ -1,19 +1,6 @@
 import { doc, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/src/config/firebase";
-import { type RoleRecord, type ComplaintStatusRecord, type Ward } from "./client";
-import { THRISSUR_WARDS } from "@/src/data/wards";
-
-export const seedWards = async (): Promise<Ward[]> => {
-  for (const w of THRISSUR_WARDS) {
-    await setDoc(doc(db, "wards", w.wardNumber.toString()), {
-      wardNumber: w.wardNumber,
-      name: w.name,
-      isActive: true,
-      createdAt: serverTimestamp(),
-    });
-  }
-  return THRISSUR_WARDS.map(w => ({ wardNumber: w.wardNumber, name: w.name, isActive: true }));
-};
+import { type RoleRecord, type ServiceStatusRecord } from "./client";
 
 export const seedRBAC = async (): Promise<RoleRecord[]> => {
   const perms = [

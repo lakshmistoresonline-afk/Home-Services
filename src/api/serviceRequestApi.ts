@@ -445,3 +445,26 @@ export const getServiceRequest = async (cid: string): Promise<ServiceRequest> =>
   const docSnap = await findServiceRequestSnapshot(cid);
   return mapDoc<ServiceRequest>(docSnap);
 };
+
+export const listComplaints = listServiceRequests;
+export const getComplaint = getServiceRequest;
+export const adminList = listServiceRequests;
+export const adminStats = async () => {
+  const list = await listServiceRequests();
+  return {
+    total: list.length,
+    submitted: list.filter(r => r.status === 'Submitted').length,
+    assigned: list.filter(r => r.status === 'Assigned').length,
+    in_progress: list.filter(r => r.status === 'In Progress').length,
+    resolved: list.filter(r => r.status === 'Resolved' || r.status === 'Completed').length,
+    closed: list.filter(r => r.status === 'Closed').length,
+    unassigned: list.filter(r => !r.assignedStaffId).length,
+    assignedToday: 0,
+    completedToday: 0,
+    avgResolutionTime: 0,
+    slaBreachedCount: 0,
+    dueTodayCount: 0,
+    nearSlaCount: 0,
+    criticalBreachCount: 0
+  };
+};

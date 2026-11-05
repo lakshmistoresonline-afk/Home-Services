@@ -11,7 +11,6 @@ import { auth, db } from '@/src/config/firebase';
 import { type User, type UserRole, getProfile, setGlobalLoggingOut } from '@/src/api/client';
 import { logAction } from '@/src/api/auditApi';
 import { checkMobileUnique } from '@/src/api/authApi';
-import { THRISSUR_WARDS } from '@/src/data/wards';
 import { notificationService } from '@/src/services/notifications';
 
 

@@ -9,7 +9,6 @@ import {
   Timestamp
 } from "firebase/firestore";
 import { auth, db } from "@/src/config/firebase";
-import { THRISSUR_WARDS } from "@/src/data/wards";
 
 // Global state to prevent Firestore race conditions during logout
 let globalIsLoggingOut = false;
@@ -27,8 +26,6 @@ export function guardAuth() {
     throw new Error("AUTH_GATED");
   }
 }
-
-export { THRISSUR_WARDS };
 
 export function getSecondaryAuth() {
   const { initializeApp, getApp, getApps } = require('firebase/app');
