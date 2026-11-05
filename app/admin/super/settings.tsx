@@ -28,8 +28,8 @@ export default function SettingsScreen() {
   const [busy, setBusy] = useState(false);
 
   // App Config
-  const [appName, setAppName] = useState('ComplaintsFire');
-  const [supportEmail, setSupportContact] = useState('support@mcms.gov.in');
+  const [appName, setAppName] = useState('Home Services');
+  const [supportEmail, setSupportContact] = useState('support@homeservice.gov.in');
 
   // Workflow Config
   const [autoAssign, setAutoAssign] = useState(true);
@@ -40,8 +40,8 @@ export default function SettingsScreen() {
       const data = await meta();
       // In a real app, these would be in a dedicated 'settings' collection
       // For this implementation, we simulate them or use 'metadata/app'
-      setAppName((meta as any).appName || 'ComplaintsFire');
-      setSupportContact((meta as any).supportEmail || 'support@mcms.gov.in');
+      setAppName((meta as any).appName || 'Home Services');
+      setSupportContact((meta as any).supportEmail || 'support@homeservice.gov.in');
       setAutoAssign((meta as any).autoAssignmentEnabled ?? true);
       setGlobalSla(((meta as any).defaultSlaHours || 72).toString());
     } catch (e: any) {
@@ -101,7 +101,7 @@ export default function SettingsScreen() {
            <View style={styles.switchRow}>
               <View style={{ flex: 1 }}>
                  <Text style={{ color: colors.text, fontWeight: '700' }}>Automatic Assignment</Text>
-                 <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}>Route new complaints to best staff instantly.</Text>
+                 <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}>Route new service requests to best staff instantly.</Text>
               </View>
               <Switch value={autoAssign} onValueChange={setAutoAssign} trackColor={{ true: colors.primary }} disabled={!canModify()} />
            </View>

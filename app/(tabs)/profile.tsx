@@ -345,7 +345,7 @@ export default function ProfileScreen() {
           <Pressable style={[styles.modalCard, { backgroundColor: colors.surface }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Sign out?</Text>
             <Text style={{ color: colors.textSecondary, marginTop: 10, fontSize: 14, lineHeight: 20 }}>
-              You will need to sign in again to access your complaints and track status.
+              You will need to sign in again to access your service requests and track status.
             </Text>
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 24 }}>
               <AppButton

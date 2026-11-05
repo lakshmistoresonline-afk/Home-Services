@@ -148,7 +148,7 @@ export default function CategoryManagement() {
     };
 
     if (Platform.OS === 'web') {
-      if (window.confirm(`Delete ${editItem.name}? This will affect future complaint filings.`)) {
+      if (window.confirm(`Delete ${editItem.name}? This will affect future service request bookings.`)) {
         performDelete();
       }
       return;
@@ -156,7 +156,7 @@ export default function CategoryManagement() {
 
     Alert.alert(
       'Delete Category',
-      `Delete ${editItem.name}? This will affect future complaint filings.`,
+      `Delete ${editItem.name}? This will affect future service request bookings.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {

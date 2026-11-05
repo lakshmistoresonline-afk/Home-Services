@@ -28,39 +28,27 @@ import { logAction } from "./auditApi";
 import { notificationService } from "@/src/services/notifications";
 
 /**
- * Internal helper to fetch the eligible staff pool for a ward.
+ * Internal helper to fetch the eligible staff pool for a Taluk.
  * Bypasses administrative role checks to allow system-level automation.
  */
-export const getStaffPool = async (wardNumber: number): Promise<User[]> => {
+export const getStaffPool = async (taluk?: string): Promise<User[]> => {
   const staffRef = collection(db, "users");
   const results: User[] = [];
   const seen = new Set<string>();
 
-  // 1. Fetch Universal Staff (all ward access)
-  const qUniversal = query(
+  const qAll = query(
     staffRef,
     where("role", "==", "staff"),
-    where("isActive", "==", true),
-    where("hasAllWardAccess", "==", true)
+    where("isActive", "==", true)
   );
-  const snapUniversal = await getDocs(qUniversal);
-  snapUniversal.docs.forEach((d) => {
-    seen.add(d.id);
-    results.push(mapUserDoc(d));
-  });
-
-  // 2. Fetch Ward-Specific Staff
-  const qLocal = query(
-    staffRef,
-    where("role", "==", "staff"),
-    where("isActive", "==", true),
-    where("assignedWardNumbers", "array-contains", wardNumber)
-  );
-  const snapLocal = await getDocs(qLocal);
-  snapLocal.docs.forEach((d) => {
-    if (!seen.has(d.id)) {
-      seen.add(d.id);
-      results.push(mapUserDoc(d));
+  const snap = await getDocs(qAll);
+  snap.docs.forEach((d) => {
+    const u = mapUserDoc(d);
+    if (!seen.has(u.uid)) {
+      if (!taluk || !u.taluk || u.taluk === taluk || u.taluk === 'Thrissur') {
+        seen.add(u.uid);
+        results.push(u);
+      }
     }
   });
 
@@ -68,10 +56,10 @@ export const getStaffPool = async (wardNumber: number): Promise<User[]> => {
 };
 
 /**
- * Finds the best eligible staff member for a complaint.
+ * Finds the best eligible staff member for a service request.
  */
 export const findBestStaff = async (complaint: Complaint): Promise<User | null> => {
-  const pool = await getStaffPool(complaint.wardNumber);
+  const pool = await getStaffPool(complaint.taluk);
   const eligible = pool.filter((s) =>
     isStaffEligible(s, complaint)
   );

@@ -93,7 +93,7 @@ export default function RegisterScreen() {
         >
           <Text style={[styles.title, { color: colors.text }]}>Create your account</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Join to submit and track your civic complaints.
+            Join to submit and track your home service requests.
           </Text>
 
           <FormField label="FULL NAME *">

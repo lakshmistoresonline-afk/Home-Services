@@ -127,7 +127,7 @@ export default function StatusManagement() {
     };
 
     if (Platform.OS === 'web') {
-      if (window.confirm(`Delete ${editItem.name}? This may break the workflow for existing complaints.`)) {
+      if (window.confirm(`Delete ${editItem.name}? This may break the workflow for existing service requests.`)) {
         performDelete();
       }
       return;
@@ -135,7 +135,7 @@ export default function StatusManagement() {
 
     Alert.alert(
       'Delete Status',
-      `Delete ${editItem.name}? This may break the workflow for existing complaints.`,
+      `Delete ${editItem.name}? This may break the workflow for existing service requests.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {

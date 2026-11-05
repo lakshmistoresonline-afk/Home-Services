@@ -408,7 +408,7 @@ export default function AdminDashboard() {
           testID="admin-search-input"
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder={isStaff ? "Search complaint ID or title" : "Search ID, name or staff"}
+          placeholder={isStaff ? "Search request ID or title" : "Search ID, name or staff"}
           placeholderTextColor={colors.textSecondary}
           style={{ flex: 1, color: colors.text, fontSize: 16, paddingLeft: spacing.xs }}
           returnKeyType="search"
@@ -485,7 +485,7 @@ export default function AdminDashboard() {
           }
           ListEmptyComponent={
             <EmptyState
-              title="No complaints match"
+              title="No service requests match"
               description="Try adjusting your filters or search term."
               onReset={resetFilters}
             />
