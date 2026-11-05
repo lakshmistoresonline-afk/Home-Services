@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,40 +15,48 @@ import dayjs from 'dayjs';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '@/src/theme';
-import { listWards, meta, generateReportData, exportToCSV, type Complaint } from '@/src/api';
+import { meta, generateReportData, exportToCSV, type ServiceRequest } from '@/src/api';
 import { showToast } from '@/src/components/Toast';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { EmptyState } from '@/src/components/EmptyState';
+
+const TALUK_OPTIONS = [
+  'Thrissur',
+  'Chavakkad',
+  'Kodungallur',
+  'Mukundapuram',
+  'Chalakudy',
+  'Talappilly',
+  'Kunnamkulam'
+];
 
 export default function ReportsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Complaint[]>([]);
+  const [data, setData] = useState<ServiceRequest[]>([]);
   const [generated, setGenerated] = useState(false);
 
   // Filters
-  const [ward, setWard] = useState<number | null>(null);
+  const [taluk, setTaluk] = useState<string | null>(null);
   const [dept, setDept] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | 'all'>('7d');
 
-  const [showWardPicker, setShowWardPicker] = useState(false);
+  const [showTalukPicker, setShowTalukPicker] = useState(false);
   const [showDeptPicker, setShowDeptPicker] = useState(false);
   const [showStatusPicker, setShowStatusPicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const [depts, setDepts] = useState<string[]>([]);
-  const [wards, setWards] = useState<any[]>([]);
 
   React.useEffect(() => {
     meta().then(m => setDepts(m?.departments || []));
-    listWards().then(list => setWards(list || []));
   }, []);
 
   const resetFilters = () => {
-    setWard(null);
+    setTaluk(null);
     setDept(null);
     setStatus(null);
     setTimeRange('7d');
@@ -65,7 +73,7 @@ export default function ReportsScreen() {
       if (timeRange === '30d') startDate = dayjs().subtract(30, 'days').toDate();
 
       const res = await generateReportData({
-        wardNumber: ward || undefined,
+        taluk: taluk || undefined,
         departmentName: dept || undefined,
         status: status || undefined,
         startDate
@@ -86,7 +94,7 @@ export default function ReportsScreen() {
 
     try {
       const csv = exportToCSV(data);
-      const filename = `report_${dayjs().format('YYYYMMDD_HHmm')}.csv`;
+      const filename = `service_report_${dayjs().format('YYYYMMDD_HHmm')}.csv`;
 
       if (Platform.OS === 'web') {
         const blob = new Blob([csv], { type: 'text/csv' });
@@ -127,7 +135,7 @@ export default function ReportsScreen() {
 
         <View style={styles.filterGrid}>
            <FilterBox label="Time Range" value={timeRange === 'all' ? 'All Time' : `Last ${timeRange}`} onPress={() => setShowTimePicker(true)} icon="calendar" color={colors} />
-           <FilterBox label="Ward" value={ward ? `Ward ${ward}` : 'All Wards'} onPress={() => setShowWardPicker(true)} icon="map" color={colors} />
+           <FilterBox label="Taluk" value={taluk || 'All Taluks'} onPress={() => setShowTalukPicker(true)} icon="map" color={colors} />
            <FilterBox label="Department" value={dept || 'All Departments'} onPress={() => setShowDeptPicker(true)} icon="business" color={colors} />
            <FilterBox label="Status" value={status || 'All Statuses'} onPress={() => setShowStatusPicker(true)} icon="filter" color={colors} />
         </View>
@@ -162,8 +170,8 @@ export default function ReportsScreen() {
                    <Text style={styles.resLabel}>COMPLETED</Text>
                 </View>
                 <View style={styles.resItem}>
-                   <Text style={[styles.resVal, { color: colors.danger }]}>{data.filter(c => c.slaBreached).length}</Text>
-                   <Text style={styles.resLabel}>SLA BREACHES</Text>
+                   <Text style={[styles.resVal, { color: colors.warning }]}>{data.filter(c => c.status === 'In Progress' || c.status === 'Assigned').length}</Text>
+                   <Text style={styles.resLabel}>IN PROGRESS</Text>
                 </View>
              </View>
 
@@ -180,7 +188,7 @@ export default function ReportsScreen() {
       </ScrollView>
 
       <PickerSheet visible={showTimePicker} title="Select Period" options={['7d', '30d', 'all']} value={timeRange} onSelect={(v: any) => { setTimeRange(v); setShowTimePicker(false); }} onClose={() => setShowTimePicker(false)} />
-      <PickerSheet visible={showWardPicker} title="Select Ward" options={['', ...(wards || []).map(w => w.wardNumber.toString())]} value={ward?.toString() || ''} onSelect={(v) => { setWard(v ? parseInt(v) : null); setShowWardPicker(false); }} onClose={() => setShowWardPicker(false)} />
+      <PickerSheet visible={showTalukPicker} title="Select Taluk" options={['', ...TALUK_OPTIONS]} value={taluk || ''} onSelect={(v) => { setTaluk(v || null); setShowTalukPicker(false); }} onClose={() => setShowTalukPicker(false)} />
       <PickerSheet visible={showDeptPicker} title="Select Department" options={['', ...(depts || [])]} value={dept || ''} onSelect={(v) => { setDept(v || null); setShowDeptPicker(false); }} onClose={() => setShowDeptPicker(false)} />
       <PickerSheet visible={showStatusPicker} title="Select Status" options={['', 'Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed']} value={status || ''} onSelect={(v) => { setStatus(v || null); setShowStatusPicker(false); }} onClose={() => setShowStatusPicker(false)} />
 

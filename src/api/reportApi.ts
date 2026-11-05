@@ -1,6 +1,6 @@
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/src/config/firebase";
-import { mapDoc, type Complaint } from "./client";
+import { mapDoc, type ServiceRequest } from "./client";
 
 /**
  * Generates a report dataset based on filters.
@@ -8,15 +8,15 @@ import { mapDoc, type Complaint } from "./client";
 export const generateReportData = async (filters: {
   startDate?: Date;
   endDate?: Date;
-  wardNumber?: number;
+  taluk?: string;
   departmentName?: string;
   status?: string;
-}): Promise<Complaint[]> => {
+}): Promise<ServiceRequest[]> => {
   try {
-    let q = query(collection(db, "complaints"), orderBy("createdAt", "asc"));
+    let q = query(collection(db, "serviceRequests"), orderBy("createdAt", "asc"));
 
-    if (filters.wardNumber) {
-      q = query(q, where("wardNumber", "==", filters.wardNumber));
+    if (filters.taluk) {
+      q = query(q, where("taluk", "==", filters.taluk));
     }
     if (filters.departmentName) {
       q = query(q, where("departmentName", "==", filters.departmentName));
@@ -28,9 +28,9 @@ export const generateReportData = async (filters: {
     const snap = await getDocs(q);
     if (snap.empty) return [];
 
-    let results = snap.docs.map(mapDoc<Complaint>);
+    let results = snap.docs.map(mapDoc<ServiceRequest>);
 
-    // Date filtering (Client-side because Firestore inequalities on different fields are complex)
+    // Date filtering
     if (filters.startDate) {
       results = results.filter(c => new Date(c.createdAt?.toDate?.() || c.createdAt) >= filters.startDate!);
     }
@@ -48,13 +48,13 @@ export const generateReportData = async (filters: {
 /**
  * Export function
  */
-export const exportToCSV = (data: Complaint[]): string => {
-  const headers = ["ID", "Title", "Status", "Ward", "Department", "Created At"];
+export const exportToCSV = (data: ServiceRequest[]): string => {
+  const headers = ["ID", "Title", "Status", "Taluk", "Department", "Created At"];
   const rows = data.map(c => [
-    c.complaint_id,
+    c.complaint_id || c.id,
     `"${c.title.replace(/"/g, '""')}"`,
     c.status,
-    c.wardNumber,
+    c.taluk || 'Thrissur',
     c.departmentName,
     new Date(c.createdAt?.toDate?.() || c.createdAt).toLocaleString()
   ]);

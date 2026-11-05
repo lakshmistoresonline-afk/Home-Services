@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useTheme } from '@/src/theme';
 import { useAuth } from '../../../src/context/auth';
-import { listCorporationStaff, listDepartments, listCategories, listWards, checkMobileUnique, updateStaff, createStaff, toggleStaff, type Staff, type Department, type ComplaintCategory } from '@/src/api';
+import { listCorporationStaff, listDepartments, listCategories, checkMobileUnique, updateStaff, createStaff, toggleStaff, type Staff, type Department, type ComplaintCategory } from '@/src/api';
 import { showToast } from '@/src/components/Toast';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { EmptyState } from '@/src/components/EmptyState';
@@ -35,7 +35,6 @@ export default function SuperStaffManagement() {
   const [items, setItems] = useState<Staff[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [categories, setCategories] = useState<ComplaintCategory[]>([]);
-  const [wards, setWards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -78,16 +77,14 @@ export default function SuperStaffManagement() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const [allStaff, depts, cats, wList] = await Promise.all([
+      const [allStaff, depts, cats] = await Promise.all([
         listCorporationStaff(),
         listDepartments(),
         listCategories(),
-        listWards(),
       ]);
       setItems(allStaff || []);
       setDepartments(depts || []);
       setCategories(cats || []);
-      setWards(wList || []);
     } catch (e: any) {
       showToast(e.message || 'Failed to load data', 'error');
     } finally {
