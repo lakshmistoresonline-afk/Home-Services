@@ -136,7 +136,6 @@ async function runSeeder() {
         await seedCollection("serviceCategories", categories);
         await seedCollection("servicePriorities", priorities);
         await seedCollection("serviceStatuses", statuses);
-        await seedCollection("slaRules", slaRules, "categoryId");
         await seedCollection("notificationTemplates", notificationTemplates, "type");
 
         // Users

@@ -63,8 +63,6 @@ const DEFAULT_SEED_REQUESTS: ServiceRequest[] = [
     remarks: null,
     resolvedAt: null,
     resolutionDuration: null,
-    slaDueAt: "2026-10-25T08:00:00.000Z",
-    slaBreached: false,
     history: [],
     comments: [],
     timeline: [
@@ -107,8 +105,6 @@ const DEFAULT_SEED_REQUESTS: ServiceRequest[] = [
     assignmentHistory: [],
     remarks: null,
     resolvedAt: null,
-    slaDueAt: "2026-10-25T09:30:00.000Z",
-    slaBreached: false,
     history: [],
     comments: [],
     timeline: [],
@@ -202,16 +198,10 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
     if (directDoc.exists()) return directDoc as any;
   } catch (e) { }
 
-  try {
-    const directDoc = await getDoc(doc(db, "complaints", cid));
-    if (directDoc.exists()) return directDoc as any;
-  } catch (e) { }
-
   // 2. Query by complaint_id or request_id
   const queries = [
     getDocs(query(collection(db, "serviceRequests"), where("complaint_id", "==", cid), limit(1))).catch(() => null),
     getDocs(query(collection(db, "serviceRequests"), where("request_id", "==", cid), limit(1))).catch(() => null),
-    getDocs(query(collection(db, "complaints"), where("complaint_id", "==", cid), limit(1))).catch(() => null),
   ];
 
   const results = await Promise.all(queries);
@@ -290,8 +280,6 @@ export const createServiceRequest = async (body: {
     remarks: null,
     resolvedAt: null,
     resolutionDuration: null,
-    slaDueAt: null,
-    slaBreached: false,
     history: [{
       actor_id: user.uid,
       actor_name: profile?.fullName || 'Customer',
@@ -326,19 +314,20 @@ export const createServiceRequest = async (body: {
   // 1. Immediately persist clean object in local browser storage & memory cache
   saveStoredLocalRequest(createdItem);
 
-  // 2. Attempt Firestore remote persistence
+  // 2. Prepare fully sanitized JSON object for Cloud Firestore (stripping any undefined fields)
+  const firestoreData = JSON.parse(
+    JSON.stringify(data, (key, value) => (value === undefined ? null : value))
+  );
+  firestoreData.createdAt = serverTimestamp();
+  firestoreData.updatedAt = serverTimestamp();
+
+  // 3. Attempt Firestore remote persistence
   try {
-    const docRef = await addDoc(collection(db, "serviceRequests"), data);
+    const docRef = await addDoc(collection(db, "serviceRequests"), firestoreData);
     createdItem.id = docRef.id;
     saveStoredLocalRequest(createdItem);
   } catch (err: any) {
-    try {
-      const docRef = await addDoc(collection(db, "complaints"), data);
-      createdItem.id = docRef.id;
-      saveStoredLocalRequest(createdItem);
-    } catch (e2: any) {
-      console.warn("Write to Firestore serviceRequests/complaints handled:", e2?.message || e2);
-    }
+    console.error("Write to Firestore serviceRequests failed:", err?.message || err);
   }
 
   try {
@@ -369,14 +358,11 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
         const queries = [
           getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", user.uid))).catch(() => null),
           getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", "citizen_01"))).catch(() => null),
-          getDocs(query(collection(db, "complaints"), where("citizenId", "==", user.uid))).catch(() => null),
-          getDocs(query(collection(db, "complaints"), where("citizenId", "==", "citizen_01"))).catch(() => null),
         ];
         snaps = await Promise.all(queries);
       } else {
         const queries = [
           getDocs(query(collection(db, "serviceRequests"), limit(100))).catch(() => null),
-          getDocs(query(collection(db, "complaints"), limit(100))).catch(() => null),
         ];
         snaps = await Promise.all(queries);
       }
