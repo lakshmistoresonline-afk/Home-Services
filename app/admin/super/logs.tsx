@@ -252,7 +252,7 @@ export default function AuditLogScreen() {
       <PickerSheet
         visible={showRolePicker}
         title="Filter by Role"
-        options={['', 'super_admin', 'ward_admin', 'staff', 'citizen']}
+        options={['', 'super_admin', 'taluk_admin', 'staff', 'citizen']}
         onSelect={(val) => {
           setRoleFilter(val);
           setShowRolePicker(false);
@@ -265,9 +265,6 @@ export default function AuditLogScreen() {
 
 function FilterChip({ label, active, onPress }: any) {
   const { colors } = useTheme();
-  const goHome = () => {
-    router.replace('/admin/super');
-  };
 
   return (
     <TouchableOpacity
