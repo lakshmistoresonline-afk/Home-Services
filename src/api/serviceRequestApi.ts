@@ -314,20 +314,11 @@ export const createServiceRequest = async (body: {
   // 1. Immediately persist clean object in local browser storage & memory cache
   saveStoredLocalRequest(createdItem);
 
-  // 2. Prepare fully sanitized JSON object for Cloud Firestore (stripping any undefined fields)
-  const firestoreData = JSON.parse(
-    JSON.stringify(data, (key, value) => (value === undefined ? null : value))
-  );
-  firestoreData.createdAt = serverTimestamp();
-  firestoreData.updatedAt = serverTimestamp();
-
-  // 3. Attempt Firestore remote persistence
+  // 2. Persist directly to Cloud Firestore under document key requestId
   try {
-    const docRef = await addDoc(collection(db, "serviceRequests"), firestoreData);
-    createdItem.id = docRef.id;
-    saveStoredLocalRequest(createdItem);
+    await setDoc(doc(db, "serviceRequests", requestId), data);
   } catch (err: any) {
-    console.warn("Write to Firestore serviceRequests persisted locally (token/network sync):", err?.message || err);
+    console.error("Failed to write serviceRequest to Firestore:", err?.message || err);
   }
 
   try {
