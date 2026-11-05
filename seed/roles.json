@@ -7,16 +7,16 @@
     "isActive": true
   },
   {
-    "id": "ward_admin",
-    "name": "Ward Admin",
-    "description": "Administrative access for a specific ward.",
-    "permissions": ["view_dashboard", "assign_complaints", "reassign_complaints", "close_complaints", "view_reports", "manage_staff", "manage_wards"],
+    "id": "taluk_admin",
+    "name": "Taluk Admin",
+    "description": "Administrative access for a specific Taluk jurisdiction.",
+    "permissions": ["view_dashboard", "assign_requests", "reassign_requests", "close_requests", "view_reports", "manage_staff", "manage_taluks"],
     "isActive": true
   },
   {
     "id": "staff",
-    "name": "Field Staff",
-    "description": "Field resources assigned to resolve complaints.",
+    "name": "Field Service Specialist",
+    "description": "Field resources assigned to handle home service requests.",
     "permissions": ["view_dashboard", "update_progress", "upload_photos", "add_notes"],
     "isActive": true
   },
@@ -30,8 +30,8 @@
   {
     "id": "citizen",
     "name": "Citizen",
-    "description": "General users who can file and track complaints.",
-    "permissions": ["create_complaint", "view_own_complaints", "reopen_complaint", "add_comment"],
+    "description": "General users who can book and track home service requests.",
+    "permissions": ["create_request", "view_own_requests", "reopen_request", "add_comment"],
     "isActive": true
   }
 ]

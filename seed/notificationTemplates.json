@@ -1,6 +1,6 @@
 [
-  { "type": "COMPLAINT_CREATED", "title": "Complaint Filed", "message": "Your complaint {{id}} has been successfully filed." },
-  { "type": "COMPLAINT_ASSIGNED", "title": "New Assignment", "message": "You have been assigned to complaint {{id}}: {{title}}" },
-  { "type": "STATUS_CHANGED", "title": "Status Update", "message": "Complaint {{id}} status updated to {{status}}" },
-  { "type": "ACCOUNT_CREATED", "title": "Account Ready", "message": "Your MCMS account has been created by the administrator." }
+  { "type": "SERVICE_REQUEST_CREATED", "title": "Service Request Filed", "message": "Your service request {{id}} has been successfully filed." },
+  { "type": "SERVICE_REQUEST_ASSIGNED", "title": "New Service Assignment", "message": "You have been assigned to service request {{id}}: {{title}}" },
+  { "type": "STATUS_CHANGED", "title": "Status Update", "message": "Service request {{id}} status updated to {{status}}" },
+  { "type": "ACCOUNT_CREATED", "title": "Account Ready", "message": "Your Home Services account has been created by the administrator." }
 ]

@@ -1,4 +1,4 @@
 [
-  { "id": "LOG_001", "timestamp": "2026-07-25T10:00:00Z", "actor": { "uid": "citizen_01", "name": "Rahul Nair", "role": "citizen" }, "action": "COMPLAINT_CREATED", "entity": { "type": "complaint", "id": "TCR-2026-001" }, "context": { "device": "android 34" } },
-  { "id": "LOG_002", "timestamp": "2026-07-25T10:31:00Z", "actor": { "uid": "system", "name": "Assignment Engine", "role": "super_admin" }, "action": "COMPLAINT_ASSIGNED", "entity": { "type": "complaint", "id": "TCR-2026-002" }, "changes": { "prev": null, "next": "Electrical Specialist 1" }, "context": { "device": "system-process" } }
+  { "id": "LOG_001", "timestamp": "2026-10-24T10:00:00Z", "actor": { "uid": "citizen_01", "name": "Rahul Nair", "role": "citizen" }, "action": "SERVICE_REQUEST_CREATED", "entity": { "type": "serviceRequest", "id": "SRV-2026-001" }, "context": { "device": "android 34" } },
+  { "id": "LOG_002", "timestamp": "2026-10-24T10:31:00Z", "actor": { "uid": "system", "name": "Assignment Engine", "role": "super_admin" }, "action": "SERVICE_REQUEST_ASSIGNED", "entity": { "type": "serviceRequest", "id": "SRV-2026-002" }, "changes": { "prev": null, "next": "Rajesh AC & Electrical Expert" }, "context": { "device": "system-process" } }
 ]

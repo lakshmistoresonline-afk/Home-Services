@@ -11,7 +11,6 @@ const categories = require("./serviceCategories.json");
 const priorities = require("./servicePriorities.json");
 const statuses = require("./serviceStatuses.json");
 const workflowRules = require("./workflowRules.json");
-const slaRules = require("./slaRules.json");
 const notificationTemplates = require("./notificationTemplates.json");
 const superAdmins = require("./superAdmin.json");
 const readonlyAdmins = require("./readonlyAdmin.json");
