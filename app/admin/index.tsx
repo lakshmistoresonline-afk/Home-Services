@@ -39,7 +39,7 @@ const ComplaintListItem = React.memo(({ item, onPress }: { item: Complaint, onPr
       <AppCard padding="md" elevation="sm">
         <View style={styles.topRow}>
           <Text style={[typography.label.small, { color: colors.textSecondary, letterSpacing: 1.2, fontWeight: '700' }]}>
-            {item.complaint_id}
+            {item.complaint_id || item.request_id}
           </Text>
           <StatusBadge status={item.status} />
         </View>
@@ -48,19 +48,7 @@ const ComplaintListItem = React.memo(({ item, onPress }: { item: Complaint, onPr
           {item.title}
         </Text>
 
-        <View style={{ marginTop: spacing.md }}>
-          <SLAProgressBar details={sla} height={6} />
-          <View style={styles.slaDetails}>
-            <Text style={[typography.label.small, { color: sla.isBreached ? colors.danger : colors.textSecondary, fontWeight: '700' }]}>
-              {sla.isBreached ? `OVERDUE: ${Math.round(sla.overdueHours)}h` : `REMAINING: ${Math.round(sla.timeRemainingHours)}h`}
-            </Text>
-            <Text style={[typography.label.small, { color: colors.textSecondary, fontWeight: '700' }]}>
-              DUE: {dayjs(item.slaDueAt?.toDate?.() || item.slaDueAt).format('MMM D')}
-            </Text>
-          </View>
-        </View>
-
-        <View style={[styles.metaRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm }]}>
+        <View style={[styles.metaRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm, marginTop: spacing.md }]}>
           <View style={styles.metaItem}>
             <Ionicons name="person-outline" size={14} color={colors.primary} />
             <Text style={[typography.body.small, { color: colors.textSecondary, fontWeight: '600' }]}>{item.citizenName}</Text>
