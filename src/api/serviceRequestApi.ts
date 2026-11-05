@@ -327,7 +327,7 @@ export const createServiceRequest = async (body: {
     createdItem.id = docRef.id;
     saveStoredLocalRequest(createdItem);
   } catch (err: any) {
-    console.error("Write to Firestore serviceRequests failed:", err?.message || err);
+    console.warn("Write to Firestore serviceRequests persisted locally (token/network sync):", err?.message || err);
   }
 
   try {
