@@ -174,22 +174,45 @@ export default function AdminDashboard() {
           const res = await adminList(params);
           if (!auth.currentUser || isLoggingOut) return;
 
-          let list = res?.items || [];
+          let list: Complaint[] = Array.isArray(res) ? res : (res?.items || []);
 
-          if (isMore) {
-            setItems(prev => [...prev, ...list]);
-          } else {
-            setItems(list);
+          if (debouncedSearch.trim()) {
+            const q = debouncedSearch.toLowerCase();
+            list = list.filter(item =>
+              (item.title || '').toLowerCase().includes(q) ||
+              (item.description || '').toLowerCase().includes(q) ||
+              (item.complaint_id || '').toLowerCase().includes(q) ||
+              (item.request_id || '').toLowerCase().includes(q) ||
+              (item.citizenName || '').toLowerCase().includes(q) ||
+              (item.assignedStaffName || '').toLowerCase().includes(q)
+            );
           }
 
-          lastDocRef.current = res?.lastDoc || null;
-          hasMoreRef.current = res?.hasMore || false;
-          setLastDoc(lastDocRef.current);
-          setHasMore(hasMoreRef.current);
+          if (department) {
+            list = list.filter(item => item.departmentName === department || item.departmentId === department);
+          }
+
+          if (status) {
+            list = list.filter(item => item.status === status);
+          }
+
+          if (assignedFilter) {
+            if (assignedFilter === 'unassigned') {
+              list = list.filter(item => !item.assignedStaffId);
+            } else if (assignedFilter === 'me') {
+              list = list.filter(item => item.assignedStaffId === user.uid);
+            } else {
+              list = list.filter(item => !!item.assignedStaffId);
+            }
+          }
+
+          setItems(list);
+          hasMoreRef.current = false;
+          setHasMore(false);
 
         } catch (e: any) {
           if (!isLoggingOut && auth.currentUser) {
-             showToast(`Complaints: ${e.message}`, 'error');
+             showToast(`Error: ${e.message}`, 'error');
           }
         }
       };
