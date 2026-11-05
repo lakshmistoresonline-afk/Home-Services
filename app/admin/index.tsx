@@ -89,7 +89,6 @@ export default function AdminDashboard() {
   const [status, setStatus] = useState<string>('');
   const [department, setDepartment] = useState<string>('');
   const [assignedFilter, setAssignedFilter] = useState<string>('');
-  const [slaFilter, setSlaFilter] = useState<string>('');
 
   const [items, setItems] = useState<Complaint[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
@@ -121,7 +120,6 @@ export default function AdminDashboard() {
 
   const [showStatus, setShowStatus] = useState(false);
   const [showDept, setShowDept] = useState(false);
-  const [showSla, setShowSla] = useState(false);
 
   // Use refs to track values needed in load but shouldn't trigger re-renders or effect loops
   const lastDocRef = useRef<any>(null);
@@ -264,7 +262,7 @@ export default function AdminDashboard() {
       setLoadingMore(false);
       isLoadingRef.current = false;
     }
-  }, [debouncedSearch, department, status, slaFilter, assignedFilter, isWardAdmin, isSuper, isStaff, user, isLoggingOut]);
+  }, [debouncedSearch, department, status, assignedFilter, isWardAdmin, isSuper, isStaff, user, isLoggingOut]);
 
   // Initial load when screen is focused
   useFocusEffect(
@@ -281,7 +279,7 @@ export default function AdminDashboard() {
       return;
     }
     load(false);
-  }, [debouncedSearch, department, status, slaFilter, assignedFilter]);
+  }, [debouncedSearch, department, status, assignedFilter]);
 
   useEffect(() => {
     if (user && !isLoggingOut) {
@@ -321,7 +319,6 @@ export default function AdminDashboard() {
     setSearchQuery('');
     setStatus('');
     setDepartment('');
-    setSlaFilter('');
     setAssignedFilter('');
   };
 
@@ -329,14 +326,13 @@ export default function AdminDashboard() {
     return [
       status && { key: 'status', label: status, clear: () => setStatus('') },
       department && { key: 'dept', label: department, clear: () => setDepartment('') },
-      slaFilter && { key: 'sla', label: slaFilter, clear: () => setSlaFilter('') },
       assignedFilter && {
         key: 'assigned',
         label: assignedFilter === 'unassigned' ? 'Unassigned' : assignedFilter === 'me' ? 'Assigned to me' : 'Assigned',
         clear: () => setAssignedFilter(''),
       },
     ].filter(Boolean) as { key: string; label: string; clear: () => void }[];
-  }, [status, department, slaFilter, assignedFilter]);
+  }, [status, department, assignedFilter]);
 
   if (!user && !loading) return <Redirect href="/(auth)/login" />;
 
@@ -429,13 +425,6 @@ export default function AdminDashboard() {
             <Ionicons name="filter-outline" size={16} color={status ? colors.primary : colors.textSecondary} />
             <Text style={[typography.label.medium, { color: status ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{status || 'Status'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowSla(true)}
-            style={[styles.chip, { borderColor: slaFilter ? '#EA580C' : colors.border, backgroundColor: slaFilter ? '#EA580C10' : colors.surface }]}
-          >
-            <Ionicons name="time-outline" size={16} color={slaFilter ? '#EA580C' : colors.textSecondary} />
-            <Text style={[typography.label.medium, { color: slaFilter ? '#EA580C' : colors.textSecondary, fontWeight: '700' }]}>{slaFilter || 'SLA Status'}</Text>
-          </TouchableOpacity>
           {!isStaff && (
             <TouchableOpacity
               onPress={() => setShowDept(true)}
@@ -502,7 +491,6 @@ export default function AdminDashboard() {
 
       <PickerSheet visible={showStatus} title="Select Status" options={['', ...STATUSES]} value={status} onSelect={(v) => setStatus(v)} onClose={() => setShowStatus(false)} />
       <PickerSheet visible={showDept} title="Select Department" options={['', ...departments]} value={department} onSelect={(v) => setDepartment(v)} onClose={() => setShowDept(false)} />
-      <PickerSheet visible={showSla} title="Select SLA Status" options={['', ...SLA_FILTERS]} value={slaFilter} onSelect={(v) => setSlaFilter(v)} onClose={() => setShowSla(false)} />
     </SafeAreaView>
   );
 }
