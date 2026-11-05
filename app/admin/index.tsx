@@ -143,9 +143,10 @@ export default function AdminDashboard() {
     switch (user?.role) {
       case 'super_admin':
       case 'readonly_super_admin': return 'SUPER ADMIN';
-      case 'ward_admin': return `WARD ${user.wardNumber} ADMIN`;
-      case 'staff': return 'FIELD STAFF DASHBOARD';
-      default: return 'ADMIN DASHBOARD';
+      case 'taluk_admin':
+      case 'ward_admin': return `${(user?.taluk || 'THRISSUR').toUpperCase()} TALUK ADMIN`;
+      case 'staff': return 'FIELD SERVICE DASHBOARD';
+      default: return 'TALUK ADMIN DASHBOARD';
     }
   }, [user]);
 

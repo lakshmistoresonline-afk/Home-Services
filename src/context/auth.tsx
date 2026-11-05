@@ -20,7 +20,7 @@ type AuthState = {
   loading: boolean;
   isLoggingOut: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (data: { full_name: string; email: string; mobile: string; password: string; wardName: string }) => Promise<User>;
+  register: (data: { full_name: string; email: string; mobile: string; password: string; taluk: string; district?: string }) => Promise<User>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   setUser: (u: User) => void;
@@ -205,10 +205,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Mobile number already registered');
       }
 
-      const ward = THRISSUR_WARDS.find(w => w.name === data.wardName);
-      const wardNumber = ward ? ward.wardNumber : null;
-      const wardId = wardNumber ? `ward_${wardNumber}` : null;
-
       const profileData = {
         uid: cred.user.uid,
         fullName: data.full_name || '',
@@ -217,16 +213,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         mobileNumber: data.mobile || '',
         role: 'citizen',
         status: 'active',
-        wardNumber: wardNumber,
-        wardName: data.wardName || null,
-        wardId: wardId,
+        district: data.district || 'Thrissur',
+        taluk: data.taluk || 'Thrissur',
         isActive: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        activeComplaintCount: 0,
-        completedComplaintCount: 0,
-        averageResolutionTime: 0,
-        rating: 5.0,
         permissions: [],
       };
 

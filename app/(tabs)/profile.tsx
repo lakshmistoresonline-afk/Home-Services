@@ -17,13 +17,27 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/auth';
 import { useTheme } from '@/src/theme';
-import { THRISSUR_WARDS } from '@/src/data/wards';
 import { checkMobileUnique, updateProfile, deleteOwnAccount, changePassword } from '@/src/api';
 import { showToast } from '@/src/components/Toast';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { AppCard } from '@/src/components/AppCard';
 import { AppButton } from '@/src/components/AppButton';
 import { AppInput } from '@/src/components/AppInput';
+
+const KERALA_TALUK_OPTIONS = [
+  'Thrissur',
+  'Chavakkad',
+  'Kodungallur',
+  'Mukundapuram',
+  'Chalakudy',
+  'Talappilly',
+  'Kunnamkulam',
+  'Aluva',
+  'Kochi',
+  'Kanayannur',
+  'Kozhikode',
+  'Thiruvananthapuram'
+];
 
 export default function ProfileScreen() {
   const { user, logout, setUser } = useAuth();
@@ -33,8 +47,8 @@ export default function ProfileScreen() {
   const [name, setName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
   const [mobile, setMobile] = useState(user?.mobile || '');
-  const [wardName, setWardName] = useState(user?.wardName || '');
-  const [showWardPicker, setShowWardPicker] = useState(false);
+  const [taluk, setTaluk] = useState(user?.taluk || 'Thrissur');
+  const [showTalukPicker, setShowTalukPicker] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [showPwModal, setShowPwModal] = useState(false);
@@ -46,14 +60,12 @@ export default function ProfileScreen() {
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const wardOptions = THRISSUR_WARDS.map(w => `${w.wardNumber} - ${w.name}`);
-
   useEffect(() => {
     if (user) {
       setName(user.fullName);
       setEmail(user.email);
       setMobile(user.mobile);
-      setWardName(user.wardName ? `${user.wardNumber} - ${user.wardName}` : '');
+      setTaluk(user.taluk || 'Thrissur');
     }
   }, [user]);
 
@@ -72,16 +84,12 @@ export default function ProfileScreen() {
         return showToast('Mobile number already registered', 'error');
       }
 
-      const selectedWardName = wardName.split(' - ')[1];
-      const ward = THRISSUR_WARDS.find(w => w.name === selectedWardName);
-      const wardNumber = ward ? ward.wardNumber : null;
-
       const updated = await updateProfile({
         fullName: name.trim(),
         email: email.trim().toLowerCase(),
         mobile: mobile.trim(),
-        wardNumber: wardNumber as any,
-        wardName: selectedWardName
+        taluk,
+        district: 'Thrissur'
       });
       setUser(updated);
       showToast('Profile updated', 'success');
@@ -172,20 +180,11 @@ export default function ProfileScreen() {
             <Text style={[styles.avatarName, { color: colors.text }]}>{user?.fullName}</Text>
             <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{user?.email}</Text>
 
-            {user?.wardName && user?.role !== 'staff' && (
-              <View style={[styles.roleBadge, { backgroundColor: colors.primary + '15' }]}>
-                <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>
-                  WARD {user.wardNumber}: {user.wardName.toUpperCase()}
-                </Text>
-              </View>
-            )}
-            {user?.role === 'staff' && (
-              <View style={[styles.roleBadge, { backgroundColor: colors.primary + '15' }]}>
-                <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>
-                  STAFF JURISDICTION: {user.hasAllWardAccess ? 'ALL WARDS' : (user.assignedWardNumbers.join(', ') || 'NONE')}
-                </Text>
-              </View>
-            )}
+            <View style={[styles.roleBadge, { backgroundColor: colors.primary + '15' }]}>
+              <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>
+                TALUK JURISDICTION: {(user?.taluk || 'Thrissur').toUpperCase()}
+              </Text>
+            </View>
           </View>
 
           <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>PERSONAL INFORMATION</Text>
@@ -212,7 +211,7 @@ export default function ProfileScreen() {
               placeholder="10-digit mobile number"
             />
 
-            <Text style={styles.inputLabel}>WARD JURISDICTION</Text>
+            <Text style={styles.inputLabel}>TALUK JURISDICTION</Text>
             {user?.role === 'staff' ? (
               <View style={[styles.readOnlyInput, { backgroundColor: colors.surfaceTint, borderColor: colors.border }]}>
                 <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
@@ -221,12 +220,12 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <TouchableOpacity
-                onPress={() => setShowWardPicker(true)}
+                onPress={() => setShowTalukPicker(true)}
                 style={[styles.selector, { backgroundColor: colors.surfaceTint, borderColor: colors.border }]}
                 activeOpacity={0.7}
               >
-                <Text style={{ color: wardName ? colors.text : colors.textSecondary, fontSize: 15 }}>
-                  {wardName || 'Select your ward'}
+                <Text style={{ color: taluk ? colors.text : colors.textSecondary, fontSize: 15 }}>
+                  {taluk || 'Select your Taluk'}
                 </Text>
                 <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
@@ -294,13 +293,13 @@ export default function ProfileScreen() {
       </KeyboardAvoidingView>
 
       <PickerSheet
-        visible={showWardPicker}
-        title="Select Ward"
-        options={wardOptions}
-        value={wardName}
-        onSelect={setWardName}
-        onClose={() => setShowWardPicker(false)}
-        testIDPrefix="profile-ward"
+        visible={showTalukPicker}
+        title="Select Taluk"
+        options={KERALA_TALUK_OPTIONS}
+        value={taluk}
+        onSelect={setTaluk}
+        onClose={() => setShowTalukPicker(false)}
+        testIDPrefix="profile-taluk"
       />
 
       {/* Change password modal */}

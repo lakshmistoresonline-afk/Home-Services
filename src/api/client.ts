@@ -106,27 +106,21 @@ export type User = {
   fullName: string;
   email: string;
   mobile: string;
-  mobileNumber?: string; // Alias for mobile
+  mobileNumber?: string;
   role: UserRole;
   status?: string;
   permissions: string[];
-  assignedWardNumbers: number[];
-  hasAllWardAccess: boolean;
-  wardNumber: number | null;
-  wardName: string | null;
   district?: string | null;
   taluk?: string | null;
-  wardId?: string; // Legacy ID format ward_X
   departments: string[];
   departmentIds?: string[];
   departmentNames?: string[];
   categories: string[];
   designation: string | null;
   isActive: boolean;
-  activeComplaintCount: number;
-  completedComplaintCount: number;
-  averageResolutionTime: number; // in hours
-  rating: number;
+  activeServiceCount?: number;
+  completedServiceCount?: number;
+  rating?: number;
   joiningDate: string | null;
   pushToken?: string | null;
   createdAt: Timestamp | any;
@@ -269,8 +263,6 @@ export type ServiceRequest = {
   citizenName: string;
   district?: string;
   taluk?: string;
-  wardNumber?: number;
-  wardName?: string;
   departmentId: string;
   departmentName: string;
   categoryId: string;
@@ -289,9 +281,7 @@ export type ServiceRequest = {
   assignmentHistory?: AssignmentEntry[];
   remarks: string | null;
   resolvedAt: any | null;
-  resolutionDuration?: number | null; // in hours
-  slaDueAt?: any | null;
-  slaBreached?: boolean;
+  resolutionDuration?: number | null;
   history: HistoryEntry[];
   comments: ServiceComment[];
   timeline: TimelineActivity[];

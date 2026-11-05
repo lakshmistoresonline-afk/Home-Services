@@ -15,9 +15,23 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/auth';
 import { useTheme } from '@/src/theme';
-import { THRISSUR_WARDS } from '@/src/data/wards';
 import { showToast } from '@/src/components/Toast';
 import { PickerSheet } from '@/src/components/PickerSheet';
+
+const KERALA_TALUK_OPTIONS = [
+  'Thrissur',
+  'Chavakkad',
+  'Kodungallur',
+  'Mukundapuram',
+  'Chalakudy',
+  'Talappilly',
+  'Kunnamkulam',
+  'Aluva',
+  'Kochi',
+  'Kanayannur',
+  'Kozhikode',
+  'Thiruvananthapuram'
+];
 
 export default function RegisterScreen() {
   const { register } = useAuth();
@@ -29,12 +43,10 @@ export default function RegisterScreen() {
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [ward, setWard] = useState('');
-  const [showWard, setShowWard] = useState(false);
+  const [taluk, setTaluk] = useState('Thrissur');
+  const [showTaluk, setShowTaluk] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
-
-  const wardOptions = THRISSUR_WARDS.map(w => `${w.wardNumber} - ${w.name}`);
 
   const onSubmit = async () => {
     if (!name.trim() || name.trim().length < 3) return showToast('Enter your full name (min 3 chars)', 'error');
@@ -49,12 +61,11 @@ export default function RegisterScreen() {
     if (password.length < 6) return showToast('Password min 6 characters', 'error');
     if (password !== confirmPassword) return showToast('Passwords do not match', 'error');
 
-    if (!ward) return showToast('Please select your ward', 'error');
+    if (!taluk) return showToast('Please select your Taluk', 'error');
 
     setBusy(true);
     try {
-      const selectedWardName = ward.includes(' - ') ? ward.split(' - ')[1] : ward;
-      await register({ full_name: name.trim(), email: emailNorm, mobile, password, wardName: selectedWardName });
+      await register({ full_name: name.trim(), email: emailNorm, mobile, password, taluk, district: 'Thrissur' });
       showToast('Account created!', 'success');
       router.replace('/(tabs)/home');
     } catch (e: any) {
@@ -123,15 +134,15 @@ export default function RegisterScreen() {
             />
           </FormField>
 
-          <FormField label="WARD SELECTION *">
+          <FormField label="TALUK SELECTION *">
             <TouchableOpacity
-              testID="ward-picker"
-              onPress={() => setShowWard(true)}
+              testID="taluk-picker"
+              onPress={() => setShowTaluk(true)}
               style={[styles.selector, { backgroundColor: colors.surface, borderColor: colors.border }]}
               activeOpacity={0.7}
             >
-              <Text style={{ color: ward ? colors.text : colors.textSecondary, fontSize: 16 }}>
-                {ward || 'Select your ward'}
+              <Text style={{ color: taluk ? colors.text : colors.textSecondary, fontSize: 16 }}>
+                {taluk || 'Select your Taluk'}
               </Text>
               <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -194,13 +205,13 @@ export default function RegisterScreen() {
       </KeyboardAvoidingView>
 
       <PickerSheet
-        visible={showWard}
-        title="Select Ward"
-        options={wardOptions}
-        value={ward}
-        onSelect={setWard}
-        onClose={() => setShowWard(false)}
-        testIDPrefix="ward"
+        visible={showTaluk}
+        title="Select Taluk"
+        options={KERALA_TALUK_OPTIONS}
+        value={taluk}
+        onSelect={setTaluk}
+        onClose={() => setShowTaluk(false)}
+        testIDPrefix="taluk"
       />
     </SafeAreaView>
   );
