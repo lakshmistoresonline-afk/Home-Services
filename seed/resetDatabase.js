@@ -1,32 +1,35 @@
 const { auth, db, projectId } = require("./firebase-utils");
 
 async function deleteAllCollections() {
-    console.log("\n[1/2] CLEARING FIRESTORE COLLECTIONS...");
-    const collections = [
-        'serviceRequests', 'complaints', 'users', 'departments',
-        'taluks', 'wards', 'complaintCategories', 'timeline',
-        'attachments', 'comments', 'notifications', 'auditLogs',
-        'roles', 'permissions', 'slaRules', 'notificationTemplates',
-        'dashboardConfigurations', 'reportConfigurations'
-    ];
+    console.log("\n[1/2] DYNAMICALLY DISCOVERING & WIPING ALL FIRESTORE COLLECTIONS...");
+    try {
+        const collections = await db.listCollections();
+        console.log(`Found ${collections.length} collections in Firestore project '${projectId}'.`);
 
-    for (const col of collections) {
-        try {
-            const snap = await db.collection(col).get();
-            if (!snap.empty) {
-                const batch = db.batch();
-                snap.docs.forEach(doc => batch.delete(doc.ref));
-                await batch.commit();
-                console.log(`  ✓ Cleared collection: ${col} (${snap.size} docs)`);
+        for (const colRef of collections) {
+            const colName = colRef.id;
+            try {
+                const snap = await colRef.get();
+                if (!snap.empty) {
+                    const batch = db.batch();
+                    snap.docs.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    console.log(`  ✓ Wiped collection: ${colName} (${snap.size} docs)`);
+                } else {
+                    console.log(`  • Empty collection cleared: ${colName}`);
+                }
+            } catch (e) {
+                console.warn(`  ! Could not clear collection ${colName}:`, e.message);
             }
-        } catch (e) {
-            console.warn(`  ! Could not clear ${col}:`, e.message);
         }
+    } catch (e) {
+        console.error("  ❌ Failed to list collections:", e.message);
+        throw e;
     }
 }
 
 async function deleteAllUsers() {
-    console.log("\n[2/2] DELETING AUTHENTICATED USERS...");
+    console.log("\n[2/2] DELETING ALL AUTHENTICATED USERS...");
     let totalDeleted = 0;
     try {
         let pageToken;
@@ -51,7 +54,7 @@ async function deleteAllUsers() {
 async function runReset() {
     const start = Date.now();
     console.log("=========================================================");
-    console.log(" FIREBASE ADMIN SDK SYSTEM PURGE");
+    console.log(" FIREBASE ADMIN SDK DYNAMIC FIRESTORE PURGE");
     console.log(` PROJECT: ${projectId}`);
     console.log("=========================================================");
 
