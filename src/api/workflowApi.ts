@@ -1,6 +1,6 @@
 import { collection, query, orderBy, getDocs, updateDoc, doc, serverTimestamp, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/src/config/firebase";
-import { type ComplaintStatusRecord, type User, type Complaint } from "./client";
+import { type ServiceStatusRecord, type User, type ServiceRequest } from "./client";
 
 export const WORKFLOW_MAP: Record<string, string[]> = {
   'Submitted': ['Assigned', 'Cancelled'],
@@ -14,61 +14,61 @@ export const WORKFLOW_MAP: Record<string, string[]> = {
   'Reopened': ['Assigned', 'Cancelled'],
 };
 
-export const canAssign = (user: User, complaint: Complaint): boolean => {
+export const canAssign = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
-  if (user.role === 'ward_admin' && user.wardNumber === complaint.wardNumber) return true;
+  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk) return true;
   return false;
 };
 
-export const canCancel = (user: User, complaint: Complaint): boolean => {
+export const canCancel = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'citizen' && complaint.citizenId === user.uid && complaint.status === 'Submitted') return true;
   return false;
 };
 
-export const canAcceptOrReject = (user: User, complaint: Complaint): boolean => {
+export const canAcceptOrReject = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'staff' && complaint.assignedStaffId === user.uid && complaint.status === 'Assigned') return true;
   return false;
 };
 
-export const canUpdateProgress = (user: User, complaint: Complaint): boolean => {
+export const canUpdateProgress = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'staff' && complaint.assignedStaffId === user.uid && ['Accepted', 'In Progress'].includes(complaint.status)) return true;
   return false;
 };
 
-export const canResolve = (user: User, complaint: Complaint): boolean => {
+export const canResolve = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'staff' && complaint.assignedStaffId === user.uid && complaint.status === 'In Progress') return true;
   return false;
 };
 
-export const canClose = (user: User, complaint: Complaint): boolean => {
+export const canClose = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
-  if (user.role === 'ward_admin' && user.wardNumber === complaint.wardNumber && complaint.status === 'Resolved') return true;
+  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk && complaint.status === 'Resolved') return true;
   return false;
 };
 
-export const canReopen = (user: User, complaint: Complaint): boolean => {
+export const canReopen = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'citizen' && complaint.citizenId === user.uid && complaint.status === 'Resolved') return true;
-  if (user.role === 'ward_admin' && user.wardNumber === complaint.wardNumber && complaint.status === 'Resolved') return true;
+  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk && complaint.status === 'Resolved') return true;
   return false;
 };
 
-export const canComment = (user: User, complaint: Complaint): boolean => {
+export const canComment = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'citizen' && complaint.citizenId === user.uid) return true;
-  if (user.role === 'ward_admin' && user.wardNumber === complaint.wardNumber) return true;
+  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk) return true;
   if (user.role === 'staff' && complaint.assignedStaffId === user.uid) return true;
   return false;
 };
@@ -85,31 +85,31 @@ export const isFinalStatus = (status: string): boolean => {
   return getNextStatuses(status).length === 0;
 };
 
-export const listStatuses = async (): Promise<ComplaintStatusRecord[]> => {
+export const listStatuses = async (): Promise<ServiceStatusRecord[]> => {
   try {
-    const q = query(collection(db, "complaintStatuses"), orderBy("displayOrder", "asc"));
+    const q = query(collection(db, "serviceStatuses"), orderBy("displayOrder", "asc"));
     const snap = await getDocs(q);
     if (snap.empty) return [];
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ComplaintStatusRecord));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ServiceStatusRecord));
   } catch (e) {
     console.error('Failed to list statuses:', e);
     return [];
   }
 };
 
-export const addStatusRecord = async (data: Omit<ComplaintStatusRecord, 'id'>) => {
-  return await addDoc(collection(db, "complaintStatuses"), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+export const addStatusRecord = async (data: Omit<ServiceStatusRecord, 'id'>) => {
+  return await addDoc(collection(db, "serviceStatuses"), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
 };
 
-export const updateStatusRecord = async (id: string, data: Partial<ComplaintStatusRecord>) => {
-  return await updateDoc(doc(db, "complaintStatuses", id), { ...data, updatedAt: serverTimestamp() });
+export const updateStatusRecord = async (id: string, data: Partial<ServiceStatusRecord>) => {
+  return await updateDoc(doc(db, "serviceStatuses", id), { ...data, updatedAt: serverTimestamp() });
 };
 
 export const deleteStatusRecord = async (id: string) => {
-  return await deleteDoc(doc(db, "complaintStatuses", id));
+  return await deleteDoc(doc(db, "serviceStatuses", id));
 };
 
-export const getAllowedTransitions = (user: User, complaint: Complaint): string[] => {
+export const getAllowedTransitions = (user: User, complaint: ServiceRequest): string[] => {
   if (user.role === 'readonly_super_admin') return [];
 
   if (user.role === 'super_admin') {

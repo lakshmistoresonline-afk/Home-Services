@@ -23,12 +23,8 @@ const FALLBACK_CATEGORIES: ComplaintCategory[] = [
 
 export const listCategories = async (): Promise<ComplaintCategory[]> => {
   try {
-    let q = query(collection(db, "serviceCategories"), orderBy("displayOrder", "asc"));
-    let snap = await getDocs(q);
-    if (snap.empty) {
-      q = query(collection(db, "complaintCategories"), orderBy("displayOrder", "asc"));
-      snap = await getDocs(q);
-    }
+    const q = query(collection(db, "serviceCategories"), orderBy("displayOrder", "asc"));
+    const snap = await getDocs(q);
     if (snap.empty) return FALLBACK_CATEGORIES;
     const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as ComplaintCategory));
     const filtered = list.filter(c => c.isActive !== false);
