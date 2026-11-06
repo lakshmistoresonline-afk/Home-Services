@@ -211,6 +211,31 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
     }
   }
 
+  // 3. Fallback sync for local drafts or seed entries: automatically write to Firestore under key cid
+  const storedList = getStoredLocalRequests();
+  const localMatch = storedList.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid)
+    || DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
+
+  if (localMatch) {
+    try {
+      const docData: any = {
+        ...localMatch,
+        complaint_id: localMatch.complaint_id || cid,
+        request_id: localMatch.request_id || cid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+      delete docData.createdAtDate;
+      delete docData.updatedAtDate;
+      await setDoc(doc(db, "serviceRequests", cid), docData);
+
+      const createdDoc = await getDoc(doc(db, "serviceRequests", cid));
+      if (createdDoc.exists()) return createdDoc as any;
+    } catch (err) {
+      console.warn("Auto-syncing local request to Firestore notice:", err);
+    }
+  }
+
   throw new Error("Service request not found or access denied");
 };
 
