@@ -137,17 +137,17 @@ export const assignComplaint = async (cid: string, staff_id: string | null, rema
   if (staff_id) {
     staff = await getProfile(staff_id);
     if (staff && !isStaffEligible(staff, cData)) {
-      throw new Error(`Staff member ${staff.fullName} is not eligible for this complaint (Ward/Department mismatch).`);
+      throw new Error(`Staff member ${staff.fullName} is not eligible for this service request (Department mismatch).`);
     }
   }
 
-  if (profile.role === 'ward_admin') {
-    if (cData.wardNumber !== profile.wardNumber) {
-      throw new Error("Unauthorized ward access");
+  if (profile.role === 'ward_admin' || profile.role === 'taluk_admin') {
+    if (profile.taluk && cData.taluk && profile.taluk.trim().toLowerCase() !== cData.taluk.trim().toLowerCase()) {
+      throw new Error("Unauthorized Taluk jurisdiction access");
     }
   }
 
-  const activityType: TimelineActivityType = staff_id ? (cData.assignedStaffId ? 'COMPLAINT_REASSIGNED' : 'COMPLAINT_ASSIGNED') : 'STAFF_CHANGED';
+  const activityType: TimelineActivityType = staff_id ? (cData.assignedStaffId ? 'SERVICE_REQUEST_ASSIGNED' : 'SERVICE_REQUEST_ASSIGNED') : 'STAFF_CHANGED';
   const activity = createActivity({
     type: activityType,
     user: profile,
@@ -163,11 +163,12 @@ export const assignComplaint = async (cid: string, staff_id: string | null, rema
     staff,
     staff_id ? 'Assigned' : 'Submitted',
     activity,
-    profile
+    profile,
+    cDoc.id
   );
 
-  const d = await getDocs(query(collection(db, "complaints"), where("complaint_id", "==", cid), limit(1)));
-  return mapDoc<Complaint>(d.docs[0]);
+  const docSnap = await findComplaintSnapshot(cid);
+  return mapDoc<Complaint>(docSnap);
 };
 
 export const requestReassignment = async (cid: string, reason: string) => {

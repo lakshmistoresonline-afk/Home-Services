@@ -156,20 +156,28 @@ export const commitAssignment = async (
   let docId = providedDocId;
 
   if (!docId) {
-    let q = query(
-      collection(db, "complaints"),
-      where("complaint_id", "==", complaintId),
-      limit(1)
-    );
+    // 1. Try direct doc lookup by ID
+    try {
+      const directDoc = await getDoc(doc(db, "serviceRequests", complaintId));
+      if (directDoc.exists()) docId = directDoc.id;
+    } catch (e) { }
 
-    // If actor is a citizen, we MUST add the owner filter to satisfy security rules
-    if (actor.role === 'citizen') {
-      q = query(q, where("citizenId", "==", actor.uid));
+    if (!docId) {
+      let q = query(
+        collection(db, "serviceRequests"),
+        where("complaint_id", "==", complaintId),
+        limit(1)
+      );
+
+      // If actor is a citizen, we MUST add the owner filter to satisfy security rules
+      if (actor.role === 'citizen') {
+        q = query(collection(db, "serviceRequests"), where("citizenId", "==", actor.uid), where("complaint_id", "==", complaintId), limit(1));
+      }
+
+      const snap = await getDocs(q);
+      if (snap.empty) throw new Error("Service request not found or access denied");
+      docId = snap.docs[0].id;
     }
-
-    const snap = await getDocs(q);
-    if (snap.empty) throw new Error("Complaint not found or access denied");
-    docId = snap.docs[0].id;
   }
 
   const historyEntry: AssignmentEntry = {
@@ -206,12 +214,12 @@ export const commitAssignment = async (
     });
   }
 
-  await updateDoc(doc(db, "complaints", docId), updates);
+  await updateDoc(doc(db, "serviceRequests", docId!), updates);
 
   // Audit Log
   await logAction({
-    action: assignedStaff ? "COMPLAINT_ASSIGNED" : "COMPLAINT_UNASSIGNED",
-    entityType: "complaint",
+    action: assignedStaff ? "SERVICE_REQUEST_ASSIGNED" : "SERVICE_REQUEST_UNASSIGNED",
+    entityType: "service_request",
     entityId: complaintId,
     changes: { prev: complaintData.assignedStaffName, next: assignedStaff?.fullName || null },
   });
