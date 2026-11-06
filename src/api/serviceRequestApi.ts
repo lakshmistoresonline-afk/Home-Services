@@ -200,17 +200,15 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
   } catch (e) { }
 
   // 2. Query by complaint_id or request_id
-  const queries = [
-    getDocs(query(collection(db, "serviceRequests"), where("complaint_id", "==", cid), limit(1))).catch(() => null),
-    getDocs(query(collection(db, "serviceRequests"), where("request_id", "==", cid), limit(1))).catch(() => null),
-  ];
+  try {
+    const q1 = await getDocs(query(collection(db, "serviceRequests"), where("complaint_id", "==", cid), limit(1)));
+    if (!q1.empty) return q1.docs[0];
+  } catch (e) { }
 
-  const results = await Promise.all(queries);
-  for (const snap of results) {
-    if (snap && !snap.empty) {
-      return snap.docs[0];
-    }
-  }
+  try {
+    const q2 = await getDocs(query(collection(db, "serviceRequests"), where("request_id", "==", cid), limit(1)));
+    if (!q2.empty) return q2.docs[0];
+  } catch (e) { }
 
   // 3. Fallback sync for local drafts or seed entries: automatically write to Firestore under key cid
   const storedList = getStoredLocalRequests();
@@ -218,22 +216,45 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
     || DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
 
   if (localMatch) {
-    try {
-      const docData: any = {
-        ...localMatch,
-        complaint_id: localMatch.complaint_id || cid,
-        request_id: localMatch.request_id || cid,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-      delete docData.createdAtDate;
-      delete docData.updatedAtDate;
-      await setDoc(doc(db, "serviceRequests", cid), docData);
+    const sanitizedDoc: any = {
+      complaint_id: localMatch.complaint_id || cid,
+      request_id: localMatch.request_id || cid,
+      citizenId: localMatch.citizenId || auth.currentUser.uid,
+      citizenName: localMatch.citizenName || 'Customer',
+      district: localMatch.district || 'Thrissur',
+      taluk: localMatch.taluk || 'Thrissur',
+      departmentId: localMatch.departmentId || 'general',
+      departmentName: localMatch.departmentName || 'General',
+      categoryId: localMatch.categoryId || 'gen_inq',
+      categoryName: localMatch.categoryName || 'General Inquiry',
+      title: localMatch.title || 'Service Request',
+      description: localMatch.description || '',
+      status: localMatch.status || 'Submitted',
+      photos: localMatch.photos || [],
+      attachments: localMatch.attachments || [],
+      assignedStaffId: localMatch.assignedStaffId || null,
+      assignedStaffName: localMatch.assignedStaffName || null,
+      assignedDepartment: localMatch.assignedDepartment || null,
+      assignedAt: localMatch.assignedAt || null,
+      assignedBy: localMatch.assignedBy || null,
+      assignedByName: localMatch.assignedByName || null,
+      assignmentHistory: localMatch.assignmentHistory || [],
+      remarks: localMatch.remarks || null,
+      resolvedAt: localMatch.resolvedAt || null,
+      resolutionDuration: localMatch.resolutionDuration || null,
+      history: localMatch.history || [],
+      comments: localMatch.comments || [],
+      timeline: localMatch.timeline || [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
 
+    try {
+      await setDoc(doc(db, "serviceRequests", cid), sanitizedDoc);
       const createdDoc = await getDoc(doc(db, "serviceRequests", cid));
       if (createdDoc.exists()) return createdDoc as any;
-    } catch (err) {
-      console.warn("Auto-syncing local request to Firestore notice:", err);
+    } catch (err: any) {
+      console.warn("Auto-syncing local request to Firestore notice:", err?.message || err);
     }
   }
 
@@ -452,6 +473,13 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 };
 
 export const getServiceRequest = async (cid: string): Promise<ServiceRequest> => {
+  try {
+    const docSnap = await findServiceRequestSnapshot(cid);
+    if (docSnap && docSnap.exists()) {
+      return mapDoc<ServiceRequest>(docSnap);
+    }
+  } catch (e) { }
+
   const storedList = getStoredLocalRequests();
   const localMatch = storedList.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
   if (localMatch) return localMatch;
@@ -459,8 +487,7 @@ export const getServiceRequest = async (cid: string): Promise<ServiceRequest> =>
   const seedMatch = DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
   if (seedMatch) return seedMatch;
 
-  const docSnap = await findServiceRequestSnapshot(cid);
-  return mapDoc<ServiceRequest>(docSnap);
+  throw new Error("Service request not found or access denied");
 };
 
 export const listComplaints = listServiceRequests;
