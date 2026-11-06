@@ -216,45 +216,40 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
     || DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
 
   if (localMatch) {
-    const sanitizedDoc: any = {
-      complaint_id: localMatch.complaint_id || cid,
-      request_id: localMatch.request_id || cid,
-      citizenId: localMatch.citizenId || auth.currentUser.uid,
-      citizenName: localMatch.citizenName || 'Customer',
-      district: localMatch.district || 'Thrissur',
-      taluk: localMatch.taluk || 'Thrissur',
-      departmentId: localMatch.departmentId || 'general',
-      departmentName: localMatch.departmentName || 'General',
-      categoryId: localMatch.categoryId || 'gen_inq',
-      categoryName: localMatch.categoryName || 'General Inquiry',
-      title: localMatch.title || 'Service Request',
-      description: localMatch.description || '',
-      status: localMatch.status || 'Submitted',
-      photos: localMatch.photos || [],
-      attachments: localMatch.attachments || [],
-      assignedStaffId: localMatch.assignedStaffId || null,
-      assignedStaffName: localMatch.assignedStaffName || null,
-      assignedDepartment: localMatch.assignedDepartment || null,
-      assignedAt: localMatch.assignedAt || null,
-      assignedBy: localMatch.assignedBy || null,
-      assignedByName: localMatch.assignedByName || null,
-      assignmentHistory: localMatch.assignmentHistory || [],
-      remarks: localMatch.remarks || null,
-      resolvedAt: localMatch.resolvedAt || null,
-      resolutionDuration: localMatch.resolutionDuration || null,
-      history: localMatch.history || [],
-      comments: localMatch.comments || [],
-      timeline: localMatch.timeline || [],
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+    const cleanObject = (obj: any): any => {
+      if (obj === null || obj === undefined) return null;
+      if (typeof obj !== 'object') return obj;
+      if (obj instanceof Date) return obj.toISOString();
+      if (Array.isArray(obj)) return obj.map(cleanObject);
+      const res: any = {};
+      for (const key of Object.keys(obj)) {
+        if (key === 'createdAtDate' || key === 'updatedAtDate') continue;
+        const val = obj[key];
+        if (val === undefined) {
+          res[key] = null;
+        } else if (val && typeof val === 'object' && !(val instanceof Date)) {
+          res[key] = cleanObject(val);
+        } else if (val instanceof Date) {
+          res[key] = val.toISOString();
+        } else {
+          res[key] = val;
+        }
+      }
+      return res;
     };
+
+    const sanitizedDoc = cleanObject(localMatch);
+    sanitizedDoc.complaint_id = sanitizedDoc.complaint_id || cid;
+    sanitizedDoc.request_id = sanitizedDoc.request_id || cid;
+    sanitizedDoc.createdAt = serverTimestamp();
+    sanitizedDoc.updatedAt = serverTimestamp();
 
     try {
       await setDoc(doc(db, "serviceRequests", cid), sanitizedDoc);
       const createdDoc = await getDoc(doc(db, "serviceRequests", cid));
       if (createdDoc.exists()) return createdDoc as any;
     } catch (err: any) {
-      console.warn("Auto-syncing local request to Firestore notice:", err?.message || err);
+      console.error("Auto-syncing local request to Firestore failed:", err?.message || err);
     }
   }
 

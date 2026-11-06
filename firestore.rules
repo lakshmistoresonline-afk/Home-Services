@@ -3,16 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Core Authorization Helpers ---
-
     function isAuthenticated() {
       return request.auth != null;
-    }
-
-    function isEmployee() {
-      return isAuthenticated() &&
-             request.auth.token.email != null &&
-             request.auth.token.email.matches('.*\\.gov\\.in$');
     }
 
     function actorPath() {
@@ -28,60 +20,35 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() { return actorExists() && actorData().role == 'super_admin'; }
-    function isReadOnlyAdmin() { return actorExists() && actorData().role == 'readonly_super_admin'; }
-    function isTalukAdmin() { return actorExists() && actorData().role == 'taluk_admin'; }
-    function isSuperLevel() { return isSuperAdmin() || isReadOnlyAdmin(); }
 
-    // --- Master Data & Configurations (Viewable by authenticated users, writable by Super Admin) ---
+    // --- Master Data & Catalog (Public Read for browsing, Write for Auth/SuperAdmin) ---
 
-    match /roles/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /permissions/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /taluks/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /departments/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /serviceCategories/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /serviceStatuses/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /servicePriorities/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /dashboardConfigurations/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /reportConfigurations/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /notificationTemplates/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /metadata/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /settings/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /roles/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /permissions/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /taluks/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /departments/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /serviceCategories/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /serviceStatuses/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /servicePriorities/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /dashboardConfigurations/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /reportConfigurations/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /notificationTemplates/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /metadata/{id} { allow read: if true; allow write: if isAuthenticated(); }
+    match /settings/{id} { allow read: if true; allow write: if isAuthenticated(); }
 
     // --- Functional Collections ---
 
-    // 1. Users
-    match /users/{uid} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null;
-    }
+    match /users/{uid} { allow read, write: if true; }
+    match /serviceRequests/{id} { allow read, write: if isAuthenticated(); }
+    match /notifications/{id} { allow read, write: if isAuthenticated(); }
+    match /comments/{id} { allow read, write: if isAuthenticated(); }
+    match /timeline/{id} { allow read, write: if isAuthenticated(); }
+    match /attachments/{id} { allow read, write: if isAuthenticated(); }
+    match /auditLogs/{id} { allow read, write: if isAuthenticated(); }
 
-    // 2. Service Requests
-    match /serviceRequests/{id} {
-      allow create, list, get, update: if isAuthenticated();
-      allow delete: if isSuperAdmin();
-    }
-
-    // 3. Notifications & Activity
-    match /notifications/{id} {
+    // Fallback Catch-All Rule
+    match /{document=**} {
       allow read, write: if isAuthenticated();
-    }
-
-    match /comments/{id} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /timeline/{id} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /attachments/{id} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // 4. Audit Logs
-    match /auditLogs/{id} {
-      allow read, create: if isAuthenticated();
-      allow update, delete: if false;
     }
   }
 }
