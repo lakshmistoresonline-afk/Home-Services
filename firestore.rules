@@ -32,17 +32,18 @@ service cloud.firestore {
     function isTalukAdmin() { return actorExists() && actorData().role == 'taluk_admin'; }
     function isSuperLevel() { return isSuperAdmin() || isReadOnlyAdmin(); }
 
-    // --- Master Data (Viewable publicly for catalog browsing, writable only by Super Admin) ---
+    // --- Master Data & Configurations (Viewable by authenticated users, writable by Super Admin) ---
 
     match /roles/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /permissions/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /taluks/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /departments/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /complaintCategories/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /serviceCategories/{id} { allow read: if true; allow write: if isSuperAdmin(); }
-    match /complaintStatuses/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /serviceStatuses/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /servicePriorities/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /dashboardConfigurations/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /reportConfigurations/{id} { allow read: if true; allow write: if isSuperAdmin(); }
+    match /notificationTemplates/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /metadata/{id} { allow read: if true; allow write: if isSuperAdmin(); }
     match /settings/{id} { allow read: if true; allow write: if isSuperAdmin(); }
 
@@ -60,8 +61,20 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
-    // 3. Notifications
+    // 3. Notifications & Activity
     match /notifications/{id} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /comments/{id} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /timeline/{id} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /attachments/{id} {
       allow read, write: if isAuthenticated();
     }
 

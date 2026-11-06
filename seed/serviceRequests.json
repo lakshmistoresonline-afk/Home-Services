@@ -1,6 +1,7 @@
 [
   {
-    "id": "SRV_001",
+    "id": "SRV-2026-001",
+    "complaint_id": "SRV-2026-001",
     "request_id": "SRV-2026-001",
     "citizenId": "citizen_01",
     "citizenName": "Rahul Nair",
@@ -20,7 +21,7 @@
     "createdAt": "2026-10-24T08:00:00Z",
     "timeline": [
       {
-        "id": "init-SRV_001",
+        "id": "init-SRV-2026-001",
         "type": "REQUEST_CREATED",
         "title": "Service Request Filed",
         "performedBy": "citizen_01",
@@ -28,11 +29,11 @@
         "performedByRole": "citizen",
         "timestamp": "2026-10-24T08:00:00Z"
       }
-    ],
-    "slaDueAt": "2026-10-25T08:00:00.000Z"
+    ]
   },
   {
-    "id": "SRV_002",
+    "id": "SRV-2026-002",
+    "complaint_id": "SRV-2026-002",
     "request_id": "SRV-2026-002",
     "citizenId": "citizen_02",
     "citizenName": "Anjali Menon",
@@ -46,7 +47,7 @@
     "description": "Need complete desilting, wall scrubbing, and chlorination for residential open well before monsoon.",
     "status": "Assigned",
     "assignedStaffId": "staff_01",
-    "assignedStaffName": "Rahul Electrician",
+    "assignedStaffName": "Rajesh AC & Electrical Expert",
     "price": 1999,
     "paymentStatus": "Paid Online",
     "scheduledTimeSlot": "02:00 PM - 04:00 PM",
@@ -54,7 +55,7 @@
     "createdAt": "2026-10-24T09:30:00Z",
     "timeline": [
       {
-        "id": "init-SRV_002",
+        "id": "init-SRV-2026-002",
         "type": "REQUEST_CREATED",
         "title": "Service Request Filed",
         "performedBy": "citizen_02",
@@ -63,20 +64,20 @@
         "timestamp": "2026-10-24T09:30:00Z"
       },
       {
-        "id": "assign-SRV_002",
+        "id": "assign-SRV-2026-002",
         "type": "REQUEST_ASSIGNED",
         "title": "Assigned by Taluk Admin",
         "performedBy": "taluk_admin_01",
         "performedByName": "Thrissur Taluk Admin",
         "performedByRole": "taluk_admin",
         "timestamp": "2026-10-24T10:00:00Z",
-        "newValue": "Rahul Electrician"
+        "newValue": "Rajesh AC & Electrical Expert"
       }
-    ],
-    "slaDueAt": "2026-10-25T09:30:00.000Z"
+    ]
   },
   {
-    "id": "SRV_003",
+    "id": "SRV-2026-003",
+    "complaint_id": "SRV-2026-003",
     "request_id": "SRV-2026-003",
     "citizenId": "citizen_03",
     "citizenName": "Deepak Kumar",
@@ -90,7 +91,7 @@
     "description": "Complete floor machine polishing, bathroom deep cleaning, and kitchen grease removal required.",
     "status": "In Progress",
     "assignedStaffId": "staff_02",
-    "assignedStaffName": "Arun Plumber",
+    "assignedStaffName": "Arun Master Plumber & Well Care",
     "price": 2499,
     "paymentStatus": "Paid Online",
     "scheduledTimeSlot": "11:00 AM - 02:00 PM",
@@ -98,7 +99,7 @@
     "createdAt": "2026-10-24T07:15:00Z",
     "timeline": [
       {
-        "id": "init-SRV_003",
+        "id": "init-SRV-2026-003",
         "type": "REQUEST_CREATED",
         "title": "Service Request Filed",
         "performedBy": "citizen_03",
@@ -106,7 +107,6 @@
         "performedByRole": "citizen",
         "timestamp": "2026-10-24T07:15:00Z"
       }
-    ],
-    "slaDueAt": "2026-10-25T07:15:00.000Z"
+    ]
   }
 ]
