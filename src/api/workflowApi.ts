@@ -15,9 +15,13 @@ export const WORKFLOW_MAP: Record<string, string[]> = {
 };
 
 export const canAssign = (user: User, complaint: ServiceRequest): boolean => {
+  if (!user) return false;
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
-  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk) return true;
+  if (user.role === 'taluk_admin' || user.role === 'ward_admin') {
+    if (!user.taluk || !complaint?.taluk) return true;
+    return user.taluk.trim().toLowerCase() === complaint.taluk.trim().toLowerCase();
+  }
   return false;
 };
 
