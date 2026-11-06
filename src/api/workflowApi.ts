@@ -89,15 +89,27 @@ export const isFinalStatus = (status: string): boolean => {
   return getNextStatuses(status).length === 0;
 };
 
+const DEFAULT_STATUS_RECORDS: ServiceStatusRecord[] = [
+  { id: 'submitted', name: 'Submitted', color: '#3B82F6', isInitial: true, isFinal: false, displayOrder: 1 },
+  { id: 'assigned', name: 'Assigned', color: '#F59E0B', isInitial: false, isFinal: false, displayOrder: 2 },
+  { id: 'accepted', name: 'Accepted', color: '#8B5CF6', isInitial: false, isFinal: false, displayOrder: 3 },
+  { id: 'in_progress', name: 'In Progress', color: '#06B6D4', isInitial: false, isFinal: false, displayOrder: 4 },
+  { id: 'resolved', name: 'Resolved', color: '#10B981', isInitial: false, isFinal: false, displayOrder: 5 },
+  { id: 'closed', name: 'Closed', color: '#6B7280', isInitial: false, isFinal: true, displayOrder: 6 },
+  { id: 'cancelled', name: 'Cancelled', color: '#EF4444', isInitial: false, isFinal: true, displayOrder: 7 },
+  { id: 'rejected', name: 'Rejected', color: '#DC2626', isInitial: false, isFinal: false, displayOrder: 8 },
+  { id: 'reopened', name: 'Reopened', color: '#EC4899', isInitial: false, isFinal: false, displayOrder: 9 },
+];
+
 export const listStatuses = async (): Promise<ServiceStatusRecord[]> => {
   try {
-    const q = query(collection(db, "serviceStatuses"), orderBy("displayOrder", "asc"));
-    const snap = await getDocs(q);
-    if (snap.empty) return [];
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ServiceStatusRecord));
+    const q = query(collection(db, "serviceStatuses"));
+    const snap = await getDocs(q).catch(() => null);
+    if (!snap || snap.empty) return DEFAULT_STATUS_RECORDS;
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() } as ServiceStatusRecord));
+    return items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   } catch (e) {
-    console.error('Failed to list statuses:', e);
-    return [];
+    return DEFAULT_STATUS_RECORDS;
   }
 };
 
