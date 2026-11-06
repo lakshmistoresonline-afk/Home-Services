@@ -193,13 +193,13 @@ const saveStoredLocalRequest = (req: ServiceRequest) => {
 export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocumentSnapshot> => {
   if (!auth.currentUser) throw new Error("Authentication required");
 
-  // 1. Try direct document read by ID
+  // 1. Direct document lookup by ID in Firestore
   try {
     const directDoc = await getDoc(doc(db, "serviceRequests", cid));
     if (directDoc.exists()) return directDoc as any;
   } catch (e) { }
 
-  // 2. Query by complaint_id or request_id
+  // 2. Query by complaint_id or request_id in Firestore
   try {
     const q1 = await getDocs(query(collection(db, "serviceRequests"), where("complaint_id", "==", cid), limit(1)));
     if (!q1.empty) return q1.docs[0];
@@ -209,49 +209,6 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
     const q2 = await getDocs(query(collection(db, "serviceRequests"), where("request_id", "==", cid), limit(1)));
     if (!q2.empty) return q2.docs[0];
   } catch (e) { }
-
-  // 3. Fallback sync for local drafts or seed entries: automatically write to Firestore under key cid
-  const storedList = getStoredLocalRequests();
-  const localMatch = storedList.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid)
-    || DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
-
-  if (localMatch) {
-    const cleanObject = (obj: any): any => {
-      if (obj === null || obj === undefined) return null;
-      if (typeof obj !== 'object') return obj;
-      if (obj instanceof Date) return obj.toISOString();
-      if (Array.isArray(obj)) return obj.map(cleanObject);
-      const res: any = {};
-      for (const key of Object.keys(obj)) {
-        if (key === 'createdAtDate' || key === 'updatedAtDate') continue;
-        const val = obj[key];
-        if (val === undefined) {
-          res[key] = null;
-        } else if (val && typeof val === 'object' && !(val instanceof Date)) {
-          res[key] = cleanObject(val);
-        } else if (val instanceof Date) {
-          res[key] = val.toISOString();
-        } else {
-          res[key] = val;
-        }
-      }
-      return res;
-    };
-
-    const sanitizedDoc = cleanObject(localMatch);
-    sanitizedDoc.complaint_id = sanitizedDoc.complaint_id || cid;
-    sanitizedDoc.request_id = sanitizedDoc.request_id || cid;
-    sanitizedDoc.createdAt = serverTimestamp();
-    sanitizedDoc.updatedAt = serverTimestamp();
-
-    try {
-      await setDoc(doc(db, "serviceRequests", cid), sanitizedDoc);
-      const createdDoc = await getDoc(doc(db, "serviceRequests", cid));
-      if (createdDoc.exists()) return createdDoc as any;
-    } catch (err: any) {
-      console.error("Auto-syncing local request to Firestore failed:", err?.message || err);
-    }
-  }
 
   throw new Error("Service request not found or access denied");
 };
@@ -468,21 +425,8 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 };
 
 export const getServiceRequest = async (cid: string): Promise<ServiceRequest> => {
-  try {
-    const docSnap = await findServiceRequestSnapshot(cid);
-    if (docSnap && docSnap.exists()) {
-      return mapDoc<ServiceRequest>(docSnap);
-    }
-  } catch (e) { }
-
-  const storedList = getStoredLocalRequests();
-  const localMatch = storedList.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
-  if (localMatch) return localMatch;
-
-  const seedMatch = DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
-  if (seedMatch) return seedMatch;
-
-  throw new Error("Service request not found or access denied");
+  const docSnap = await findServiceRequestSnapshot(cid);
+  return mapDoc<ServiceRequest>(docSnap);
 };
 
 export const listComplaints = listServiceRequests;

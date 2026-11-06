@@ -108,5 +108,101 @@
         "timestamp": "2026-10-24T07:15:00Z"
       }
     ]
+  },
+  {
+    "id": "SRV-966270",
+    "complaint_id": "SRV-966270",
+    "request_id": "SRV-966270",
+    "citizenId": "citizen_01",
+    "citizenName": "Rahul Nair",
+    "district": "Thrissur",
+    "taluk": "Thrissur",
+    "departmentId": "electrical",
+    "departmentName": "Electrical Repair & Wiring",
+    "categoryId": "elec_wiring",
+    "categoryName": "Electrical Repair & Wiring",
+    "title": "TEST",
+    "description": "TEST",
+    "status": "Submitted",
+    "price": 499,
+    "paymentStatus": "Cash on Delivery",
+    "scheduledTimeSlot": "10:00 AM - 12:00 PM",
+    "address": "House No 24, Kuruppam Road, Thrissur",
+    "createdAt": "2026-11-05T11:56:00Z",
+    "timeline": [
+      {
+        "id": "init-SRV-966270",
+        "type": "REQUEST_CREATED",
+        "title": "Service Request Submitted",
+        "performedBy": "citizen_01",
+        "performedByName": "Rahul Nair",
+        "performedByRole": "citizen",
+        "timestamp": "2026-11-05T11:56:00Z"
+      }
+    ]
+  },
+  {
+    "id": "SRV-400278",
+    "complaint_id": "SRV-400278",
+    "request_id": "SRV-400278",
+    "citizenId": "citizen_01",
+    "citizenName": "Rahul Nair",
+    "district": "Thrissur",
+    "taluk": "Thrissur",
+    "departmentId": "general",
+    "departmentName": "General",
+    "categoryId": "gen_inq",
+    "categoryName": "General Inquiry",
+    "title": "SDSDS",
+    "description": "SDSDS",
+    "status": "Submitted",
+    "price": 350,
+    "paymentStatus": "Cash on Delivery",
+    "scheduledTimeSlot": "10:00 AM - 12:00 PM",
+    "address": "House No 24, Kuruppam Road, Thrissur",
+    "createdAt": "2026-11-05T12:00:00Z",
+    "timeline": [
+      {
+        "id": "init-SRV-400278",
+        "type": "REQUEST_CREATED",
+        "title": "Service Request Submitted",
+        "performedBy": "citizen_01",
+        "performedByName": "Rahul Nair",
+        "performedByRole": "citizen",
+        "timestamp": "2026-11-05T12:00:00Z"
+      }
+    ]
+  },
+  {
+    "id": "SRV-213545",
+    "complaint_id": "SRV-213545",
+    "request_id": "SRV-213545",
+    "citizenId": "citizen_01",
+    "citizenName": "Rahul Nair",
+    "district": "Thrissur",
+    "taluk": "Thrissur",
+    "departmentId": "general",
+    "departmentName": "General",
+    "categoryId": "gen_inq",
+    "categoryName": "General Inquiry",
+    "title": "test",
+    "description": "test",
+    "status": "Submitted",
+    "price": 350,
+    "paymentStatus": "Cash on Delivery",
+    "scheduledTimeSlot": "10:00 AM - 12:00 PM",
+    "address": "House No 24, Kuruppam Road, Thrissur",
+    "createdAt": "2026-11-05T12:05:00Z",
+    "timeline": [
+      {
+        "id": "init-SRV-213545",
+        "type": "REQUEST_CREATED",
+        "title": "Service Request Submitted",
+        "performedBy": "citizen_01",
+        "performedByName": "Rahul Nair",
+        "performedByRole": "citizen",
+        "timestamp": "2026-11-05T12:05:00Z"
+      }
+    ]
   }
 ]

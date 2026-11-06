@@ -2,53 +2,8 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    function actorPath() {
-      return /databases/$(database)/documents/users/$(request.auth.uid);
-    }
-
-    function actorData() {
-      return get(actorPath()).data;
-    }
-
-    function actorExists() {
-      return isAuthenticated() && exists(actorPath());
-    }
-
-    function isSuperAdmin() { return actorExists() && actorData().role == 'super_admin'; }
-
-    // --- Master Data & Catalog (Public Read for browsing, Write for Auth/SuperAdmin) ---
-
-    match /roles/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /permissions/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /taluks/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /departments/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /serviceCategories/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /serviceStatuses/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /servicePriorities/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /dashboardConfigurations/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /reportConfigurations/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /notificationTemplates/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /metadata/{id} { allow read: if true; allow write: if isAuthenticated(); }
-    match /settings/{id} { allow read: if true; allow write: if isAuthenticated(); }
-
-    // --- Functional Collections ---
-
-    match /users/{uid} { allow read, write: if true; }
-    match /serviceRequests/{id} { allow read, write: if isAuthenticated(); }
-    match /notifications/{id} { allow read, write: if isAuthenticated(); }
-    match /comments/{id} { allow read, write: if isAuthenticated(); }
-    match /timeline/{id} { allow read, write: if isAuthenticated(); }
-    match /attachments/{id} { allow read, write: if isAuthenticated(); }
-    match /auditLogs/{id} { allow read, write: if isAuthenticated(); }
-
-    // Fallback Catch-All Rule
     match /{document=**} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if true;
     }
   }
 }
