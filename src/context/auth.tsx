@@ -62,22 +62,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return profile;
       }
 
-      // Offline session fallback profile
+      // Safe fallback profile when offline or profile document is creating
       const fbUser = auth.currentUser;
       if (fbUser) {
-        const isEmployee = fbUser.email?.endsWith('.gov.in');
-        const role = isEmployee
-          ? (fbUser.email?.includes('superadmin') ? 'super_admin' : 'taluk_admin')
-          : 'citizen';
-
         return {
           uid: fbUser.uid,
           email: fbUser.email || '',
           fullName: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
-          role,
+          role: 'citizen',
           district: 'Thrissur',
           taluk: 'Thrissur',
           isActive: true,
+          permissions: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         } as User;
