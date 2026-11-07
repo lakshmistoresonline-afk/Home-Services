@@ -275,10 +275,18 @@ export default function NewServiceRequestScreen() {
     }
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      goHome();
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} testID="new-service-back" style={styles.backBtn}>
+        <TouchableOpacity onPress={handleBack} testID="new-service-back" style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[typography.title.large, { color: colors.text, fontWeight: '800', flex: 1 }]}>Raise Service Request</Text>

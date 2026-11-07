@@ -345,13 +345,21 @@ export default function AdminDashboard() {
     ].filter(Boolean) as { key: string; label: string; clear: () => void }[];
   }, [status, department, assignedFilter]);
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/admin/super');
+    }
+  };
+
   if (!user && !loading) return <Redirect href="/(auth)/login" />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
       <View style={styles.header}>
         {isSuper && (
-          <TouchableOpacity onPress={() => router.back()} style={{ marginRight: spacing.md }}>
+          <TouchableOpacity onPress={handleBack} style={{ marginRight: spacing.md }}>
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
         )}

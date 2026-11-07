@@ -4,7 +4,7 @@ import type { PropsWithChildren } from "react";
 
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="en" style={{ height: "100%" }}>
+    <html lang="en" style={{ height: "100%" }} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -29,6 +29,7 @@ export default function Root({ children }: PropsWithChildren) {
         />
       </head>
       <body
+        suppressHydrationWarning
         style={{
           margin: 0,
           height: "100%",
