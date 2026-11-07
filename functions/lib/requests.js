@@ -55,7 +55,16 @@ exports.createServiceRequest = functions.https.onCall(async (data, context) => {
     if (!title || !description || !category) {
         throw new functions.https.HttpsError('invalid-argument', 'Title, description, and category are required.');
     }
-    const requestId = `SRV-${Math.floor(100000 + Math.random() * 900000)}`;
+    let requestId = `SRV-${Math.floor(100000 + Math.random() * 900000)}`;
+    let attempts = 0;
+    // Collision-safe document ID generation
+    while (attempts < 5) {
+        const existingSnap = await db.collection('serviceRequests').doc(requestId).get();
+        if (!existingSnap.exists)
+            break;
+        requestId = `SRV-${Math.floor(100000 + Math.random() * 900000)}`;
+        attempts++;
+    }
     const nowIso = new Date().toISOString();
     const docData = {
         complaint_id: requestId,
