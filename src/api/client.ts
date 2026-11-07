@@ -277,6 +277,9 @@ export type ServiceRequest = {
   assignedByName?: string | null;
   assignmentHistory?: AssignmentEntry[];
   remarks: string | null;
+  price?: number | null;
+  paymentMethod?: 'UPI_QR' | 'Cash' | null;
+  paymentStatus?: 'Pending' | 'Paid' | 'Cash on Delivery' | null;
   resolvedAt: any | null;
   resolutionDuration?: number | null;
   history: HistoryEntry[];

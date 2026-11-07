@@ -67,6 +67,10 @@ export default function ServiceRequestDetail() {
   const [remarks, setRemarks] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [resolveModalVisible, setResolveModalVisible] = useState(false);
+  const [resolvePrice, setResolvePrice] = useState('500');
+  const [paymentMethod, setPaymentMethod] = useState<'UPI_QR' | 'Cash'>('UPI_QR');
+
   const [comment, setComment] = useState('');
   const [postingComment, setPostingComment] = useState(false);
   const [timelineFilter, setTimelineFilter] = useState<string>('ALL');
@@ -157,10 +161,18 @@ export default function ServiceRequestDetail() {
 
   const setStatus = async (status: string) => {
     if (!item) return;
-    if (status === 'Cancelled' || status === 'Rejected' || status === 'Resolved') {
+    if (status === 'Cancelled' || status === 'Rejected') {
       setPendingWorkflowAction({ type: 'STATUS_CHANGE', status });
       setRemarks('');
       setRemarksModal(true);
+      return;
+    }
+
+    if (status === 'Resolved' || status === 'Completed') {
+      setResolvePrice(String(item.price || 500));
+      setPaymentMethod('UPI_QR');
+      setRemarks('');
+      setResolveModalVisible(true);
       return;
     }
 
@@ -174,6 +186,36 @@ export default function ServiceRequestDetail() {
       showToast(`Status updated to ${status}`, 'success');
     } catch (e: any) {
       showToast(e.message || 'Failed to update status', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const confirmResolveAndPay = async () => {
+    if (!item) return;
+    const numPrice = parseFloat(resolvePrice.replace(/[^0-9.]/g, '')) || 0;
+    if (numPrice <= 0) {
+      showToast('Please enter a valid amount', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const updated = await adminUpdateStatus(item.complaint_id, {
+        status: 'Resolved',
+        price: numPrice,
+        paymentMethod: paymentMethod,
+        paymentStatus: 'Paid',
+        remarks: remarks.trim() || `Resolved with ${paymentMethod === 'UPI_QR' ? 'UPI QR Code' : 'Cash'} payment of ₹${numPrice}`,
+      });
+      setItem(updated);
+      const transitions = workflowApi.getAllowedTransitions(user!, updated);
+      setAllowedNextStatuses(transitions);
+      setResolveModalVisible(false);
+      setStatusSheet(false);
+      showToast(`Service request resolved & payment recorded (₹${numPrice})`, 'success');
+    } catch (e: any) {
+      showToast(e.message || 'Failed to resolve service request', 'error');
     } finally {
       setSaving(false);
     }
@@ -817,6 +859,156 @@ export default function ServiceRequestDetail() {
               <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
                 <TouchableOpacity onPress={() => { setRemarksModal(false); setPendingWorkflowAction(null); }} style={[styles.modalBtn, { borderColor: colors.border, borderWidth: 1 }]}><Text style={{ fontWeight: '700', color: colors.text }}>Cancel</Text></TouchableOpacity>
                 <TouchableOpacity onPress={saveRemarks} disabled={saving} style={[styles.modalBtn, { backgroundColor: colors.primary }]}>{saving ? <ActivityIndicator color="#fff" /> : <Text style={{ fontWeight: '800', color: '#fff' }}>Confirm</Text>}</TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Resolve & Payment Modal */}
+      <Modal transparent visible={resolveModalVisible} animationType="fade" onRequestClose={() => setResolveModalVisible(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setResolveModalVisible(false)}>
+            <Pressable style={[styles.modalCard, { backgroundColor: colors.surface, maxWidth: 440, width: '92%' }]} onPress={(e) => e.stopPropagation()}>
+              <Text style={[styles.modalTitle, { color: colors.text, textAlign: 'center' }]}>Resolve & Payment</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 12, textAlign: 'center', marginTop: 4, marginBottom: 16 }}>
+                Enter the service charge and select payment mode to resolve this request.
+              </Text>
+
+              {/* Amount Input */}
+              <Text style={[styles.label, { color: colors.textSecondary }]}>SERVICE FEE / AMOUNT (₹)</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: colors.primary, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, marginTop: 6, backgroundColor: colors.background }}>
+                <Text style={{ fontSize: 20, fontWeight: '800', color: colors.primary, marginRight: 8 }}>₹</Text>
+                <TextInput
+                  value={resolvePrice}
+                  onChangeText={setResolvePrice}
+                  keyboardType="numeric"
+                  placeholder="500"
+                  placeholderTextColor={colors.textSecondary}
+                  style={{ flex: 1, fontSize: 18, fontWeight: '800', color: colors.text }}
+                />
+              </View>
+
+              {/* Payment Mode Selector - UPI Priority */}
+              <Text style={[styles.label, { color: colors.textSecondary, marginTop: 16 }]}>PAYMENT METHOD</Text>
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
+                <TouchableOpacity
+                  onPress={() => setPaymentMethod('UPI_QR')}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    paddingHorizontal: 8,
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: paymentMethod === 'UPI_QR' ? colors.primary : colors.border,
+                    backgroundColor: paymentMethod === 'UPI_QR' ? colors.primary + '10' : colors.surface,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justify: 'center',
+                    gap: 6
+                  }}
+                >
+                  <Ionicons name="qr-code" size={18} color={paymentMethod === 'UPI_QR' ? colors.primary : colors.textSecondary} />
+                  <Text style={{ color: paymentMethod === 'UPI_QR' ? colors.primary : colors.text, fontWeight: '800', fontSize: 13 }}>
+                    UPI / QR Code
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setPaymentMethod('Cash')}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    paddingHorizontal: 8,
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: paymentMethod === 'Cash' ? colors.primary : colors.border,
+                    backgroundColor: paymentMethod === 'Cash' ? colors.primary + '10' : colors.surface,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justify: 'center',
+                    gap: 6
+                  }}
+                >
+                  <Ionicons name="cash-outline" size={18} color={paymentMethod === 'Cash' ? colors.primary : colors.textSecondary} />
+                  <Text style={{ color: paymentMethod === 'Cash' ? colors.primary : colors.text, fontWeight: '800', fontSize: 13 }}>
+                    Cash Payment
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* UPI QR Code Display Frame */}
+              {paymentMethod === 'UPI_QR' ? (
+                <View style={{ marginTop: 16, alignItems: 'center', backgroundColor: '#F8FAFC', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: colors.border }}>
+                  {/* Merchant Header */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>S</Text>
+                    </View>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>Srinath Rajkiran</Text>
+                  </View>
+
+                  {/* QR Code Container */}
+                  <View style={{ width: 180, height: 180, backgroundColor: '#fff', borderRadius: 12, padding: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0' }}>
+                    <Image
+                      source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=srinathrajkiran007-2@okaxis&pn=Srinath%20Rajkiran&am=${resolvePrice || '500'}&cu=INR` }}
+                      style={{ width: 160, height: 160 }}
+                      resizeMode="contain"
+                    />
+                  </View>
+
+                  {/* UPI ID Info */}
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSecondary, marginTop: 10 }}>
+                    UPI ID: srinathrajkiran007-2@okaxis
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 2 }}>
+                    Scan to pay with any UPI app (GPay, PhonePe, Paytm, BHIM)
+                  </Text>
+
+                  {/* Amount Badge */}
+                  <View style={{ backgroundColor: colors.primary + '15', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginTop: 10 }}>
+                    <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>
+                      Payable Amount: ₹{resolvePrice || '0'}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={{ marginTop: 16, alignItems: 'center', backgroundColor: '#F8FAFC', padding: 20, borderRadius: 16, borderWidth: 1, borderColor: colors.border }}>
+                  <Ionicons name="cash" size={48} color="#10B981" />
+                  <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text, marginTop: 8 }}>Cash on Hand / Received</Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary, textAlign: 'center', marginTop: 4 }}>
+                    Confirm that ₹{resolvePrice || '0'} cash has been received directly from the customer.
+                  </Text>
+                </View>
+              )}
+
+              {/* Remarks Optional Input */}
+              <TextInput
+                value={remarks}
+                onChangeText={setRemarks}
+                placeholder="Resolution remarks / payment notes..."
+                placeholderTextColor={colors.textSecondary}
+                style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 10, marginTop: 16, color: colors.text, fontSize: 13 }}
+              />
+
+              {/* Buttons */}
+              <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+                <TouchableOpacity onPress={() => setResolveModalVisible(false)} style={[styles.modalBtn, { borderColor: colors.border, borderWidth: 1 }]}>
+                  <Text style={{ fontWeight: '700', color: colors.text }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={confirmResolveAndPay}
+                  disabled={saving}
+                  style={[styles.modalBtn, { backgroundColor: colors.primary, flex: 2 }]}
+                >
+                  {saving ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={{ fontWeight: '800', color: '#fff', fontSize: 13 }}>
+                      Confirm & Resolve (₹{resolvePrice || '0'})
+                    </Text>
+                  )}
+                </TouchableOpacity>
               </View>
             </Pressable>
           </Pressable>

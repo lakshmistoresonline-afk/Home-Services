@@ -173,7 +173,13 @@ export const assignComplaint = async (cid: string, staff_id: string | null, rema
 
 export const adminUpdateStatus = async (
   cid: string,
-  data: { status?: string; remarks?: string }
+  data: {
+    status?: string;
+    remarks?: string;
+    price?: number | null;
+    paymentMethod?: 'UPI_QR' | 'Cash' | null;
+    paymentStatus?: 'Pending' | 'Paid' | 'Cash on Delivery' | null;
+  }
 ): Promise<Complaint> => {
   const fbUser = auth.currentUser;
   if (!fbUser) throw new Error("Not authenticated");
@@ -189,7 +195,7 @@ export const adminUpdateStatus = async (
   const activity = createActivity({
     type: 'PROGRESS_UPDATED',
     user: profile,
-    title: `Status updated to ${newStatus}`,
+    title: `Status updated to ${newStatus}${data.paymentMethod ? ` (${data.paymentMethod} Payment)` : ''}`,
     remarks: remarks,
     oldValue: cData.status,
     newValue: newStatus,
@@ -201,6 +207,16 @@ export const adminUpdateStatus = async (
     timeline: arrayUnion(activity),
     updatedAt: serverTimestamp(),
   };
+
+  if (data.price !== undefined && data.price !== null) {
+    updateData.price = Number(data.price);
+  }
+  if (data.paymentMethod) {
+    updateData.paymentMethod = data.paymentMethod;
+  }
+  if (data.paymentStatus) {
+    updateData.paymentStatus = data.paymentStatus;
+  }
 
   if (newStatus === 'Resolved' || newStatus === 'Completed') {
     updateData.resolvedAt = new Date().toISOString();
