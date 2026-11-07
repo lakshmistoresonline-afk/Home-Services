@@ -425,8 +425,19 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
 };
 
 export const getServiceRequest = async (cid: string): Promise<ServiceRequest> => {
-  const docSnap = await findServiceRequestSnapshot(cid);
-  return mapDoc<ServiceRequest>(docSnap);
+  try {
+    const docSnap = await findServiceRequestSnapshot(cid);
+    return mapDoc<ServiceRequest>(docSnap);
+  } catch (e: any) {
+    const storedList = getStoredLocalRequests();
+    const localMatch = storedList.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
+    if (localMatch) return localMatch;
+
+    const seedMatch = DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
+    if (seedMatch) return seedMatch;
+
+    throw e;
+  }
 };
 
 export const listComplaints = listServiceRequests;
