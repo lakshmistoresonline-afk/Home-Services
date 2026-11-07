@@ -8,6 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "test:security": "node seed/runSecurityTests.js",
     "reset": "node seed/resetDatabase.js",
     "seed": "node seed/seedFirestore.js",
     "reset-and-seed": "npm run reset && npm run seed"
