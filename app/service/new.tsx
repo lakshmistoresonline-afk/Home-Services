@@ -18,6 +18,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { useTheme } from '@/src/theme';
 import { useAuth } from '@/src/context/auth';
 import { listCategories, listDepartments, uploadFile, createServiceRequest, type ComplaintCategory, type Department, type TimelineAttachment } from '@/src/api';
+import { uploadComplaintPhoto } from '@/src/api/storageService';
 import { showToast } from '@/src/components/Toast';
 import { PickerSheet } from '@/src/components/PickerSheet';
 import { AppInput } from '@/src/components/AppInput';
@@ -223,23 +224,33 @@ export default function NewServiceRequestScreen() {
     setBusy(true);
     try {
       const uploadedAttachments: TimelineAttachment[] = [];
+      const tempId = `TEMP_${user!.uid}_${Date.now()}`;
 
       for (let i = 0; i < pendingFiles.length; i++) {
         const file = pendingFiles[i];
-        if (!file.base64) {
-          console.warn(`File ${file.name} missing base64 data`);
-          continue;
+        let downloadUrl = '';
+
+        try {
+          // Upload to Firebase Cloud Storage
+          downloadUrl = await uploadComplaintPhoto(tempId, file.uri || `data:${file.type};base64,${file.base64}`, file.name);
+        } catch (storageErr) {
+          console.warn('Cloud Storage upload notice (fallback to inline data):', storageErr);
+          if (file.base64) {
+            downloadUrl = `data:${file.type};base64,${file.base64}`;
+          }
         }
 
-        uploadedAttachments.push({
-          id: `b64-${Date.now()}-${i}`,
-          filename: file.name,
-          url: `data:${file.type};base64,${file.base64}`,
-          size: file.base64.length,
-          contentType: file.type,
-          uploadedBy: user!.uid,
-          uploadedAt: new Date().toISOString(),
-        });
+        if (downloadUrl) {
+          uploadedAttachments.push({
+            id: `att-${Date.now()}-${i}`,
+            filename: file.name,
+            url: downloadUrl,
+            size: file.base64?.length || 1024,
+            contentType: file.type,
+            uploadedBy: user!.uid,
+            uploadedAt: new Date().toISOString(),
+          });
+        }
 
         setPendingFiles(prev => {
           const next = [...prev];
