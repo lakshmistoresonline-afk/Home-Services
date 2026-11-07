@@ -43,7 +43,7 @@ service firebase.storage {
           )
         )
       ) && request.resource.size < 5 * 1024 * 1024 // Max 5MB per file
-        && (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('application/pdf'));
+        && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
     }
 
     match /complaints/{complaintId}/{filename} {
