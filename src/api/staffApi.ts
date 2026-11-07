@@ -171,6 +171,57 @@ export const assignComplaint = async (cid: string, staff_id: string | null, rema
   return mapDoc<Complaint>(docSnap);
 };
 
+export const adminUpdateStatus = async (
+  cid: string,
+  data: { status?: string; remarks?: string }
+): Promise<Complaint> => {
+  const fbUser = auth.currentUser;
+  if (!fbUser) throw new Error("Not authenticated");
+  const profile = await getProfile(fbUser.uid);
+  if (!profile) throw new Error("Profile not found");
+
+  const cDoc = await findComplaintSnapshot(cid);
+  const cData = cDoc.data() as Complaint;
+
+  const newStatus = data.status || cData.status;
+  const remarks = data.remarks?.trim() || cData.remarks || null;
+
+  const activity = createActivity({
+    type: 'PROGRESS_UPDATED',
+    user: profile,
+    title: `Status updated to ${newStatus}`,
+    remarks: remarks,
+    oldValue: cData.status,
+    newValue: newStatus,
+  });
+
+  const updateData: any = {
+    status: newStatus,
+    remarks: remarks,
+    timeline: arrayUnion(activity),
+    updatedAt: serverTimestamp(),
+  };
+
+  if (newStatus === 'Resolved' || newStatus === 'Completed') {
+    updateData.resolvedAt = new Date().toISOString();
+  }
+
+  await updateDoc(doc(db, "serviceRequests", cDoc.id), updateData);
+  await logAction({
+    action: 'STATUS_UPDATED',
+    entityType: 'service_request',
+    entityId: cid,
+    changes: { prev: cData.status, next: newStatus }
+  });
+
+  const updatedDoc = await findComplaintSnapshot(cid);
+  return mapDoc<Complaint>(updatedDoc);
+};
+
+export const reopenComplaint = async (cid: string, remarks?: string): Promise<Complaint> => {
+  return adminUpdateStatus(cid, { status: 'In Progress', remarks: remarks || 'Service request reopened' });
+};
+
 export const requestReassignment = async (cid: string, reason: string) => {
   const fbUser = auth.currentUser;
   if (!fbUser) throw new Error("Not authenticated");

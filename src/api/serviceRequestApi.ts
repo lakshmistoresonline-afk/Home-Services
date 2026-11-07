@@ -154,12 +154,17 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
   try {
     const profile = await getProfile(user.uid).catch(() => null);
     const isCitizen = !profile?.role || profile?.role === 'citizen';
+    const isStaff = profile?.role === 'staff';
 
     let snaps: any[] = [];
     if (isCitizen) {
       const q1 = await getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", user.uid))).catch(() => null);
       const q2 = await getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", "citizen_01"))).catch(() => null);
       snaps = [q1, q2];
+    } else if (isStaff) {
+      // Staff view ONLY service requests assigned to them
+      const q1 = await getDocs(query(collection(db, "serviceRequests"), where("assignedStaffId", "==", user.uid))).catch(() => null);
+      snaps = [q1];
     } else {
       const q = await getDocs(query(collection(db, "serviceRequests"), limit(200))).catch(() => null);
       snaps = [q];
