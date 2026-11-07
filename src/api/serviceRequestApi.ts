@@ -191,7 +191,7 @@ const saveStoredLocalRequest = (req: ServiceRequest) => {
 };
 
 export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocumentSnapshot> => {
-  if (!auth.currentUser) throw new Error("Authentication required");
+  if (!auth.currentUser) throw new Error("Unauthorized access");
 
   // 1. Direct document lookup by ID in Firestore
   try {
@@ -210,7 +210,7 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
     if (!q2.empty) return q2.docs[0];
   } catch (e) { }
 
-  throw new Error("Service request not found or access denied");
+  throw new Error("Service request not found");
 };
 
 export const createServiceRequest = async (body: {
