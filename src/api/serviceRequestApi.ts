@@ -1,194 +1,18 @@
 import {
   collection,
   doc,
-  addDoc,
   setDoc,
   getDoc,
   getDocs,
-  updateDoc,
   query,
   where,
-  orderBy,
   limit,
   serverTimestamp,
-  increment,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db, auth } from "@/src/config/firebase";
 import { logAction } from "./auditApi";
-import { getProfile, findTalukAdmin, mapDoc, type ServiceRequest, type TimelineAttachment } from "./client";
-
-const STORAGE_KEY = 'hs_service_requests_v1';
-
-// Global In-Memory Cache (Survives all route navigations and state transitions instantly)
-const IN_MEMORY_REQUESTS_CACHE: ServiceRequest[] = [];
-
-const syncToMemoryCache = (req: ServiceRequest) => {
-  const key = req.complaint_id || req.request_id || req.id;
-  const existingIdx = IN_MEMORY_REQUESTS_CACHE.findIndex(
-    r => (r.complaint_id && r.complaint_id === key) || (r.request_id && r.request_id === key) || r.id === key
-  );
-  if (existingIdx >= 0) {
-    IN_MEMORY_REQUESTS_CACHE[existingIdx] = { ...IN_MEMORY_REQUESTS_CACHE[existingIdx], ...req };
-  } else {
-    IN_MEMORY_REQUESTS_CACHE.unshift(req);
-  }
-};
-
-const DEFAULT_SEED_REQUESTS: ServiceRequest[] = [
-  {
-    id: "SRV-2026-001",
-    complaint_id: "SRV-2026-001",
-    request_id: "SRV-2026-001",
-    citizenId: "citizen_01",
-    citizenName: "Rahul Nair",
-    district: "Thrissur",
-    taluk: "Thrissur",
-    departmentId: "appliance",
-    departmentName: "Appliance Repair",
-    categoryId: "app_ac",
-    categoryName: "AC Service & Repair",
-    title: "Split AC not cooling properly",
-    description: "The 1.5 ton split AC in the living room is blowing normal air. Needs gas check and general servicing.",
-    status: "Submitted",
-    photos: [],
-    attachments: [],
-    assignedStaffId: null,
-    assignedStaffName: null,
-    assignedDepartment: null,
-    assignedAt: null,
-    assignedBy: null,
-    assignedByName: null,
-    assignmentHistory: [],
-    remarks: null,
-    resolvedAt: null,
-    resolutionDuration: null,
-    history: [],
-    comments: [],
-    timeline: [
-      {
-        id: "init-SRV_001",
-        type: "REQUEST_CREATED",
-        title: "Service Request Filed",
-        performedBy: "citizen_01",
-        performedByName: "Rahul Nair",
-        performedByRole: "citizen",
-        timestamp: "2026-10-24T08:00:00Z"
-      }
-    ],
-    createdAt: "2026-10-24T08:00:00Z",
-    created_at: "2026-10-24T08:00:00Z",
-    updatedAt: "2026-10-24T08:00:00Z",
-    updated_at: "2026-10-24T08:00:00Z",
-    createdAtDate: new Date("2026-10-24T08:00:00Z"),
-    updatedAtDate: new Date("2026-10-24T08:00:00Z"),
-  } as any,
-  {
-    id: "SRV-2026-002",
-    complaint_id: "SRV-2026-002",
-    request_id: "SRV-2026-002",
-    citizenId: "citizen_02",
-    citizenName: "Anjali Menon",
-    district: "Thrissur",
-    taluk: "Chavakkad",
-    departmentId: "water_systems",
-    departmentName: "Water Systems & Well Care",
-    categoryId: "well_clean",
-    categoryName: "Well Cleaning & Chlorination",
-    title: "Annual well cleaning and chlorination",
-    description: "Need complete desilting, wall scrubbing, and chlorination for open well.",
-    status: "Assigned",
-    assignedStaffId: "staff_01",
-    assignedStaffName: "Rahul Electrician",
-    photos: [],
-    attachments: [],
-    assignmentHistory: [],
-    remarks: null,
-    resolvedAt: null,
-    history: [],
-    comments: [],
-    timeline: [],
-    createdAt: "2026-10-24T09:30:00Z",
-    created_at: "2026-10-24T09:30:00Z",
-    updatedAt: "2026-10-24T09:30:00Z",
-    updated_at: "2026-10-24T09:30:00Z",
-    createdAtDate: new Date("2026-10-24T09:30:00Z"),
-    updatedAtDate: new Date("2026-10-24T09:30:00Z"),
-  } as any
-];
-
-const sanitizeForStorage = (req: ServiceRequest): ServiceRequest => {
-  const cleanAttachments = (req.attachments || []).map(a => ({
-    ...a,
-    url: a.url && a.url.startsWith('data:') ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80' : a.url
-  }));
-  const cleanPhotos = (req.photos || []).map(p => p && p.startsWith('data:') ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80' : p);
-
-  return {
-    ...req,
-    photos: cleanPhotos,
-    attachments: cleanAttachments,
-    timeline: (req.timeline || []).map(t => ({
-      ...t,
-      attachments: (t.attachments || []).map(ta => ({
-        ...ta,
-        url: ta.url && ta.url.startsWith('data:') ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80' : ta.url
-      }))
-    }))
-  };
-};
-
-const getStoredLocalRequests = (): ServiceRequest[] => {
-  const map = new Map<string, ServiceRequest>();
-
-  // A. Load from In-Memory Cache
-  IN_MEMORY_REQUESTS_CACHE.forEach(r => {
-    const key = r.complaint_id || r.request_id || r.id;
-    if (key) map.set(key, r);
-  });
-
-  // B. Load from window.localStorage
-  try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const json = window.localStorage.getItem(STORAGE_KEY);
-      if (json) {
-        const parsed: ServiceRequest[] = JSON.parse(json);
-        parsed.forEach(r => {
-          const key = r.complaint_id || r.request_id || r.id;
-          if (key && !map.has(key)) map.set(key, r);
-          syncToMemoryCache(r);
-        });
-      }
-    }
-  } catch (e) {
-    console.warn("getStoredLocalRequests error:", e);
-  }
-
-  return Array.from(map.values());
-};
-
-const saveStoredLocalRequest = (req: ServiceRequest) => {
-  const cleanReq = sanitizeForStorage(req);
-
-  // 1. Immediately sync in-memory cache
-  syncToMemoryCache(cleanReq);
-
-  // 2. Persist in window.localStorage
-  try {
-    const list = getStoredLocalRequests();
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    }
-  } catch (e: any) {
-    console.warn("saveStoredLocalRequest localStorage error:", e?.message || e);
-  }
-
-  // 3. Async persist
-  try {
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(IN_MEMORY_REQUESTS_CACHE)).catch(() => {});
-  } catch (e) {}
-};
+import { getProfile, mapDoc, type ServiceRequest, type TimelineAttachment } from "./client";
 
 export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocumentSnapshot> => {
   if (!auth.currentUser) throw new Error("Unauthorized access");
@@ -294,31 +118,8 @@ export const createServiceRequest = async (body: {
     updatedAt: serverTimestamp(),
   };
 
-  // Clean JSON-serializable data copy for local browser storage
-  const dataForStorage = {
-    ...data,
-    createdAt: nowIso,
-    updatedAt: nowIso,
-    created_at: nowIso,
-    updated_at: nowIso,
-  };
-
-  const createdItem: ServiceRequest = {
-    id: requestId,
-    ...dataForStorage,
-    createdAtDate: new Date(),
-    updatedAtDate: new Date(),
-  };
-
-  // 1. Immediately persist clean object in local browser storage & memory cache
-  saveStoredLocalRequest(createdItem);
-
-  // 2. Persist directly to Cloud Firestore under document key requestId
-  try {
-    await setDoc(doc(db, "serviceRequests", requestId), data);
-  } catch (err: any) {
-    console.error("Failed to write serviceRequest to Firestore:", err?.message || err);
-  }
+  // Persist directly to Cloud Firestore under document key requestId
+  await setDoc(doc(db, "serviceRequests", requestId), data);
 
   try {
     await logAction({
@@ -331,73 +132,52 @@ export const createServiceRequest = async (body: {
     /* non-blocking audit log */
   }
 
-  return createdItem;
+  const createdDoc = await getDoc(doc(db, "serviceRequests", requestId));
+  if (createdDoc.exists()) {
+    return mapDoc<ServiceRequest>(createdDoc as any);
+  }
+
+  return {
+    id: requestId,
+    ...data,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+    createdAtDate: new Date(),
+    updatedAtDate: new Date(),
+  };
 };
 
 export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
   const user = auth.currentUser;
-  const storedList = getStoredLocalRequests();
+  if (!user) return [];
 
   try {
-    const profile = user ? await getProfile(user.uid).catch(() => null) : null;
+    const profile = await getProfile(user.uid).catch(() => null);
     const isCitizen = !profile?.role || profile?.role === 'citizen';
 
     let snaps: any[] = [];
-    if (user) {
-      if (isCitizen) {
-        const queries = [
-          getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", user.uid))).catch(() => null),
-          getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", "citizen_01"))).catch(() => null),
-        ];
-        snaps = await Promise.all(queries);
-      } else {
-        const queries = [
-          getDocs(query(collection(db, "serviceRequests"), limit(100))).catch(() => null),
-        ];
-        snaps = await Promise.all(queries);
-      }
+    if (isCitizen) {
+      const q1 = await getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", user.uid))).catch(() => null);
+      const q2 = await getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", "citizen_01"))).catch(() => null);
+      snaps = [q1, q2];
+    } else {
+      const q = await getDocs(query(collection(db, "serviceRequests"), limit(200))).catch(() => null);
+      snaps = [q];
     }
 
     const map = new Map<string, ServiceRequest>();
 
-    // 1. Load stored local requests & memory cache first
-    storedList.forEach(item => {
-      const key = item.complaint_id || item.request_id || item.id;
-      if (key) map.set(key, item);
-    });
-
-    // 2. Load Firestore network documents (merging with existing local entries)
+    // Load Cloud Firestore network documents ONLY
     snaps.forEach(snap => {
       if (snap && !snap.empty) {
         snap.docs.map(mapDoc<ServiceRequest>).forEach((item: ServiceRequest) => {
           const key = item.complaint_id || item.request_id || item.id;
-          if (!key) return;
-          const existing = map.get(key);
-          if (existing) {
-            map.set(key, {
-              ...item,
-              created_at: existing.created_at || item.created_at || new Date().toISOString(),
-              createdAtDate: existing.createdAtDate || item.createdAtDate || new Date(),
-            });
-          } else {
+          if (key && !map.has(key)) {
             map.set(key, item);
           }
         });
       }
     });
-
-    // 3. Guaranteed Fallback: If map is still empty, populate default sample service requests
-    if (map.size === 0) {
-      DEFAULT_SEED_REQUESTS.forEach(item => {
-        const key = item.complaint_id || item.request_id || item.id;
-        const localizedItem = {
-          ...item,
-          citizenId: user?.uid || item.citizenId,
-          citizenName: profile?.fullName || user?.email || item.citizenName,
-        };
-        map.set(key, localizedItem);
-      });
-    }
 
     const getTime = (item: ServiceRequest) => {
       if (item.createdAtDate instanceof Date && !isNaN(item.createdAtDate.getTime())) {
@@ -409,35 +189,20 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
       if (typeof item.created_at === 'string' && !isNaN(new Date(item.created_at).getTime())) {
         return new Date(item.created_at).getTime();
       }
-      if (typeof (item as any).createdAt === 'number') {
-        return (item as any).createdAt;
-      }
-      // If timestamp is pending/null from Firestore, return current time so new requests sort to index 0!
-      return Date.now();
+      return 0;
     };
 
-    const allList = Array.from(new Set(map.values()));
+    const allList = Array.from(map.values());
     return allList.sort((a, b) => getTime(b) - getTime(a));
   } catch (e: any) {
-    console.warn("Dashboard sync notice (handled):", e?.message || e);
-    return storedList.length > 0 ? storedList : DEFAULT_SEED_REQUESTS;
+    console.warn("Failed to fetch serviceRequests from Firestore:", e?.message || e);
+    return [];
   }
 };
 
 export const getServiceRequest = async (cid: string): Promise<ServiceRequest> => {
-  try {
-    const docSnap = await findServiceRequestSnapshot(cid);
-    return mapDoc<ServiceRequest>(docSnap);
-  } catch (e: any) {
-    const storedList = getStoredLocalRequests();
-    const localMatch = storedList.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
-    if (localMatch) return localMatch;
-
-    const seedMatch = DEFAULT_SEED_REQUESTS.find(r => r.complaint_id === cid || r.request_id === cid || r.id === cid);
-    if (seedMatch) return seedMatch;
-
-    throw e;
-  }
+  const docSnap = await findServiceRequestSnapshot(cid);
+  return mapDoc<ServiceRequest>(docSnap);
 };
 
 export const listComplaints = listServiceRequests;
