@@ -1,0 +1,36 @@
+name: CCMS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate_and_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: Verify TypeScript Compilation
+        run: npx tsc --noEmit
+
+      - name: Compile Cloud Functions
+        run: |
+          cd functions
+          npm ci
+          npm run build
+
+      - name: Build Production Web Bundle
+        run: npx expo export --platform web
