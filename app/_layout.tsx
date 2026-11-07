@@ -35,8 +35,10 @@ const DeveloperBanner = React.memo(() => {
 
 export default function RootLayout() {
   const [loaded, error] = useIconFonts();
+  const [isMounted, setIsMounted] = React.useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     if (loaded || error) {
       SplashScreen.hideAsync();
     }
@@ -51,7 +53,7 @@ export default function RootLayout() {
           <StatusBar barStyle="dark-content" />
           <View style={{ flex: 1 }}>
             <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
-            <DeveloperBanner />
+            {isMounted && <DeveloperBanner />}
           </View>
           <ToastHost />
         </AuthProvider>

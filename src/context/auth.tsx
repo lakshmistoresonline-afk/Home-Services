@@ -122,17 +122,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
-    // Web Fallback: If auth doesn't settle within 3 seconds, stop loading
+    // Web Fallback: If auth doesn't settle within 5 seconds, stop loading gracefully
     if (Platform.OS === 'web') {
       const timer = setTimeout(() => {
         setLoading((prev) => {
            if (prev) {
-             console.warn('Auth state settlement timed out on web root. Forcing loading false.');
              return false;
            }
            return false;
         });
-      }, 3000);
+      }, 5000);
       return () => {
         unsubscribe();
         clearTimeout(timer);
