@@ -9,7 +9,8 @@ const serviceAccount = require(serviceAccountPath);
 
 if (getApps().length === 0) {
     initializeApp({
-        credential: cert(serviceAccount)
+        credential: cert(serviceAccount),
+        storageBucket: "home-services-8789c.firebasestorage.app"
     });
 }
 
