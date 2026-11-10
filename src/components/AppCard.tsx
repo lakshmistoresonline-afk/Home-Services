@@ -39,7 +39,13 @@ export function AppCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: Platform.OS === 'ios' ? 0.5 : 0,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    ...Platform.select({
+      web: {
+        transition: 'all 0.2s ease-in-out',
+        backdropFilter: 'blur(8px)',
+      } as any,
+    }),
   },
 });

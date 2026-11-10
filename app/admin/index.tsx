@@ -398,7 +398,8 @@ export default function AdminDashboard() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-      <View style={styles.header}>
+      <View style={{ flex: 1, maxWidth: 1200, width: '100%', alignSelf: 'center' }}>
+        <View style={styles.header}>
         {isSuper && (
           <TouchableOpacity onPress={handleBack} style={{ marginRight: spacing.md }}>
             <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -548,6 +549,7 @@ export default function AdminDashboard() {
           )}
         />
       )}
+      </View>
 
       <PickerSheet visible={showStatus} title="Select Status" options={['', ...STATUSES]} value={status} onSelect={(v) => setStatus(v)} onClose={() => setShowStatus(false)} />
       <PickerSheet visible={showDept} title="Select Department" options={['', ...departments]} value={department} onSelect={(v) => setDepartment(v)} onClose={() => setShowDept(false)} />

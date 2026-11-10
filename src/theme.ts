@@ -2,11 +2,11 @@ import { useColorScheme } from 'react-native';
 import { spacing, radius, shadows, typography, animations } from './DesignTokens';
 
 const light = {
-  background: '#FAFAFA',
+  background: '#F8FAFC',
   surface: '#FFFFFF',
-  surfaceTint: '#F3F4F6',
-  primary: '#1E3A8A',
-  primaryVariant: '#2563EB',
+  surfaceTint: '#F1F5F9',
+  primary: '#047857',
+  primaryVariant: '#059669',
   text: '#0F172A',
   textSecondary: '#475569',
   border: '#E2E8F0',
@@ -19,8 +19,8 @@ const dark = {
   background: '#0F172A',
   surface: '#1E293B',
   surfaceTint: '#334155',
-  primary: '#3B82F6',
-  primaryVariant: '#60A5FA',
+  primary: '#10B981',
+  primaryVariant: '#34D399',
   text: '#F8FAFC',
   textSecondary: '#94A3B8',
   border: '#334155',

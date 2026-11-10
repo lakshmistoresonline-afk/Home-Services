@@ -394,7 +394,8 @@ export default function ServiceRequestDetail() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+      <View style={{ flex: 1, maxWidth: 1200, width: '100%', alignSelf: 'center' }}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={handleBack} style={styles.headerIconBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -735,6 +736,7 @@ export default function ServiceRequestDetail() {
           </View>
         )}
       </ScrollView>
+      </View>
 
       {/* Image viewer */}
       <Modal transparent visible={!!viewer} onRequestClose={() => setViewer(null)}>
