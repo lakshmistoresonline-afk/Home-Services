@@ -200,6 +200,18 @@ export default function AdminDashboard() {
           hasMoreRef.current = false;
           setHasMore(false);
 
+          // Update stats bar dynamically from filtered items
+          setStats(prev => ({
+            ...prev,
+            total: list.length,
+            submitted: list.filter(r => r.status === 'Submitted').length,
+            assigned: list.filter(r => r.status === 'Assigned').length,
+            in_progress: list.filter(r => r.status === 'In Progress').length,
+            resolved: list.filter(r => r.status === 'Resolved' || r.status === 'Completed').length,
+            closed: list.filter(r => r.status === 'Closed').length,
+            unassigned: list.filter(r => !r.assignedStaffId).length,
+          }));
+
         } catch (e: any) {
           if (!isLoggingOut && auth.currentUser) {
              showToast(`Error: ${e.message}`, 'error');
