@@ -534,9 +534,11 @@ export default function AdminDashboard() {
       </View>
 
       {loading && items.length === 0 ? (
-        <View style={{ padding: 24 }}>
+        <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
           {[1,2,3,4].map(i => (
-            <Skeleton key={i} height={140} borderRadius={16} style={{ marginBottom: 12 }} />
+            <View key={i} style={{ marginBottom: 16, borderLeftWidth: 4, borderLeftColor: colors.primary + '40', borderRadius: 16, overflow: 'hidden' }}>
+              <Skeleton height={130} borderRadius={16} />
+            </View>
           ))}
         </View>
       ) : (
