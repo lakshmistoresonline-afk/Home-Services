@@ -304,7 +304,7 @@ export default function AdminDashboard() {
         where("recipientUid", "==", user.uid),
         where("read", "==", false)
       );
-      const unsubscribe = onSnapshot(q,
+      const unsubscribeNotif = onSnapshot(q,
         (snap) => {
           if (!auth.currentUser || isLoggingOut) return;
           setUnreadCount(snap?.size || 0);
@@ -314,9 +314,33 @@ export default function AdminDashboard() {
           console.error('Admin notifications listener error:', error);
         }
       );
-      return () => unsubscribe();
+
+      // Real-time Service Requests Listener for instant dashboard sync
+      let reqQuery;
+      if (isWardAdmin) {
+        const talukName = user.taluk || 'Thrissur';
+        reqQuery = query(collection(db, "serviceRequests"), where("taluk", "==", talukName));
+      } else if (isSuper) {
+        reqQuery = query(collection(db, "serviceRequests"));
+      }
+
+      let unsubscribeReq: (() => void) | undefined;
+      if (reqQuery) {
+        unsubscribeReq = onSnapshot(reqQuery, (snap) => {
+          if (!auth.currentUser || isLoggingOut) return;
+          // Refresh list and stats on real-time document mutation
+          load(false);
+        }, (err) => {
+          /* non-blocking snapshot notice */
+        });
+      }
+
+      return () => {
+        unsubscribeNotif();
+        if (unsubscribeReq) unsubscribeReq();
+      };
     }
-  }, [user, isLoggingOut]);
+  }, [user, isLoggingOut, isWardAdmin, isSuper]);
 
   const doLogout = async () => {
     await logout();

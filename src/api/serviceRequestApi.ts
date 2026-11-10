@@ -169,42 +169,51 @@ export interface ListServiceRequestsParams {
   lastDoc?: any;
 }
 
+export const getScopedServiceRequestQuery = (user: { uid: string; role?: string; taluk?: string }, params?: ListServiceRequestsParams) => {
+  const role = params?.role || user.role || 'citizen';
+  const taluk = params?.taluk || user.taluk || 'Thrissur';
+
+  let q = collection(db, "serviceRequests");
+
+  if (role === 'citizen') {
+    return query(q, where("citizenId", "==", user.uid));
+  }
+  if (role === 'staff') {
+    return query(q, where("assignedStaffId", "==", user.uid));
+  }
+  if (role === 'taluk_admin' || role === 'ward_admin') {
+    return query(q, where("taluk", "==", taluk), limit(params?.pageSize || 200));
+  }
+
+  // Super Admin / ReadOnly Admin
+  return query(q, limit(params?.pageSize || 200));
+};
+
 export const listServiceRequests = async (params?: ListServiceRequestsParams): Promise<ServiceRequest[]> => {
   const user = auth.currentUser;
   if (!user) return [];
 
   try {
     const profile = await getProfile(user.uid).catch(() => null);
-    const role = params?.role || profile?.role || 'citizen';
-    const taluk = params?.taluk || profile?.taluk;
+    const effectiveRole = params?.role || profile?.role || 'citizen';
+    const effectiveTaluk = params?.taluk || profile?.taluk || 'Thrissur';
 
-    const isCitizen = role === 'citizen';
-    const isStaff = role === 'staff';
-    const isTalukAdmin = role === 'taluk_admin' || role === 'ward_admin';
-    const isSuper = role === 'super_admin' || role === 'readonly_super_admin';
+    const reqQuery = getScopedServiceRequestQuery(
+      { uid: user.uid, role: effectiveRole, taluk: effectiveTaluk },
+      params
+    );
 
     let snaps: any[] = [];
-    if (isCitizen) {
-      const q1 = await getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", user.uid))).catch(() => null);
+    const mainSnap = await getDocs(reqQuery).catch((err) => {
+      console.warn("Service request query notice:", err?.message || err);
+      return null;
+    });
+    snaps.push(mainSnap);
+
+    // Legacy fallback for citizen_01 test user
+    if (effectiveRole === 'citizen') {
       const q2 = await getDocs(query(collection(db, "serviceRequests"), where("citizenId", "==", "citizen_01"))).catch(() => null);
-      snaps = [q1, q2];
-    } else if (isStaff) {
-      // Staff view ONLY service requests assigned to them
-      const q1 = await getDocs(query(collection(db, "serviceRequests"), where("assignedStaffId", "==", user.uid))).catch(() => null);
-      snaps = [q1];
-    } else if (isTalukAdmin) {
-      const targetTaluk = taluk || profile?.taluk || 'Thrissur';
-      const q1 = await getDocs(query(collection(db, "serviceRequests"), where("taluk", "==", targetTaluk), limit(params?.pageSize || 200))).catch((err) => {
-        console.warn("Taluk Admin query notice:", err?.message || err);
-        return null;
-      });
-      snaps = [q1];
-    } else {
-      const q = await getDocs(query(collection(db, "serviceRequests"), limit(params?.pageSize || 200))).catch((err) => {
-        console.warn("Admin query notice:", err?.message || err);
-        return null;
-      });
-      snaps = [q];
+      snaps.push(q2);
     }
 
     const map = new Map<string, ServiceRequest>();
