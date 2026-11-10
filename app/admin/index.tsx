@@ -154,6 +154,8 @@ export default function AdminDashboard() {
         department,
         status,
         assigned_to: assignedFilter || undefined,
+        role: user?.role,
+        taluk: user?.taluk,
         lastDoc: isMore ? lastDocRef.current : undefined
       };
 
@@ -207,7 +209,10 @@ export default function AdminDashboard() {
 
       const fetchAdminStats = async () => {
         try {
-          const s = await adminStats();
+          const s = await adminStats({
+            role: user?.role,
+            taluk: user?.taluk
+          });
           if (!auth.currentUser || isLoggingOut) return;
           if (s) setStats(prev => ({ ...prev, ...s }));
         } catch (e: any) { }

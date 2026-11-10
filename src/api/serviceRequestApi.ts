@@ -147,14 +147,31 @@ export const createServiceRequest = async (body: {
   };
 };
 
-export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
+export interface ListServiceRequestsParams {
+  role?: string;
+  taluk?: string;
+  district?: string;
+  pageSize?: number;
+  q?: string;
+  department?: string;
+  status?: string;
+  assigned_to?: string;
+  lastDoc?: any;
+}
+
+export const listServiceRequests = async (params?: ListServiceRequestsParams): Promise<ServiceRequest[]> => {
   const user = auth.currentUser;
   if (!user) return [];
 
   try {
     const profile = await getProfile(user.uid).catch(() => null);
-    const isCitizen = !profile?.role || profile?.role === 'citizen';
-    const isStaff = profile?.role === 'staff';
+    const role = params?.role || profile?.role || 'citizen';
+    const taluk = params?.taluk || profile?.taluk;
+
+    const isCitizen = role === 'citizen';
+    const isStaff = role === 'staff';
+    const isTalukAdmin = role === 'taluk_admin' || role === 'ward_admin';
+    const isSuper = role === 'super_admin' || role === 'readonly_super_admin';
 
     let snaps: any[] = [];
     if (isCitizen) {
@@ -165,8 +182,19 @@ export const listServiceRequests = async (): Promise<ServiceRequest[]> => {
       // Staff view ONLY service requests assigned to them
       const q1 = await getDocs(query(collection(db, "serviceRequests"), where("assignedStaffId", "==", user.uid))).catch(() => null);
       snaps = [q1];
+    } else if (isTalukAdmin) {
+      const targetTaluk = taluk || profile?.taluk || 'Thrissur';
+      const q1 = await getDocs(query(collection(db, "serviceRequests"), where("taluk", "==", targetTaluk), limit(params?.pageSize || 200))).catch((err) => {
+        console.warn("Taluk Admin query notice:", err?.message || err);
+        return null;
+      });
+      const q2 = await getDocs(query(collection(db, "serviceRequests"), limit(params?.pageSize || 200))).catch(() => null);
+      snaps = [q1, q2];
     } else {
-      const q = await getDocs(query(collection(db, "serviceRequests"), limit(200))).catch(() => null);
+      const q = await getDocs(query(collection(db, "serviceRequests"), limit(params?.pageSize || 200))).catch((err) => {
+        console.warn("Admin query notice:", err?.message || err);
+        return null;
+      });
       snaps = [q];
     }
 
@@ -213,8 +241,8 @@ export const getServiceRequest = async (cid: string): Promise<ServiceRequest> =>
 export const listComplaints = listServiceRequests;
 export const getComplaint = getServiceRequest;
 export const adminList = listServiceRequests;
-export const adminStats = async () => {
-  const list = await listServiceRequests();
+export const adminStats = async (params?: ListServiceRequestsParams) => {
+  const list = await listServiceRequests(params);
   return {
     total: list.length,
     submitted: list.filter(r => r.status === 'Submitted').length,
