@@ -15,7 +15,12 @@ import { logAction } from "./auditApi";
 import { getProfile, mapDoc, type ServiceRequest, type TimelineAttachment } from "./client";
 
 export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocumentSnapshot> => {
-  if (!auth.currentUser) throw new Error("Unauthorized access");
+  const user = auth.currentUser;
+  if (!user) throw new Error("Unauthorized access");
+
+  const profile = await getProfile(user.uid).catch(() => null);
+  const isTalukAdmin = profile?.role === 'taluk_admin' || profile?.role === 'ward_admin';
+  const taluk = profile?.taluk || 'Thrissur';
 
   // 1. Direct document lookup by ID in Firestore
   try {
@@ -23,15 +28,20 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
     if (directDoc.exists()) return directDoc as any;
   } catch (e) { }
 
-  // 2. Query by complaint_id or request_id in Firestore
+  // 2. Query by complaint_id in Firestore
   try {
-    const q1 = await getDocs(query(collection(db, "serviceRequests"), where("complaint_id", "==", cid), limit(1)));
-    if (!q1.empty) return q1.docs[0];
+    const q1 = isTalukAdmin
+      ? await getDocs(query(collection(db, "serviceRequests"), where("complaint_id", "==", cid), where("taluk", "==", taluk), limit(1)))
+      : await getDocs(query(collection(db, "serviceRequests"), where("complaint_id", "==", cid), limit(1)));
+    if (q1 && !q1.empty) return q1.docs[0];
   } catch (e) { }
 
+  // 3. Query by request_id in Firestore
   try {
-    const q2 = await getDocs(query(collection(db, "serviceRequests"), where("request_id", "==", cid), limit(1)));
-    if (!q2.empty) return q2.docs[0];
+    const q2 = isTalukAdmin
+      ? await getDocs(query(collection(db, "serviceRequests"), where("request_id", "==", cid), where("taluk", "==", taluk), limit(1)))
+      : await getDocs(query(collection(db, "serviceRequests"), where("request_id", "==", cid), limit(1)));
+    if (q2 && !q2.empty) return q2.docs[0];
   } catch (e) { }
 
   throw new Error("Service request not found");
@@ -188,8 +198,7 @@ export const listServiceRequests = async (params?: ListServiceRequestsParams): P
         console.warn("Taluk Admin query notice:", err?.message || err);
         return null;
       });
-      const q2 = await getDocs(query(collection(db, "serviceRequests"), limit(params?.pageSize || 200))).catch(() => null);
-      snaps = [q1, q2];
+      snaps = [q1];
     } else {
       const q = await getDocs(query(collection(db, "serviceRequests"), limit(params?.pageSize || 200))).catch((err) => {
         console.warn("Admin query notice:", err?.message || err);
