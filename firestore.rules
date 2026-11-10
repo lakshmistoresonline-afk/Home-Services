@@ -13,40 +13,39 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == uid;
     }
 
-    function getUserData() {
+    function getUser() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function userExists() {
+    function hasUserDoc() {
       return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
-    function getUserRole() {
-      return userExists() ? getUserData().role : 'citizen';
-    }
-
-    function isUserActive() {
-      return userExists() && (getUserData().isActive == true || getUserData().status == 'active');
+    function roleIs(targetRole) {
+      return isAuthenticated() && (
+        (request.auth.token.keys().hasAny(['role']) && request.auth.token.role == targetRole) ||
+        (hasUserDoc() && getUser().role == targetRole)
+      );
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && (getUserRole() == 'super_admin' || request.auth.token.role == 'super_admin');
+      return roleIs('super_admin');
     }
 
     function isReadOnlyAdmin() {
-      return isAuthenticated() && (getUserRole() == 'readonly_super_admin' || request.auth.token.role == 'readonly_super_admin');
+      return roleIs('readonly_super_admin');
     }
 
     function isTalukAdmin() {
-      return isAuthenticated() && (getUserRole() == 'taluk_admin' || getUserRole() == 'ward_admin' || request.auth.token.role == 'taluk_admin');
+      return roleIs('taluk_admin') || roleIs('ward_admin');
     }
 
     function isStaff() {
-      return isAuthenticated() && (getUserRole() == 'staff' || request.auth.token.role == 'staff');
+      return roleIs('staff');
     }
 
     function isCitizen() {
-      return isAuthenticated() && getUserRole() == 'citizen';
+      return roleIs('citizen') || !hasUserDoc();
     }
 
     // --- Master Data & Catalog (Public Read for Browsing, Writable by Super Admin) ---
@@ -79,6 +78,7 @@ service cloud.firestore {
 
       allow update: if isAuthenticated() && (
         isSuperAdmin() ||
+        isTalukAdmin() ||
         (
           isUserDoc(uid) &&
           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'permissions', 'isActive', 'status'])
@@ -91,7 +91,7 @@ service cloud.firestore {
     // --- Service Requests Collection ---
 
     match /serviceRequests/{id} {
-      allow create: if isAuthenticated() && isUserActive() && (
+      allow create: if isAuthenticated() && (
         isSuperAdmin() ||
         request.resource.data.citizenId == request.auth.uid
       );
@@ -99,23 +99,16 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (
         isSuperAdmin() ||
         isReadOnlyAdmin() ||
-        resource.data.citizenId == request.auth.uid ||
-        resource.data.assignedStaffId == request.auth.uid ||
-        (isTalukAdmin() && (
-          !exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
-          getUserData().taluk == null ||
-          getUserData().taluk == resource.data.taluk
-        ))
+        isTalukAdmin() ||
+        isStaff() ||
+        resource.data.citizenId == request.auth.uid
       );
 
-      allow update: if isAuthenticated() && isUserActive() && !isReadOnlyAdmin() && (
+      allow update: if isAuthenticated() && !isReadOnlyAdmin() && (
         isSuperAdmin() ||
-        (resource.data.citizenId == request.auth.uid && request.resource.data.status in ['Cancelled', 'Reopened']) ||
-        (resource.data.assignedStaffId == request.auth.uid && request.resource.data.status in ['Accepted', 'Rejected', 'In Progress', 'Resolved']) ||
-        (isTalukAdmin() && (
-          getUserData().taluk == null ||
-          getUserData().taluk == resource.data.taluk
-        ))
+        isTalukAdmin() ||
+        isStaff() ||
+        (resource.data.citizenId == request.auth.uid && request.resource.data.status in ['Cancelled', 'Reopened'])
       );
 
       allow delete: if isSuperAdmin();

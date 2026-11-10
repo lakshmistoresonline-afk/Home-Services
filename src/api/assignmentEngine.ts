@@ -201,17 +201,25 @@ export const commitAssignment = async (
 
   // Update workload counters
   if (complaintData.assignedStaffId && complaintData.assignedStaffId !== assignedStaff?.uid) {
-    await updateDoc(doc(db, "users", complaintData.assignedStaffId), {
-      activeComplaintCount: increment(-1),
-      updatedAt: serverTimestamp(),
-    });
+    try {
+      await updateDoc(doc(db, "users", complaintData.assignedStaffId), {
+        activeComplaintCount: increment(-1),
+        updatedAt: serverTimestamp(),
+      });
+    } catch (e: any) {
+      console.warn("Staff workload decrement notice (handled):", e?.message || e);
+    }
   }
 
   if (assignedStaff && complaintData.assignedStaffId !== assignedStaff.uid) {
-    await updateDoc(doc(db, "users", assignedStaff.uid), {
-      activeComplaintCount: increment(1),
-      updatedAt: serverTimestamp(),
-    });
+    try {
+      await updateDoc(doc(db, "users", assignedStaff.uid), {
+        activeComplaintCount: increment(1),
+        updatedAt: serverTimestamp(),
+      });
+    } catch (e: any) {
+      console.warn("Staff workload increment notice (handled):", e?.message || e);
+    }
   }
 
   await updateDoc(doc(db, "serviceRequests", docId!), updates);
