@@ -325,6 +325,10 @@ export default function AdminDashboard() {
   useFocusEffect(
     useCallback(() => {
       load(false);
+      // Auto-sync any queued offline mutations on screen focus
+      import('@/src/api/offlineQueue').then(m => m.syncOfflineQueue().then(c => {
+        if (c > 0) showToast(`Synced ${c} offline update${c > 1 ? 's' : ''}`, 'success');
+      })).catch(() => {});
     }, [load]),
   );
 
