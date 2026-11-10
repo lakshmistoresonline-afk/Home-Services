@@ -176,15 +176,22 @@ export default function ServiceRequestDetail() {
       return;
     }
 
+    // Optimistic UI update for instant <30ms visual feedback
+    const prevItem = { ...item };
+    setItem(prev => prev ? { ...prev, status } : null);
+    setStatusSheet(false);
+    showToast(`Status updated to ${status}`, 'success');
+
     setSaving(true);
     try {
       const updated = await adminUpdateStatus(item.complaint_id, { status });
       setItem(updated);
-      const transitions = workflowApi.getAllowedTransitions(user!, updated);
-      setAllowedNextStatuses(transitions);
-      setStatusSheet(false);
-      showToast(`Status updated to ${status}`, 'success');
+      if (user) {
+        const transitions = workflowApi.getAllowedTransitions(user, updated);
+        setAllowedNextStatuses(transitions);
+      }
     } catch (e: any) {
+      setItem(prevItem); // Revert state if backend write fails
       showToast(e.message || 'Failed to update status', 'error');
     } finally {
       setSaving(false);
@@ -223,13 +230,25 @@ export default function ServiceRequestDetail() {
 
   const assignTo = async (staffId: string | null) => {
     if (!item) return;
+
+    // Optimistic UI update for instant <30ms visual feedback
+    const prevItem = { ...item };
+    const selectedStaffObj = staffList.find(s => s.uid === staffId);
+    setItem(prev => prev ? {
+      ...prev,
+      assignedStaffId: staffId,
+      assignedStaffName: selectedStaffObj?.fullName || (staffId ? 'Assigned Provider' : null),
+      status: staffId ? 'Assigned' : 'Submitted',
+    } : null);
+    setAssignSheet(false);
+    showToast(staffId ? 'Service provider assigned successfully' : 'Assignment cleared', 'success');
+
     setSaving(true);
     try {
       const updated = await assignComplaint(item.complaint_id, staffId);
       setItem(updated);
-      showToast(staffId ? 'Service provider assigned successfully' : 'Assignment cleared', 'success');
-      setAssignSheet(false);
     } catch (e: any) {
+      setItem(prevItem); // Revert state if backend write fails
       showToast(e.message || 'Assignment failed', 'error');
     } finally {
       setSaving(false);

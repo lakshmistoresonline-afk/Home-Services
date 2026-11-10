@@ -32,15 +32,44 @@ dayjs.extend(isToday);
 
 const STATUSES = ['Submitted', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
 
+function getCategoryIconName(dept: string = '', cat: string = ''): keyof typeof Ionicons.glyphMap {
+  const text = (dept + ' ' + cat).toLowerCase();
+  if (text.includes('elec') || text.includes('wire')) return 'flash-outline';
+  if (text.includes('appliance') || text.includes('ac')) return 'hardware-chip-outline';
+  if (text.includes('clean') || text.includes('pest')) return 'sparkles-outline';
+  if (text.includes('water') || text.includes('well') || text.includes('plumb')) return 'water-outline';
+  return 'construct-outline';
+}
+
+function getStatusBorderColor(status: string, colors: any): string {
+  switch (status) {
+    case 'Submitted': return '#F59E0B';
+    case 'Assigned': return '#3B82F6';
+    case 'In Progress': return '#06B6D4';
+    case 'Resolved': return '#10B981';
+    case 'Closed': return '#64748B';
+    case 'Cancelled': case 'Rejected': return '#DC2626';
+    default: return '#047857';
+  }
+}
+
 const ComplaintListItem = React.memo(({ item, onPress }: { item: Complaint, onPress: () => void }) => {
   const { colors, typography, spacing } = useTheme();
+  const iconName = getCategoryIconName(item.departmentName, item.categoryName);
+  const borderColor = getStatusBorderColor(item.status, colors);
+
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
-      <AppCard padding="md" elevation="sm">
+      <AppCard padding="md" elevation="sm" style={{ borderLeftWidth: 4, borderLeftColor: borderColor }}>
         <View style={styles.topRow}>
-          <Text style={[typography.label.small, { color: colors.textSecondary, letterSpacing: 1.2, fontWeight: '700' }]}>
-            {item.complaint_id || item.request_id}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={{ backgroundColor: colors.primary + '15', padding: 6, borderRadius: 8 }}>
+              <Ionicons name={iconName} size={16} color={colors.primary} />
+            </View>
+            <Text style={[typography.label.small, { color: colors.textSecondary, letterSpacing: 1.2, fontWeight: '700' }]}>
+              {item.complaint_id || item.request_id}
+            </Text>
+          </View>
           <StatusBadge status={item.status} />
         </View>
 
