@@ -15,6 +15,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/src/config/firebase';
 import { useAuth } from '@/src/context/auth';
 import { useTheme } from '@/src/theme';
 import { checkMobileUnique, updateProfile, deleteOwnAccount, changePassword } from '@/src/api';
@@ -97,6 +99,20 @@ export default function ProfileScreen() {
       showToast(e.message || 'Update failed', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const doSendResetEmail = async () => {
+    if (!user?.email) return showToast('Email not found', 'error');
+    setPwBusy(true);
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      showToast(`Password reset link sent to ${user.email}`, 'success');
+      setShowPwModal(false);
+    } catch (e: any) {
+      showToast(e.message || 'Failed to send reset link', 'error');
+    } finally {
+      setPwBusy(false);
     }
   };
 
@@ -335,6 +351,16 @@ export default function ProfileScreen() {
                 style={{ flex: 1 }}
               />
             </View>
+
+            <TouchableOpacity
+              onPress={doSendResetEmail}
+              disabled={pwBusy}
+              style={{ alignSelf: 'center', marginTop: 16 }}
+            >
+              <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>
+                Or send password reset link to email
+              </Text>
+            </TouchableOpacity>
           </Pressable>
         </Pressable>
       </Modal>

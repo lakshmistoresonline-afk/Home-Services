@@ -15,6 +15,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/src/config/firebase';
 import { useAuth } from '@/src/context/auth';
 import { useTheme } from '@/src/theme';
 import { showToast } from '@/src/components/Toast';
@@ -43,6 +45,29 @@ export default function LoginScreen() {
       }
     }
   }, [user, loading, router]);
+
+  const onForgotPassword = async () => {
+    const emailNorm = email.trim().toLowerCase();
+    if (!emailNorm) {
+      showToast('Enter your email address first', 'error');
+      return;
+    }
+    const emailOk = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailNorm);
+    if (!emailOk) {
+      showToast('Enter a valid email address', 'error');
+      return;
+    }
+
+    setBusy(true);
+    try {
+      await sendPasswordResetEmail(auth, emailNorm);
+      showToast(`Password reset email sent to ${emailNorm}`, 'success');
+    } catch (e: any) {
+      showToast(e.message || 'Failed to send reset email', 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const onSubmit = async () => {
     const emailNorm = email.trim().toLowerCase();
@@ -142,6 +167,14 @@ export default function LoginScreen() {
                 <Ionicons name={showPw ? 'eye-off' : 'eye'} size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
+
+            <TouchableOpacity
+              onPress={onForgotPassword}
+              style={{ alignSelf: 'flex-end', marginTop: 8 }}
+              testID="forgot-password-button"
+            >
+              <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>Forgot Password?</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               testID="login-submit-button"
