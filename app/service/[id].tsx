@@ -512,9 +512,39 @@ export default function ServiceRequestDetail() {
           <MetaRow label="Department" value={item.departmentName} color={colors} />
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <MetaRow label="Category" value={item.categoryName} color={colors} />
+          {item.subCategoryName && (
+            <>
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              <MetaRow label="Selected Variant" value={item.subCategoryName} color={colors} />
+            </>
+          )}
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <MetaRow label="Target SLA" value={`⚡ ${item.slaHours || 24} Hours`} color={colors} />
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <MetaRow label="Last update" value={dayjs(item.updatedAtDate || item.updatedAt).format('MMM D · h:mm A')} color={colors} />
         </AppCard>
+
+        {/* Itemized Price Breakdown Card */}
+        {item.basePrice > 0 && (
+          <View style={{ marginTop: 24 }}>
+            <Text style={[styles.section, { color: colors.textSecondary }]}>ESTIMATED INVOICE BREAKDOWN</Text>
+            <AppCard padding="md" elevation="sm" style={{ backgroundColor: colors.surfaceTint }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>
+                  {item.subCategoryName || item.categoryName} Package
+                </Text>
+                <Text style={{ color: colors.text, fontSize: 14, fontWeight: '700' }}>₹{item.basePrice}</Text>
+              </View>
+
+              <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 8 }} />
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '800' }}>Total Estimated Amount</Text>
+                <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '800' }}>₹{item.price || item.basePrice}</Text>
+              </View>
+            </AppCard>
+          </View>
+        )}
 
         <View style={{ marginTop: 24 }}>
           <Text style={[styles.section, { color: colors.textSecondary }]}>DESCRIPTION</Text>

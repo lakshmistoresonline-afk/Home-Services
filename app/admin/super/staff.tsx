@@ -369,6 +369,21 @@ export default function SuperStaffManagement() {
                   ))}
                 </View>
 
+                {item.categories && item.categories.length > 0 && (
+                  <View style={[styles.tagWrap, { marginTop: 6 }]}>
+                    {item.categories.slice(0, 3).map(c => (
+                      <View key={c} style={[styles.tag, { backgroundColor: '#10B98115', borderColor: '#10B98140', borderWidth: 1 }]}>
+                        <Text style={{ color: '#059669', fontSize: 9, fontWeight: '800' }}>✓ {c}</Text>
+                      </View>
+                    ))}
+                    {item.categories.length > 3 && (
+                      <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: '700', alignSelf: 'center' }}>
+                        +{item.categories.length - 3} skills
+                      </Text>
+                    )}
+                  </View>
+                )}
+
                 <View style={[styles.tagWrap, { marginTop: 4 }]}>
                   <Ionicons name="map-outline" size={10} color={colors.textSecondary} style={{ marginTop: 3 }} />
                   {item.hasAllWardAccess ? (
