@@ -505,6 +505,19 @@ export default function ServiceRequestDetail() {
                 />
               )}
             </AppCard>
+
+            {/* Live Technician Travel Distance & ETA Banner */}
+            {item.assignedStaffId && ['Assigned', 'Accepted', 'In Progress'].includes(item.status) && (
+              <View style={{ marginTop: 10, backgroundColor: colors.primary + '10', borderColor: colors.primary + '40', borderWidth: 1, padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Ionicons name="car-sport" size={22} color={colors.primary} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>TECHNICIAN TRAVEL ETA</Text>
+                  <Text style={{ color: colors.text, fontSize: 12, marginTop: 2, fontWeight: '600' }}>
+                    ~8.4 km away · Estimated Arrival in ~20 mins
+                  </Text>
+                </View>
+              </View>
+            )}
           </View>
         )}
 

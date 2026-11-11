@@ -253,6 +253,33 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Monsoon Combo Care Pack Banner */}
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: '/service/new', params: { departmentId: 'monsoon_care', departmentName: 'Monsoon & Waterproofing Care' } })}
+          style={{ marginTop: spacing.lg }}
+          activeOpacity={0.85}
+        >
+          <AppCard padding="md" elevation="sm" style={{ backgroundColor: '#0284C70F', borderColor: '#0284C740', borderWidth: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ backgroundColor: '#0284C720', width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="umbrella" size={24} color="#0284C7" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={[typography.title.small, { color: colors.text, fontWeight: '800' }]}>Monsoon Protection Combo Pack</Text>
+                  <View style={{ backgroundColor: '#0284C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>SAVE 10%</Text>
+                  </View>
+                </View>
+                <Text style={[typography.body.small, { color: colors.textSecondary, marginTop: 2 }]}>
+                  Clay Roof Tile Waterproofing + Open Well Desilting Care
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+            </View>
+          </AppCard>
+        </TouchableOpacity>
+
         {/* Dynamic Showcase of All 15+ Service Departments */}
         <View style={{ marginTop: spacing.xl }}>
           <Text style={[typography.title.medium, { color: colors.text, fontWeight: '800', marginBottom: spacing.md }]}>All Home Services ({departments.length})</Text>

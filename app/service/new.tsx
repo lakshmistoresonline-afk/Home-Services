@@ -53,12 +53,52 @@ export default function NewServiceRequestScreen() {
   const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<any | null>(null);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [selectedSpecOption, setSelectedSpecOption] = useState<string>('1.5 Ton');
+  const [isListening, setIsListening] = useState(false);
   const [category, setCategory] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [showCat, setShowCat] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const startDictation = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      try {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-IN';
+        recognition.interimResults = false;
+        setIsListening(true);
+        showToast('Listening... speak your service details', 'info');
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript) {
+            setDescription(prev => (prev ? `${prev}\n${transcript}` : transcript));
+            showToast('Voice transcribed successfully', 'success');
+          }
+          setIsListening(false);
+        };
+
+        recognition.onerror = () => {
+          setIsListening(false);
+          showToast('Speech recognition failed, please type manually', 'error');
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognition.start();
+      } catch (e) {
+        setIsListening(false);
+        showToast('Voice dictation not supported in this browser', 'error');
+      }
+    } else {
+      showToast('Voice dictation active on supported Web/Mobile browsers', 'info');
+    }
+  };
 
   const toggleAddOn = (addonId: string) => {
     setSelectedAddOns(prev =>
@@ -497,6 +537,34 @@ export default function NewServiceRequestScreen() {
             </AppCard>
           )}
 
+          {/* Dynamic Variant Specification Options */}
+          {selectedCategory && (
+            <View style={{ marginBottom: spacing.lg }}>
+              <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>SPECIFICATION / SIZE OPTION</Text>
+              <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                {['1.0 Ton / 1BHK', '1.5 Ton / 2BHK', '2.0 Ton / 3BHK', '50+ ft Well'].map((opt) => {
+                  const isOptSelected = selectedSpecOption === opt;
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      onPress={() => setSelectedSpecOption(opt)}
+                      style={{
+                        paddingHorizontal: 14,
+                        paddingVertical: 8,
+                        borderRadius: 20,
+                        borderWidth: 1,
+                        borderColor: isOptSelected ? colors.primary : colors.border,
+                        backgroundColor: isOptSelected ? colors.primary : colors.surface,
+                      }}
+                    >
+                      <Text style={{ color: isOptSelected ? '#fff' : colors.text, fontSize: 13, fontWeight: '700' }}>{opt}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
           <AppInput
             label="SERVICE TITLE"
             testID="service-title-input"
@@ -506,18 +574,30 @@ export default function NewServiceRequestScreen() {
             containerStyle={{ marginBottom: spacing.lg }}
           />
 
-          <AppInput
-            label="DETAILED DESCRIPTION"
-            testID="service-description-input"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={5}
-            placeholder="Provide exact address and service details..."
-            textAlignVertical="top"
-            inputStyle={{ height: 120, paddingTop: 12 }}
-            containerStyle={{ marginBottom: spacing.lg }}
-          />
+          <View style={{ marginBottom: spacing.lg }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }}>
+              <Text style={[typography.label.medium, { color: colors.textSecondary }]}>DETAILED DESCRIPTION</Text>
+              <TouchableOpacity
+                onPress={startDictation}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: isListening ? colors.danger + '1A' : colors.primary + '1A', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}
+              >
+                <Ionicons name={isListening ? "mic" : "mic-outline"} size={14} color={isListening ? colors.danger : colors.primary} />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: isListening ? colors.danger : colors.primary }}>
+                  {isListening ? 'LISTENING...' : 'VOICE DICTATE'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <AppInput
+              testID="service-description-input"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={5}
+              placeholder="Type or click Voice Dictate to describe service problem..."
+              textAlignVertical="top"
+              inputStyle={{ height: 120, paddingTop: 12 }}
+            />
+          </View>
 
           <View style={{ marginBottom: spacing.xl }}>
             <View style={styles.attachmentHeader}>
