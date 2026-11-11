@@ -178,7 +178,6 @@ export default function SuperAdminDashboard() {
     { id: 'departments', title: 'Manage Departments', icon: 'business', color: '#F59E0B', perm: 'manage_departments' },
     { id: 'reports', title: 'View Reports', icon: 'bar-chart', color: '#EC4899', perm: 'view_reports' },
     { id: 'logs', title: 'Security Audit Logs', icon: 'shield-half', color: '#64748B', perm: 'view_audit_logs' },
-    { id: 'sla', title: 'SLA Management', icon: 'time', color: '#EA580C', perm: 'manage_settings' },
     { id: 'settings', title: 'System Settings', icon: 'settings', color: '#475569', perm: 'manage_settings' },
   ];
 
@@ -214,7 +213,6 @@ export default function SuperAdminDashboard() {
         <View style={styles.statsGrid}>
           <StatCard label="Total Users" value={stats.totalUsers} icon="people-outline" color={colors.primary} />
           <StatCard label="Service Requests" value={stats.totalComplaints} icon="clipboard-outline" color="#7C3AED" />
-          <StatCard label="SLA Breaches" value={stats.slaBreachedCount} icon="alert-circle-outline" color={colors.danger} />
           <StatCard label="Resolved" value={stats.resolvedComplaints} icon="checkmark-circle-outline" color={colors.success} />
         </View>
 

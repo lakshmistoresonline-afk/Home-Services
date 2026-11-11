@@ -18,7 +18,7 @@ export const canAssign = (user: User, complaint: ServiceRequest): boolean => {
   if (!user) return false;
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
-  if (user.role === 'taluk_admin' || user.role === 'ward_admin') {
+  if (user.role === 'taluk_admin') {
     if (!user.taluk || !complaint?.taluk) return true;
     return user.taluk.trim().toLowerCase() === complaint.taluk.trim().toLowerCase();
   }
@@ -56,7 +56,7 @@ export const canResolve = (user: User, complaint: ServiceRequest): boolean => {
 export const canClose = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
-  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk && complaint.status === 'Resolved') return true;
+  if (user.role === 'taluk_admin' && user.taluk === complaint.taluk && complaint.status === 'Resolved') return true;
   return false;
 };
 
@@ -64,7 +64,7 @@ export const canReopen = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'citizen' && complaint.citizenId === user.uid && complaint.status === 'Resolved') return true;
-  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk && complaint.status === 'Resolved') return true;
+  if (user.role === 'taluk_admin' && user.taluk === complaint.taluk && complaint.status === 'Resolved') return true;
   return false;
 };
 
@@ -72,7 +72,7 @@ export const canComment = (user: User, complaint: ServiceRequest): boolean => {
   if (user.role === 'readonly_super_admin') return false;
   if (user.role === 'super_admin') return true;
   if (user.role === 'citizen' && complaint.citizenId === user.uid) return true;
-  if ((user.role === 'taluk_admin' || user.role === 'ward_admin') && user.taluk === complaint.taluk) return true;
+  if (user.role === 'taluk_admin' && user.taluk === complaint.taluk) return true;
   if (user.role === 'staff' && complaint.assignedStaffId === user.uid) return true;
   return false;
 };

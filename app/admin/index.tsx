@@ -450,14 +450,6 @@ export default function AdminDashboard() {
             <Ionicons name="notifications-outline" size={22} color={colors.text} />
             {unreadCount > 0 && <View style={[styles.badge, { backgroundColor: colors.danger }]} />}
           </TouchableOpacity>
-          {isWardAdmin && (
-            <TouchableOpacity
-              onPress={() => router.push('/admin/sla-breaches')}
-              style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, marginRight: spacing.sm }]}
-            >
-              <Ionicons name="time-outline" size={22} color={colors.warning} />
-            </TouchableOpacity>
-          )}
           {isSuper && (
             <TouchableOpacity
               onPress={goHome}
@@ -477,16 +469,15 @@ export default function AdminDashboard() {
           {isStaff ? (
             <>
               <StatChip label="Assigned" value={complaintStats.assigned} color={colors.primary} />
-              <StatChip label="Due Today" value={complaintStats.dueTodayCount} color={colors.warning} />
-              <StatChip label="Near Expiry" value={complaintStats.nearSlaCount} color="#EA580C" />
-              <StatChip label="Breached" value={complaintStats.slaBreachedCount} color={colors.danger} />
+              <StatChip label="In Progress" value={complaintStats.in_progress} color={colors.warning} />
+              <StatChip label="Resolved" value={complaintStats.resolved} color={colors.success} />
             </>
           ) : (
             <>
               <StatChip label="Total" value={complaintStats.total} color={colors.primary} />
-              <StatChip label="Breached" value={complaintStats.slaBreachedCount} color={colors.danger} />
               <StatChip label="Open" value={complaintStats.submitted + complaintStats.assigned + complaintStats.in_progress} color={colors.warning} />
-              <StatChip label="Due Today" value={complaintStats.dueTodayCount} color="#7C3AED" />
+              <StatChip label="Resolved" value={complaintStats.resolved} color={colors.success} />
+              <StatChip label="Unassigned" value={complaintStats.unassigned} color={colors.danger} />
             </>
           )}
         </ScrollView>

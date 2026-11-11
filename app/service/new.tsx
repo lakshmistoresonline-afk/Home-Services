@@ -442,10 +442,7 @@ export default function NewServiceRequestScreen() {
 
                       <View style={{ flexDirection: 'row', gap: 12, marginTop: 8, alignItems: 'center' }}>
                         <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '600' }}>
-                          ⏱️ {sub.estimatedMinutes || 60} mins
-                        </Text>
-                        <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '700' }}>
-                          ⚡ {sub.slaHours || 24}h SLA ({sub.priority})
+                          ⏱️ {sub.estimatedMinutes || 60} mins duration
                         </Text>
                       </View>
                     </TouchableOpacity>
@@ -528,9 +525,9 @@ export default function NewServiceRequestScreen() {
                   <Text style={{ fontSize: 22, fontWeight: '800', color: colors.primary, marginTop: 2 }}>₹{calculatedTotal}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '600' }}>TARGET COMPLETION</Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '600' }}>SERVICE TIME</Text>
                   <Text style={{ fontSize: 13, color: colors.text, fontWeight: '700', marginTop: 2 }}>
-                    ⚡ {selectedSubCategory?.slaHours || selectedCategory?.slaHours || 24} Hours
+                    ⏱️ {selectedSubCategory?.estimatedMinutes || 60} mins
                   </Text>
                 </View>
               </View>

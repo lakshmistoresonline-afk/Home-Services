@@ -43,7 +43,7 @@ export function getSecondaryAuth() {
   return getAuth(secondaryApp);
 }
 
-export type UserRole = 'citizen' | 'staff' | 'ward_admin' | 'taluk_admin' | 'super_admin' | 'readonly_super_admin';
+export type UserRole = 'citizen' | 'staff' | 'taluk_admin' | 'super_admin' | 'readonly_super_admin';
 
 export type Permission = {
   id: string;

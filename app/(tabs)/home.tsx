@@ -215,7 +215,7 @@ export default function HomeScreen() {
                 <Ionicons name="flash" size={26} color="#F59E0B" />
               </View>
               <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' }}>Electrician</Text>
-              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', marginTop: 2 }}>⚡ 2h SLA</Text>
+              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', marginTop: 2 }}>Quick Fix</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

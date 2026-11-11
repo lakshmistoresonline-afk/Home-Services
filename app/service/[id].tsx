@@ -532,8 +532,6 @@ export default function ServiceRequestDetail() {
             </>
           )}
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          <MetaRow label="Target SLA" value={`⚡ ${item.slaHours || 24} Hours`} color={colors} />
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <MetaRow label="Last update" value={dayjs(item.updatedAtDate || item.updatedAt).format('MMM D · h:mm A')} color={colors} />
         </AppCard>
 
