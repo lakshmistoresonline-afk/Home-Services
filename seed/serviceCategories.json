@@ -1,22 +1,155 @@
 [
-  { "id": "app_ac", "name": "AC Service & Repair", "departmentId": "appliance", "departmentName": "Appliance Repair", "displayOrder": 10, "color": "#0284C7", "icon": "snow", "requiresLocation": true, "requiresPhoto": false, "priority": "High", "basePrice": 599, "slaHours": 12, "isActive": true },
-  { "id": "app_wm", "name": "Washing Machine Repair", "departmentId": "appliance", "departmentName": "Appliance Repair", "displayOrder": 12, "color": "#0369A1", "icon": "water", "requiresLocation": true, "requiresPhoto": false, "priority": "Medium", "basePrice": 499, "slaHours": 24, "isActive": true },
-  { "id": "app_ro", "name": "Water Purifier (RO) Service", "departmentId": "appliance", "departmentName": "Appliance Repair", "displayOrder": 14, "color": "#0ea5e9", "icon": "filter", "requiresLocation": true, "requiresPhoto": false, "priority": "Medium", "basePrice": 399, "slaHours": 24, "isActive": true },
-  { "id": "clean_deep", "name": "Full Home Deep Cleaning (2BHK)", "departmentId": "cleaning", "departmentName": "Cleaning & Pest Control", "displayOrder": 20, "color": "#10B981", "icon": "sparkles", "requiresLocation": true, "requiresPhoto": false, "priority": "Medium", "basePrice": 2499, "slaHours": 24, "isActive": true },
-  { "id": "clean_pest", "name": "Pest Control (Cockroach/Termite)", "departmentId": "cleaning", "departmentName": "Cleaning & Pest Control", "displayOrder": 22, "color": "#059669", "icon": "bug", "requiresLocation": true, "requiresPhoto": false, "priority": "High", "basePrice": 899, "slaHours": 12, "isActive": true },
-  { "id": "well_clean", "name": "Well Cleaning & Chlorination (Desilting)", "departmentId": "water_systems", "departmentName": "Water Systems & Well Care", "displayOrder": 25, "color": "#0284c7", "icon": "water", "requiresLocation": true, "requiresPhoto": true, "priority": "High", "basePrice": 1999, "slaHours": 24, "isActive": true },
-  { "id": "septic_clean", "name": "Septic Tank Cleaning & De-sludging", "departmentId": "water_systems", "departmentName": "Water Systems & Well Care", "displayOrder": 27, "color": "#0369a1", "icon": "car", "requiresLocation": true, "requiresPhoto": false, "priority": "High", "basePrice": 2499, "slaHours": 24, "isActive": true },
-  { "id": "elec_repair", "name": "Electrical Repair & Wiring", "departmentId": "electrical", "departmentName": "Electrician", "displayOrder": 30, "color": "#F59E0B", "icon": "flash", "requiresLocation": true, "requiresPhoto": true, "priority": "Medium", "basePrice": 299, "slaHours": 12, "isActive": true },
-  { "id": "plumb_leak", "name": "Tap & Pipe Leakage Fix", "departmentId": "plumbing", "departmentName": "Plumber", "displayOrder": 40, "color": "#3B82F6", "icon": "water", "requiresLocation": true, "requiresPhoto": true, "priority": "High", "basePrice": 299, "slaHours": 8, "isActive": true },
-  { "id": "carp_assembly", "name": "Furniture Assembly & Repair", "departmentId": "carpentry", "departmentName": "Carpenter", "displayOrder": 50, "icon": "construct", "color": "#8B5CF6", "requiresLocation": true, "requiresPhoto": true, "priority": "Medium", "basePrice": 499, "slaHours": 24, "isActive": true },
-  { "id": "paint_wall", "name": "Interior Wall Painting (Per Room)", "departmentId": "painting", "departmentName": "Painting & Waterproofing", "displayOrder": 60, "color": "#EC4899", "icon": "color-palette", "requiresLocation": true, "requiresPhoto": true, "priority": "Low", "basePrice": 1999, "slaHours": 48, "isActive": true },
-  { "id": "roof_leak", "name": "Roof Tile Leak Repair & Waterproofing", "departmentId": "monsoon_care", "departmentName": "Monsoon & Waterproofing Care", "displayOrder": 62, "color": "#0284c7", "icon": "umbrella", "requiresLocation": true, "requiresPhoto": true, "priority": "High", "basePrice": 1499, "slaHours": 24, "isActive": true },
-  { "id": "termite_treat", "name": "Anti-Termite Wood Treatment", "departmentId": "monsoon_care", "departmentName": "Monsoon & Waterproofing Care", "displayOrder": 64, "color": "#d97706", "icon": "bug", "requiresLocation": true, "requiresPhoto": true, "priority": "High", "basePrice": 1299, "slaHours": 24, "isActive": true },
-  { "id": "civil_remodel", "name": "Bathroom & Kitchen Remodeling", "departmentId": "civil", "departmentName": "Civil Works & Renovation", "displayOrder": 65, "color": "#92400E", "icon": "home", "requiresLocation": true, "requiresPhoto": true, "priority": "High", "basePrice": 4999, "slaHours": 72, "isActive": true },
-  { "id": "solar_clean", "name": "Solar Panel Cleaning & Maintenance", "departmentId": "power_backup", "departmentName": "Solar & Power Backup", "displayOrder": 68, "color": "#f59e0b", "icon": "sunny", "requiresLocation": true, "requiresPhoto": false, "priority": "Medium", "basePrice": 799, "slaHours": 48, "isActive": true },
-  { "id": "teak_polish", "name": "Traditional Teak Wood Polish", "departmentId": "heritage_care", "departmentName": "Wood & Heritage Care", "displayOrder": 72, "color": "#78350f", "icon": "color-fill", "requiresLocation": true, "requiresPhoto": true, "priority": "Low", "basePrice": 1199, "slaHours": 48, "isActive": true },
-  { "id": "home_nurse", "name": "In-Home Nursing & Attender Service", "departmentId": "elder_care", "departmentName": "Elder Care & Nursing", "displayOrder": 75, "color": "#10b981", "icon": "medkit", "requiresLocation": true, "requiresPhoto": false, "priority": "Urgent", "basePrice": 999, "slaHours": 4, "isActive": true },
-  { "id": "beauty_salon", "name": "Salon for Women & Men's Grooming", "departmentId": "beauty", "departmentName": "Salon, Spa & Grooming", "displayOrder": 78, "color": "#FB7185", "icon": "cut", "requiresLocation": true, "requiresPhoto": false, "priority": "Low", "basePrice": 499, "slaHours": 24, "isActive": true },
-  { "id": "drive_hourly", "name": "Personal Driver (Hourly/Daily)", "departmentId": "driving", "departmentName": "Driver & Automotive", "displayOrder": 80, "color": "#EF4444", "icon": "car", "requiresLocation": true, "requiresPhoto": false, "priority": "High", "basePrice": 299, "slaHours": 4, "isActive": true },
-  { "id": "tech_cctv", "name": "CCTV Camera Installation", "departmentId": "smarthome", "departmentName": "Smart Home & Tech", "displayOrder": 90, "icon": "videocam", "color": "#6366F1", "requiresLocation": true, "requiresPhoto": false, "priority": "Medium", "basePrice": 799, "slaHours": 24, "isActive": true }
+  {
+    "id": "app_ac",
+    "name": "AC Service & Repair",
+    "departmentId": "appliance",
+    "departmentName": "Appliance Repair",
+    "displayOrder": 10,
+    "color": "#0284C7",
+    "icon": "snow",
+    "requiresLocation": true,
+    "requiresPhoto": false,
+    "priority": "High",
+    "basePrice": 599,
+    "slaHours": 12,
+    "isActive": true,
+    "subCategories": [
+      { "id": "ac_wet_wash", "categoryId": "app_ac", "name": "Foam & Jet Pump Deep Wash", "description": "High-pressure jet pump cleaning for indoor & outdoor AC units", "basePrice": 599, "estimatedMinutes": 60, "slaHours": 12, "priority": "High", "requiresPhoto": false, "isActive": true },
+      { "id": "ac_gas_refill", "categoryId": "app_ac", "name": "AC Gas Refill & Leak Fix", "description": "R32/R410a refrigerant leak detection and gas top-up", "basePrice": 1499, "estimatedMinutes": 120, "slaHours": 6, "priority": "High", "requiresPhoto": true, "isActive": true },
+      { "id": "ac_install", "categoryId": "app_ac", "name": "Split AC Installation / Removal", "description": "Wall mounting, copper piping, and testing", "basePrice": 899, "estimatedMinutes": 120, "slaHours": 24, "priority": "Medium", "requiresPhoto": false, "isActive": true }
+    ]
+  },
+  {
+    "id": "app_wm",
+    "name": "Washing Machine Repair",
+    "departmentId": "appliance",
+    "departmentName": "Appliance Repair",
+    "displayOrder": 12,
+    "color": "#0369A1",
+    "icon": "water",
+    "requiresLocation": true,
+    "requiresPhoto": false,
+    "priority": "Medium",
+    "basePrice": 499,
+    "slaHours": 24,
+    "isActive": true,
+    "subCategories": [
+      { "id": "wm_check", "categoryId": "app_wm", "name": "General Checkup & Noise Fix", "description": "Diagnostic check, belt replacement, and balancing", "basePrice": 499, "estimatedMinutes": 60, "slaHours": 24, "priority": "Medium", "requiresPhoto": false, "isActive": true },
+      { "id": "wm_motor", "categoryId": "app_wm", "name": "Drum Motor & PCB Repair", "description": "Circuit board repair and motor overhaul", "basePrice": 1299, "estimatedMinutes": 120, "slaHours": 24, "priority": "High", "requiresPhoto": true, "isActive": true }
+    ]
+  },
+  {
+    "id": "elec_repair",
+    "name": "Electrical Repair & Wiring",
+    "departmentId": "electrical",
+    "departmentName": "Electrician",
+    "displayOrder": 30,
+    "color": "#F59E0B",
+    "icon": "flash",
+    "requiresLocation": true,
+    "requiresPhoto": true,
+    "priority": "High",
+    "basePrice": 299,
+    "slaHours": 8,
+    "isActive": true,
+    "subCategories": [
+      { "id": "elec_mcb", "categoryId": "elec_repair", "name": "Main MCB & Short Circuit Emergency", "description": "Emergency tripping diagnosis and MCB replacement", "basePrice": 349, "estimatedMinutes": 45, "slaHours": 2, "priority": "Urgent", "requiresPhoto": true, "isActive": true },
+      { "id": "elec_switch", "categoryId": "elec_repair", "name": "Switch, Socket & Fan Fixture Fix", "description": "Modular switch replacement and fan mounting", "basePrice": 199, "estimatedMinutes": 30, "slaHours": 12, "priority": "Medium", "requiresPhoto": false, "isActive": true },
+      { "id": "elec_earthing", "categoryId": "elec_repair", "name": "Home Earthing Pit & Surge Protection", "description": "Salt-charcoal earthing installation and surge protection", "basePrice": 1299, "estimatedMinutes": 180, "slaHours": 24, "priority": "Medium", "requiresPhoto": true, "isActive": true }
+    ]
+  },
+  {
+    "id": "plumb_leak",
+    "name": "Tap & Pipe Leakage Fix",
+    "departmentId": "plumbing",
+    "departmentName": "Plumber",
+    "displayOrder": 40,
+    "color": "#3B82F6",
+    "icon": "water",
+    "requiresLocation": true,
+    "requiresPhoto": true,
+    "priority": "High",
+    "basePrice": 299,
+    "slaHours": 8,
+    "isActive": true,
+    "subCategories": [
+      { "id": "plumb_burst", "categoryId": "plumb_leak", "name": "Pipe Burst & Flush Tank Repair", "description": "Emergency leakage sealing and valve replacement", "basePrice": 299, "estimatedMinutes": 45, "slaHours": 2, "priority": "Urgent", "requiresPhoto": true, "isActive": true },
+      { "id": "plumb_faucet", "categoryId": "plumb_leak", "name": "Faucet, Mixer & Shower Fitting", "description": "Installation of luxury faucets, wall mixers, and showers", "basePrice": 399, "estimatedMinutes": 60, "slaHours": 12, "priority": "Medium", "requiresPhoto": false, "isActive": true }
+    ]
+  },
+  {
+    "id": "well_clean",
+    "name": "Well Cleaning & Chlorination (Desilting)",
+    "departmentId": "water_systems",
+    "departmentName": "Water Systems & Well Care",
+    "displayOrder": 25,
+    "color": "#0284c7",
+    "icon": "water",
+    "requiresLocation": true,
+    "requiresPhoto": true,
+    "priority": "High",
+    "basePrice": 1999,
+    "slaHours": 24,
+    "isActive": true,
+    "subCategories": [
+      { "id": "well_desilt", "categoryId": "well_clean", "name": "Open Well Sludge Removal & Chlorination", "description": "Manual desilting, pump extraction, and water purification treatment", "basePrice": 1999, "estimatedMinutes": 240, "slaHours": 24, "priority": "High", "requiresPhoto": true, "isActive": true },
+      { "id": "tank_vacuum", "categoryId": "well_clean", "name": "Overhead Water Tank Vacuum Clean", "description": "Automated vacuum cleaning and antibacterial treatment", "basePrice": 799, "estimatedMinutes": 120, "slaHours": 24, "priority": "Medium", "requiresPhoto": true, "isActive": true }
+    ]
+  },
+  {
+    "id": "clean_deep",
+    "name": "Full Home Deep Cleaning (2BHK)",
+    "departmentId": "cleaning",
+    "departmentName": "Cleaning & Pest Control",
+    "displayOrder": 20,
+    "color": "#10B981",
+    "icon": "sparkles",
+    "requiresLocation": true,
+    "requiresPhoto": false,
+    "priority": "Medium",
+    "basePrice": 2499,
+    "slaHours": 24,
+    "isActive": true,
+    "subCategories": [
+      { "id": "clean_2bhk", "categoryId": "clean_deep", "name": "Furnished 2BHK Deep Cleaning", "description": "Floor scrubbing, window wiping, bathroom disinfection", "basePrice": 2499, "estimatedMinutes": 240, "slaHours": 24, "priority": "Medium", "requiresPhoto": false, "isActive": true },
+      { "id": "clean_kitchen", "categoryId": "clean_deep", "name": "Kitchen Chimney & Cabinet Degreasing", "description": "High-pressure steam degreasing and tile cleaning", "basePrice": 799, "estimatedMinutes": 120, "slaHours": 24, "priority": "Medium", "requiresPhoto": false, "isActive": true }
+    ]
+  },
+  {
+    "id": "roof_leak",
+    "name": "Roof Tile Leak Repair & Waterproofing",
+    "departmentId": "monsoon_care",
+    "departmentName": "Monsoon & Waterproofing Care",
+    "displayOrder": 62,
+    "color": "#0284c7",
+    "icon": "umbrella",
+    "requiresLocation": true,
+    "requiresPhoto": true,
+    "priority": "High",
+    "basePrice": 1499,
+    "slaHours": 24,
+    "isActive": true,
+    "subCategories": [
+      { "id": "roof_seal", "categoryId": "roof_leak", "name": "Clay Tile Leakage Sealant & Replacement", "description": "Tile alignment, crack sealing, and waterproof membrane application", "basePrice": 1499, "estimatedMinutes": 180, "slaHours": 24, "priority": "High", "requiresPhoto": true, "isActive": true },
+      { "id": "damp_coating", "categoryId": "roof_leak", "name": "Exterior Wall Anti-Fungal Damp Shield", "description": "Protective elastomer coating against monsoon dampness", "basePrice": 1999, "estimatedMinutes": 300, "slaHours": 48, "priority": "Medium", "requiresPhoto": true, "isActive": true }
+    ]
+  },
+  {
+    "id": "teak_polish",
+    "name": "Traditional Teak Wood Polish",
+    "departmentId": "heritage_care",
+    "departmentName": "Wood & Heritage Care",
+    "displayOrder": 72,
+    "color": "#78350f",
+    "icon": "color-fill",
+    "requiresLocation": true,
+    "requiresPhoto": true,
+    "priority": "Low",
+    "basePrice": 1199,
+    "slaHours": 48,
+    "isActive": true,
+    "subCategories": [
+      { "id": "teak_oil", "categoryId": "teak_polish", "name": "Rosewood & Teak Oil Polish", "description": "Hand-buffed traditional wood oil finishing", "basePrice": 1199, "estimatedMinutes": 180, "slaHours": 48, "priority": "Low", "requiresPhoto": true, "isActive": true }
+    ]
+  }
 ]

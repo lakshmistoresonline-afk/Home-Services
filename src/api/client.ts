@@ -135,6 +135,19 @@ export type Department = {
   isActive: boolean;
 };
 
+export type SubCategory = {
+  id: string;
+  categoryId: string;
+  name: string;
+  description: string;
+  basePrice: number;
+  estimatedMinutes?: number;
+  slaHours: number;
+  priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+  requiresPhoto?: boolean;
+  isActive: boolean;
+};
+
 export type ServiceCategory = {
   id: string;
   name: string;
@@ -144,8 +157,10 @@ export type ServiceCategory = {
   color: string;
   icon: string;
   requiresLocation: boolean;
-  priority: 'Low' | 'Medium' | 'High';
+  priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+  basePrice?: number;
   slaHours: number;
+  subCategories?: SubCategory[];
   isActive: boolean;
 };
 export type ComplaintCategory = ServiceCategory;
