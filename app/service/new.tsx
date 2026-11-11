@@ -51,6 +51,7 @@ export default function NewServiceRequestScreen() {
   const [showDept, setShowDept] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<any | null>(null);
   const [category, setCategory] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -104,6 +105,11 @@ export default function NewServiceRequestScreen() {
      const cat = categories.find(c => c.name === name);
      setSelectedCategory(cat || null);
      setCategory(name);
+     if (cat && cat.subCategories && cat.subCategories.length > 0) {
+       setSelectedSubCategory(cat.subCategories[0]);
+     } else {
+       setSelectedSubCategory(null);
+     }
   };
 
   const filteredCategories = selectedDepartment
@@ -261,6 +267,10 @@ export default function NewServiceRequestScreen() {
 
       const c = await createServiceRequest({
         category,
+        subCategoryId: selectedSubCategory?.id,
+        subCategoryName: selectedSubCategory?.name,
+        basePrice: selectedSubCategory?.basePrice || selectedCategory?.basePrice || 0,
+        slaHours: selectedSubCategory?.slaHours || selectedCategory?.slaHours || 24,
         title: title.trim(),
         description: description.trim(),
         attachments: uploadedAttachments,
@@ -343,6 +353,53 @@ export default function NewServiceRequestScreen() {
               <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
+
+          {selectedCategory && selectedCategory.subCategories && selectedCategory.subCategories.length > 0 && (
+            <View style={{ marginBottom: spacing.lg }}>
+              <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>SELECT SERVICE VARIANT</Text>
+              <View style={{ gap: spacing.sm }}>
+                {selectedCategory.subCategories.map((sub: any) => {
+                  const isSelected = selectedSubCategory?.id === sub.id;
+                  return (
+                    <TouchableOpacity
+                      key={sub.id}
+                      onPress={() => setSelectedSubCategory(sub)}
+                      activeOpacity={0.8}
+                      style={{
+                        borderWidth: isSelected ? 2 : 1,
+                        borderColor: isSelected ? colors.primary : colors.border,
+                        backgroundColor: isSelected ? colors.primary + '0D' : colors.surface,
+                        borderRadius: radius.md,
+                        padding: spacing.md,
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={[typography.title.small, { color: colors.text, fontWeight: '700', flex: 1 }]}>
+                          {sub.name}
+                        </Text>
+                        <View style={{ backgroundColor: colors.primary + '1A', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                          <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>₹{sub.basePrice}</Text>
+                        </View>
+                      </View>
+
+                      <Text style={[typography.body.small, { color: colors.textSecondary, marginTop: 4 }]} numberOfLines={2}>
+                        {sub.description}
+                      </Text>
+
+                      <View style={{ flexDirection: 'row', gap: 12, marginTop: 8, alignItems: 'center' }}>
+                        <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '600' }}>
+                          ⏱️ {sub.estimatedMinutes || 60} mins
+                        </Text>
+                        <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '700' }}>
+                          ⚡ {sub.slaHours || 24}h SLA ({sub.priority})
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
 
           <AppInput
             label="SERVICE TITLE"

@@ -49,6 +49,10 @@ export const findServiceRequestSnapshot = async (cid: string): Promise<QueryDocu
 
 export const createServiceRequest = async (body: {
   category: string;
+  subCategoryId?: string;
+  subCategoryName?: string;
+  basePrice?: number;
+  slaHours?: number;
   title: string;
   description: string;
   attachments?: TimelineAttachment[];
@@ -98,6 +102,10 @@ export const createServiceRequest = async (body: {
     departmentName: catData?.departmentName || 'General',
     categoryId: catData?.id || 'gen_inq',
     categoryName: body.category,
+    subCategoryId: body.subCategoryId || null,
+    subCategoryName: body.subCategoryName || null,
+    basePrice: body.basePrice || catData?.basePrice || 0,
+    slaHours: body.slaHours || catData?.slaHours || 24,
     title: body.title,
     description: body.description,
     status: 'Submitted',
