@@ -52,12 +52,26 @@ export default function NewServiceRequestScreen() {
 
   const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<any | null>(null);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [category, setCategory] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [showCat, setShowCat] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const toggleAddOn = (addonId: string) => {
+    setSelectedAddOns(prev =>
+      prev.includes(addonId) ? prev.filter(id => id !== addonId) : [...prev, addonId]
+    );
+  };
+
+  const calculatedTotal = useMemo(() => {
+    const base = selectedSubCategory?.basePrice || selectedCategory?.basePrice || 0;
+    const coating = selectedAddOns.includes('addon_coating') ? 250 : 0;
+    const warranty = selectedAddOns.includes('addon_warranty') ? 199 : 0;
+    return base + coating + warranty;
+  }, [selectedSubCategory, selectedCategory, selectedAddOns]);
 
   useEffect(() => {
     if (user && !user.mobile) {
@@ -399,6 +413,88 @@ export default function NewServiceRequestScreen() {
                 })}
               </View>
             </View>
+          )}
+
+          {/* Optional Add-Ons Checklist */}
+          {selectedCategory && (
+            <View style={{ marginBottom: spacing.lg }}>
+              <Text style={[typography.label.medium, { color: colors.textSecondary, marginBottom: spacing.sm }]}>OPTIONAL SERVICE ADD-ONS</Text>
+              <View style={{ gap: spacing.xs }}>
+                <TouchableOpacity
+                  onPress={() => toggleAddOn('addon_coating')}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: spacing.md,
+                    borderRadius: radius.md,
+                    borderWidth: 1,
+                    borderColor: selectedAddOns.includes('addon_coating') ? colors.primary : colors.border,
+                    backgroundColor: selectedAddOns.includes('addon_coating') ? colors.primary + '0A' : colors.surface,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                    <Ionicons
+                      name={selectedAddOns.includes('addon_coating') ? "checkbox" : "square-outline"}
+                      size={22}
+                      color={selectedAddOns.includes('addon_coating') ? colors.primary : colors.textSecondary}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[typography.title.small, { color: colors.text, fontWeight: '700' }]}>Anti-Rust Coil Protective Coating</Text>
+                      <Text style={[typography.body.small, { color: colors.textSecondary }]}>High-grade anti-corrosive spray for outdoor unit coils</Text>
+                    </View>
+                  </View>
+                  <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>+ ₹250</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => toggleAddOn('addon_warranty')}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: spacing.md,
+                    borderRadius: radius.md,
+                    borderWidth: 1,
+                    borderColor: selectedAddOns.includes('addon_warranty') ? colors.primary : colors.border,
+                    backgroundColor: selectedAddOns.includes('addon_warranty') ? colors.primary + '0A' : colors.surface,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                    <Ionicons
+                      name={selectedAddOns.includes('addon_warranty') ? "checkbox" : "square-outline"}
+                      size={22}
+                      color={selectedAddOns.includes('addon_warranty') ? colors.primary : colors.textSecondary}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[typography.title.small, { color: colors.text, fontWeight: '700' }]}>Extended 90-Day Service Warranty</Text>
+                      <Text style={[typography.body.small, { color: colors.textSecondary }]}>Guaranteed free revisit & labor protection for 90 days</Text>
+                    </View>
+                  </View>
+                  <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>+ ₹199</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* Dynamic Order Total Summary Card */}
+          {selectedCategory && (
+            <AppCard elevation="sm" padding="md" style={{ marginBottom: spacing.lg, backgroundColor: colors.surfaceTint }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View>
+                  <Text style={[typography.label.small, { color: colors.textSecondary, letterSpacing: 1 }]}>ESTIMATED ORDER TOTAL</Text>
+                  <Text style={{ fontSize: 22, fontWeight: '800', color: colors.primary, marginTop: 2 }}>₹{calculatedTotal}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '600' }}>TARGET COMPLETION</Text>
+                  <Text style={{ fontSize: 13, color: colors.text, fontWeight: '700', marginTop: 2 }}>
+                    ⚡ {selectedSubCategory?.slaHours || selectedCategory?.slaHours || 24} Hours
+                  </Text>
+                </View>
+              </View>
+            </AppCard>
           )}
 
           <AppInput

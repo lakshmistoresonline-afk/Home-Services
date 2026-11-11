@@ -32,6 +32,25 @@ export const listCorporationStaff = async (wardNumber?: number): Promise<User[]>
   }
 };
 
+export const listStaffBySubCategorySkill = async (subCategoryName?: string, categoryName?: string): Promise<User[]> => {
+  const staff = await listCorporationStaff();
+  if (!subCategoryName && !categoryName) return staff;
+
+  const targetSkill = (subCategoryName || categoryName || '').toLowerCase().trim();
+
+  // Rank staff members with matching category or department skills at the top
+  return staff.sort((a, b) => {
+    const aMatch = (a.categories || []).some(c => c.toLowerCase().includes(targetSkill)) ||
+                   (a.departments || []).some(d => d.toLowerCase().includes(targetSkill));
+    const bMatch = (b.categories || []).some(c => c.toLowerCase().includes(targetSkill)) ||
+                   (b.departments || []).some(d => d.toLowerCase().includes(targetSkill));
+
+    if (aMatch && !bMatch) return -1;
+    if (!aMatch && bMatch) return 1;
+    return (a.activeServiceCount || 0) - (b.activeServiceCount || 0);
+  });
+};
+
 export const generateEmployeeId = async (): Promise<string> => {
   const counterRef = doc(db, "metadata", "counters");
   const snap = await getDoc(counterRef);

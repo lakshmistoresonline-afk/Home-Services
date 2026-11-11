@@ -203,6 +203,56 @@ export default function HomeScreen() {
           </AppCard>
         </TouchableOpacity>
 
+        {/* Quick Booking Category Bar */}
+        <View style={{ marginTop: spacing.xl }}>
+          <Text style={[typography.title.medium, { color: colors.text, fontWeight: '800', marginBottom: spacing.md }]}>Popular Quick Booking</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: '/service/new', params: { departmentId: 'electrical', departmentName: 'Electrician' } })}
+              style={{ alignItems: 'center', width: '22%' }}
+            >
+              <View style={{ backgroundColor: '#F59E0B20', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                <Ionicons name="flash" size={26} color="#F59E0B" />
+              </View>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' }}>Electrician</Text>
+              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', marginTop: 2 }}>⚡ 2h SLA</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: '/service/new', params: { departmentId: 'appliance', departmentName: 'Appliance Repair' } })}
+              style={{ alignItems: 'center', width: '22%' }}
+            >
+              <View style={{ backgroundColor: '#0284C720', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                <Ionicons name="snow" size={26} color="#0284C7" />
+              </View>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' }}>AC Jet Wash</Text>
+              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', marginTop: 2 }}>₹599</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: '/service/new', params: { departmentId: 'plumbing', departmentName: 'Plumber' } })}
+              style={{ alignItems: 'center', width: '22%' }}
+            >
+              <View style={{ backgroundColor: '#3B82F620', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                <Ionicons name="water" size={26} color="#3B82F6" />
+              </View>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' }}>Plumbing</Text>
+              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', marginTop: 2 }}>Leak Fix</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: '/service/new', params: { departmentId: 'water_systems', departmentName: 'Water Systems & Well Care' } })}
+              style={{ alignItems: 'center', width: '22%' }}
+            >
+              <View style={{ backgroundColor: '#10B98120', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                <Ionicons name="leaf" size={26} color="#10B981" />
+              </View>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' }}>Well Care</Text>
+              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', marginTop: 2 }}>Desilting</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Dynamic Showcase of All 15+ Service Departments */}
         <View style={{ marginTop: spacing.xl }}>
           <Text style={[typography.title.medium, { color: colors.text, fontWeight: '800', marginBottom: spacing.md }]}>All Home Services ({departments.length})</Text>
