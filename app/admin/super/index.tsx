@@ -47,6 +47,35 @@ export default function SuperAdminDashboard() {
     recentLogs: [] as any[],
   });
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('demo=')) {
+      setStats({
+        totalUsers: 148,
+        totalComplaints: 382,
+        openComplaints: 42,
+        resolvedComplaints: 340,
+        totalCitizens: 120,
+        totalWardAdmins: 12,
+        totalStaff: 16,
+        slaBreachedCount: 0
+      });
+      setDeptData([
+        { name: "Appliance Repair", count: 120 },
+        { name: "Electrician", count: 98 },
+        { name: "Plumber", count: 76 },
+        { name: "Water Systems", count: 54 },
+        { name: "Cleaning & Pest", count: 34 }
+      ]);
+      setStatusData([
+        { name: "Resolved", count: 340 },
+        { name: "Assigned", count: 24 },
+        { name: "In Progress", count: 12 },
+        { name: "Submitted", count: 6 }
+      ]);
+      setLoading(false);
+    }
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {

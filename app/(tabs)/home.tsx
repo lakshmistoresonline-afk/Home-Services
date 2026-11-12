@@ -74,6 +74,32 @@ export default function HomeScreen() {
     }
   }, [user, isLoggingOut]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('demo=')) {
+      setActiveRequests([
+        {
+          complaint_id: "srv-849201",
+          request_id: "srv-849201",
+          title: "Foam & Jet Pump Deep Chemical Wash",
+          categoryName: "AC Service & Repair",
+          departmentName: "Appliance Repair",
+          status: "In Progress",
+          created_at: new Date().toISOString()
+        } as any,
+        {
+          complaint_id: "srv-391024",
+          request_id: "srv-391024",
+          title: "Main MCB Short Circuit Trip Fix",
+          categoryName: "Electrical Repair & Wiring",
+          departmentName: "Electrician",
+          status: "Assigned",
+          created_at: new Date().toISOString()
+        } as any
+      ]);
+      setStats({ total: 12, submitted: 2, assigned: 3, in_progress: 2, resolved: 5 });
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       load();

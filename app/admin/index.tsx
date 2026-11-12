@@ -321,6 +321,74 @@ export default function AdminDashboard() {
     }
   }, [debouncedSearch, department, status, assignedFilter, isWardAdmin, isSuper, isStaff, user, isLoggingOut]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('demo=')) {
+      setComplaints([
+        {
+          complaint_id: "SRV-901824",
+          request_id: "SRV-901824",
+          title: "Clay Roof Tile Leakage Sealant",
+          categoryName: "Roof Tile Leak Repair & Waterproofing",
+          departmentName: "Monsoon Care",
+          subCategoryName: "Clay Tile Leakage Sealant & Replacement",
+          citizenName: "Rahul Nair",
+          status: "Submitted",
+          district: "Thrissur",
+          taluk: "Thrissur",
+          created_at: new Date().toISOString(),
+          basePrice: 1499
+        } as any,
+        {
+          complaint_id: "SRV-849201",
+          request_id: "SRV-849201",
+          title: "Foam & Jet Pump Deep Chemical Wash",
+          categoryName: "AC Service & Repair",
+          departmentName: "Appliance Repair",
+          subCategoryName: "Foam & Jet Pump Deep Wash",
+          citizenName: "Anjali Menon",
+          assignedStaffName: "Rajesh AC Expert",
+          status: "In Progress",
+          district: "Thrissur",
+          taluk: "Thrissur",
+          created_at: new Date().toISOString(),
+          basePrice: 599
+        } as any,
+        {
+          complaint_id: "SRV-391024",
+          request_id: "SRV-391024",
+          title: "Main MCB Short Circuit Trip Fix",
+          categoryName: "Electrical Repair & Wiring",
+          departmentName: "Electrician",
+          subCategoryName: "Main MCB & Short Circuit Emergency",
+          citizenName: "Vipin Kumar",
+          assignedStaffName: "Suresh Electrician",
+          status: "Assigned",
+          district: "Thrissur",
+          taluk: "Thrissur",
+          created_at: new Date().toISOString(),
+          basePrice: 349
+        } as any,
+        {
+          complaint_id: "SRV-102948",
+          request_id: "SRV-102948",
+          title: "Open Well Sludge Removal & Chlorination",
+          categoryName: "Well Cleaning & Chlorination (Desilting)",
+          departmentName: "Water Systems & Well Care",
+          subCategoryName: "Open Well Sludge Removal & Chlorination",
+          citizenName: "Sreekumar K",
+          assignedStaffName: "Arun Master Plumber",
+          status: "Resolved",
+          district: "Thrissur",
+          taluk: "Thrissur",
+          created_at: new Date().toISOString(),
+          basePrice: 1999
+        } as any
+      ]);
+      setComplaintStats({ total: 24, submitted: 5, assigned: 8, in_progress: 4, resolved: 7, unassigned: 5, dueTodayCount: 3, slaBreachedCount: 0, nearSlaCount: 1 });
+      setLoading(false);
+    }
+  }, []);
+
   // Initial load when screen is focused
   useFocusEffect(
     useCallback(() => {

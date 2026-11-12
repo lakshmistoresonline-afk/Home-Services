@@ -114,6 +114,38 @@ export default function NewServiceRequestScreen() {
   }, [selectedSubCategory, selectedCategory, selectedAddOns]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('demo=')) {
+      setDepartmentName("Appliance Repair");
+      setSelectedDepartment({ id: "appliance", name: "Appliance Repair" } as any);
+      setCategory("AC Service & Repair");
+      const sampleSub = [
+        { id: "ac_wet_wash", categoryId: "app_ac", name: "Foam & Jet Pump Deep Wash", description: "High-pressure jet pump cleaning for indoor & outdoor AC units", basePrice: 599, estimatedMinutes: 60, priority: "High", requiresPhoto: false, isActive: true },
+        { id: "ac_gas_refill", categoryId: "app_ac", name: "AC Gas Refill & Leak Fix", description: "R32/R410a refrigerant leak detection and gas top-up", basePrice: 1499, estimatedMinutes: 120, priority: "High", requiresPhoto: true, isActive: true },
+        { id: "ac_install", categoryId: "app_ac", name: "Split AC Installation / Removal", description: "Wall mounting, copper piping, and testing", basePrice: 899, estimatedMinutes: 120, priority: "Medium", requiresPhoto: false, isActive: true }
+      ];
+      setSelectedCategory({
+        id: "app_ac",
+        name: "AC Service & Repair",
+        departmentId: "appliance",
+        departmentName: "Appliance Repair",
+        displayOrder: 10,
+        color: "#0284C7",
+        icon: "snow",
+        requiresLocation: true,
+        priority: "High",
+        basePrice: 599,
+        slaHours: 12,
+        isActive: true,
+        subCategories: sampleSub
+      } as any);
+      setSelectedSubCategory(sampleSub[0]);
+      setTitle("AC Wet Wash & Chemical Jet Clean");
+      setDescription("Indoor split AC unit requires foam jet wash and filter cleaning.");
+      setSelectedAddOns(["addon_coating"]);
+    }
+  }, []);
+
+  useEffect(() => {
     if (user && !user.mobile) {
       if (Platform.OS === 'web') {
         router.replace('/(tabs)/profile');
