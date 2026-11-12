@@ -21,8 +21,6 @@ import { useAuth } from '@/src/context/auth';
 import { useTheme } from '@/src/theme';
 import { showToast } from '@/src/components/Toast';
 
-const APK_URL = 'https://github.com/lakshmistoresonline-afk/complaintsfirestore/releases/download/v1.0.0/MyComplaints.apk';
-
 export default function LoginScreen() {
   const { login, user, loading } = useAuth();
   const { colors } = useTheme();
@@ -32,6 +30,40 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  React.useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const handler = (e: any) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+      };
+      window.addEventListener('beforeinstallprompt', handler);
+      return () => window.removeEventListener('beforeinstallprompt', handler);
+    }
+  }, []);
+
+  const onInstallWebApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        showToast('App installed on home screen!', 'success');
+      }
+      setDeferredPrompt(null);
+    } else {
+      if (Platform.OS === 'web') {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+        if (isIOS) {
+          showToast("To install on iOS: Tap Share icon (⎋) in Safari and select 'Add to Home Screen'.", 'info');
+        } else {
+          showToast("To install: Tap browser menu (⋮) and select 'Add to Home Screen' or 'Install App'.", 'info');
+        }
+      } else {
+        showToast('Web App installation active in your web browser', 'info');
+      }
+    }
+  };
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -201,13 +233,14 @@ export default function LoginScreen() {
 
             {Platform.OS === 'web' && (
               <TouchableOpacity
-                style={[styles.downloadBtn, { borderColor: colors.border }]}
-                onPress={() => Linking.openURL(APK_URL)}
-                activeOpacity={0.7}
+                style={[styles.downloadBtn, { borderColor: colors.primary, backgroundColor: colors.primary + '0D' }]}
+                onPress={onInstallWebApp}
+                activeOpacity={0.75}
+                testID="install-webapp-button"
               >
-                <Ionicons name="logo-android" size={20} color={colors.textSecondary} />
-                <Text style={[styles.downloadText, { color: colors.textSecondary }]}>
-                  Download Android App
+                <Ionicons name="phone-portrait-outline" size={20} color={colors.primary} />
+                <Text style={[styles.downloadText, { color: colors.primary, fontWeight: '800' }]}>
+                  Install Web App on Phone/Device
                 </Text>
               </TouchableOpacity>
             )}
