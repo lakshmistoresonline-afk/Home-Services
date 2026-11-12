@@ -85,6 +85,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('demo=')) {
+      const search = window.location.search;
+      if (search.includes('demo=super')) {
+        setUser({
+          uid: "super_admin_01",
+          email: "superadmin@mcms.gov.in",
+          fullName: "System Administrator",
+          role: "super_admin",
+          mobile: "9000000001",
+          district: "Thrissur",
+          taluk: "Thrissur",
+          isActive: true,
+          permissions: ["assign_complaints", "manage_wards", "manage_staff", "manage_settings", "manage_categories", "manage_departments", "view_reports", "view_audit_logs"]
+        } as any);
+        setLoading(false);
+        return;
+      } else if (search.includes('demo=admin')) {
+        setUser({
+          uid: "taluk_admin_01",
+          email: "talukadmin.thrissur@homeservice.gov.in",
+          fullName: "Thrissur Taluk Admin",
+          role: "taluk_admin",
+          mobile: "9876543220",
+          district: "Thrissur",
+          taluk: "Thrissur",
+          isActive: true,
+          permissions: ["manage_requests", "assign_staff", "view_reports"]
+        } as any);
+        setLoading(false);
+        return;
+      } else if (search.includes('demo=citizen')) {
+        setUser({
+          uid: "citizen_01",
+          email: "rahul@example.com",
+          fullName: "Rahul Nair",
+          role: "citizen",
+          mobile: "9000000079",
+          district: "Thrissur",
+          taluk: "Thrissur",
+          isActive: true,
+          permissions: []
+        } as any);
+        setLoading(false);
+        return;
+      }
+    }
+
     if (!auth) {
       console.error('Firebase Auth instance is undefined. Check firebase configuration.');
       setLoading(false);
