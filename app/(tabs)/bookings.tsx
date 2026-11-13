@@ -183,6 +183,13 @@ export default function BookingsListScreen() {
               />
             </View>
           }
+          ListFooterComponent={
+            <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary }}>
+                Designed & Developed by Subramanian T S, WebCraft Digital Solutions
+              </Text>
+            </View>
+          }
           renderItem={({ item }) => (
             <TouchableOpacity
               testID={`booking-card-${item.complaint_id}`}

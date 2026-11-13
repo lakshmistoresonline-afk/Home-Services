@@ -546,106 +546,80 @@ export default function AdminDashboard() {
                   </TouchableOpacity>
                 )}
                 <View style={{ flex: 1 }}>
-                  <Text style={[typography.label.small, { color: colors.primary, letterSpacing: 1.2, fontWeight: '700', fontSize: 11 }]}>{roleLabel}</Text>
-                  <Text style={[typography.title.large, { color: colors.text, fontWeight: '800' }]}>Hi, {user?.fullName?.split(' ')[0] || 'Admin'}</Text>
+                  <Text style={[typography.label.small, { color: colors.primary, letterSpacing: 1.5, fontWeight: '800', fontSize: 11 }]}>
+                    {user?.taluk ? `${user.taluk.toUpperCase()} TALUK ADMIN` : roleLabel}
+                  </Text>
+                  <Text style={[typography.headline.small, { color: colors.text, fontWeight: '800', marginTop: 2 }]}>
+                    Hi, {user?.fullName?.split(' ')[0] || 'Admin'}
+                  </Text>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <TouchableOpacity
                     onPress={() => router.push('/notifications')}
-                    style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, marginRight: spacing.xs, width: 36, height: 36 }]}
+                    style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, width: 36, height: 36 }]}
                   >
                     <Ionicons name="notifications-outline" size={18} color={colors.text} />
                     {unreadCount > 0 && <View style={[styles.badge, { backgroundColor: colors.danger }]} />}
                   </TouchableOpacity>
-                  {isSuper && (
-                    <TouchableOpacity
-                      onPress={goHome}
-                      style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, marginRight: spacing.xs, width: 36, height: 36 }]}
-                    >
-                      <Ionicons name="home-outline" size={18} color={colors.primary} />
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity
+                    onPress={() => setStatus('SLA_BREACHED')}
+                    style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, width: 36, height: 36 }]}
+                  >
+                    <Ionicons name="time-outline" size={18} color={colors.warning} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setActiveViewTab('history')}
+                    style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, width: 36, height: 36 }]}
+                  >
+                    <Ionicons name="archive-outline" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(tabs)/profile')}
+                    style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, width: 36, height: 36 }]}
+                  >
+                    <Ionicons name="person-outline" size={18} color={colors.text} />
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={doLogout} style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border, width: 36, height: 36 }]}>
                     <Ionicons name="log-out-outline" size={18} color={colors.danger} />
                   </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Compact Inline Pill Stat Chips (36px height) */}
+              {/* Exact Pill Stat Chips (7 TOTAL, 7 BREACHED, 7 OPEN, 0 DUE TODAY) */}
               <View style={{ marginVertical: spacing.xs }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
-                  {isStaff ? (
-                    <>
-                      <StatPill label="Assigned" value={complaintStats.assigned} color={colors.primary} />
-                      <StatPill label="In Progress" value={complaintStats.in_progress} color={colors.warning} />
-                      <StatPill label="Resolved" value={complaintStats.resolved} color={colors.success} />
-                    </>
-                  ) : (
-                    <>
-                      <StatPill label="Total" value={complaintStats.total} color={colors.primary} />
-                      <StatPill label="Open" value={complaintStats.submitted + complaintStats.assigned + complaintStats.in_progress} color={colors.warning} />
-                      <StatPill label="Resolved" value={complaintStats.resolved} color={colors.success} />
-                      <StatPill label="Unassigned" value={complaintStats.unassigned} color={colors.danger} />
-                    </>
-                  )}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary + '10', borderColor: colors.primary + '30', borderWidth: 1, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 8 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>{complaintStats.total}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary, letterSpacing: 0.5 }}>TOTAL</Text>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 8 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: '#DC2626' }}>{complaintStats.slaBreachedCount || complaintStats.unassigned || 0}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#DC2626', letterSpacing: 0.5 }}>BREACHED</Text>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', borderColor: '#FCD34D', borderWidth: 1, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 8 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: '#D97706' }}>{complaintStats.submitted + complaintStats.assigned + complaintStats.in_progress}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#D97706', letterSpacing: 0.5 }}>OPEN</Text>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3E8FF', borderColor: '#D8B4FE', borderWidth: 1, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 8 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: '#7E22CE' }}>{complaintStats.dueTodayCount || 0}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#7E22CE', letterSpacing: 0.5 }}>DUE TODAY</Text>
+                  </View>
                 </ScrollView>
               </View>
 
-              {/* Active Requests vs Completed History Segmented Tab Bar */}
-              <View style={{ flexDirection: 'row', marginVertical: spacing.xs, gap: 10 }}>
-                <TouchableOpacity
-                  onPress={() => setActiveViewTab('active')}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 8,
-                    borderRadius: 10,
-                    backgroundColor: activeViewTab === 'active' ? colors.primary : colors.surface,
-                    borderWidth: 1,
-                    borderColor: activeViewTab === 'active' ? colors.primary : colors.border,
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    gap: 6
-                  }}
-                >
-                  <Ionicons name="flash-outline" size={15} color={activeViewTab === 'active' ? '#fff' : colors.textSecondary} />
-                  <Text style={{ fontSize: 12, fontWeight: '800', color: activeViewTab === 'active' ? '#fff' : colors.textSecondary }}>
-                    Active ({items.filter(i => ['Submitted', 'Assigned', 'Accepted', 'In Progress'].includes(i.status)).length})
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => setActiveViewTab('history')}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 8,
-                    borderRadius: 10,
-                    backgroundColor: activeViewTab === 'history' ? colors.primary : colors.surface,
-                    borderWidth: 1,
-                    borderColor: activeViewTab === 'history' ? colors.primary : colors.border,
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    gap: 6
-                  }}
-                >
-                  <Ionicons name="time-outline" size={15} color={activeViewTab === 'history' ? '#fff' : colors.textSecondary} />
-                  <Text style={{ fontSize: 12, fontWeight: '800', color: activeViewTab === 'history' ? '#fff' : colors.textSecondary }}>
-                    History ({items.filter(i => ['Resolved', 'Closed', 'Cancelled'].includes(i.status)).length})
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Compact Slim 40px Search Row */}
-              <View style={[styles.searchRow, { borderColor: colors.border, backgroundColor: colors.surface, marginHorizontal: 0, height: 42, marginVertical: spacing.xs, borderRadius: 10, ...shadows.sm }]}>
-                <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
+              {/* Exact Search Box Row (Search ID, name or staff) */}
+              <View style={[styles.searchRow, { borderColor: colors.border, backgroundColor: colors.surface, marginHorizontal: 0, height: 46, marginVertical: spacing.xs, borderRadius: 14, ...shadows.sm }]}>
+                <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
                 <TextInput
                   testID="admin-search-input"
                   value={searchQuery}
                   onChangeText={setSearchQuery}
-                  placeholder={isStaff ? "Search request ID or title" : "Search ID, name or staff..."}
+                  placeholder="Search ID, name or staff"
                   placeholderTextColor={colors.textSecondary}
-                  style={{ flex: 1, color: colors.text, fontSize: 14, paddingLeft: spacing.xs }}
+                  style={{ flex: 1, color: colors.text, fontSize: 15, paddingLeft: spacing.xs }}
                   returnKeyType="search"
                 />
                 {searchQuery.length > 0 && (
@@ -655,27 +629,45 @@ export default function AdminDashboard() {
                 )}
               </View>
 
-              {/* Compact Filter Chips Row */}
+              {/* Exact Filter Chips (Status, SLA Status, Department, History) */}
               <View style={{ marginBottom: spacing.sm }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
                   <TouchableOpacity
                     onPress={() => setShowStatus(true)}
-                    style={[styles.chip, { borderColor: status ? colors.primary : colors.border, backgroundColor: status ? colors.primary + '10' : colors.surface, paddingVertical: 4, height: 32 }]}
+                    style={[styles.chip, { borderColor: status ? colors.primary : colors.border, backgroundColor: status ? colors.primary + '10' : colors.surface, height: 36, paddingHorizontal: 14 }]}
                   >
-                    <Ionicons name="filter-outline" size={14} color={status ? colors.primary : colors.textSecondary} />
+                    <Ionicons name="filter-outline" size={15} color={status ? colors.primary : colors.textSecondary} />
                     <Text style={[typography.label.small, { color: status ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{status || 'Status'}</Text>
                   </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => setStatus(s => s === 'SLA_BREACHED' ? '' : 'SLA_BREACHED')}
+                    style={[styles.chip, { borderColor: status === 'SLA_BREACHED' ? colors.warning : colors.border, backgroundColor: status === 'SLA_BREACHED' ? colors.warning + '10' : colors.surface, height: 36, paddingHorizontal: 14 }]}
+                  >
+                    <Ionicons name="time-outline" size={15} color={status === 'SLA_BREACHED' ? colors.warning : colors.textSecondary} />
+                    <Text style={[typography.label.small, { color: status === 'SLA_BREACHED' ? colors.warning : colors.textSecondary, fontWeight: '700' }]}>SLA Status</Text>
+                  </TouchableOpacity>
+
                   {!isStaff && (
                     <TouchableOpacity
                       onPress={() => setShowDept(true)}
-                      style={[styles.chip, { borderColor: department ? colors.primary : colors.border, backgroundColor: department ? colors.primary + '10' : colors.surface, paddingVertical: 4, height: 32 }]}
+                      style={[styles.chip, { borderColor: department ? colors.primary : colors.border, backgroundColor: department ? colors.primary + '10' : colors.surface, height: 36, paddingHorizontal: 14 }]}
                     >
-                      <Ionicons name="business-outline" size={14} color={department ? colors.primary : colors.textSecondary} />
+                      <Ionicons name="business-outline" size={15} color={department ? colors.primary : colors.textSecondary} />
                       <Text style={[typography.label.small, { color: department ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{department || 'Department'}</Text>
                     </TouchableOpacity>
                   )}
+
+                  <TouchableOpacity
+                    onPress={() => setActiveViewTab(t => t === 'active' ? 'history' : 'active')}
+                    style={[styles.chip, { borderColor: activeViewTab === 'history' ? colors.primary : colors.border, backgroundColor: activeViewTab === 'history' ? colors.primary + '10' : colors.surface, height: 36, paddingHorizontal: 14 }]}
+                  >
+                    <Ionicons name="archive-outline" size={15} color={activeViewTab === 'history' ? colors.primary : colors.textSecondary} />
+                    <Text style={[typography.label.small, { color: activeViewTab === 'history' ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{activeViewTab === 'history' ? 'History (Active)' : 'History'}</Text>
+                  </TouchableOpacity>
+
                   {activeFilters.map((f) => (
-                    <TouchableOpacity key={f.key} onPress={f.clear} style={[styles.chipClear, { borderColor: colors.border, backgroundColor: colors.surfaceTint, height: 32 }]}>
+                    <TouchableOpacity key={f.key} onPress={f.clear} style={[styles.chipClear, { borderColor: colors.border, backgroundColor: colors.surfaceTint, height: 36 }]}>
                       <Ionicons name="close" size={14} color={colors.textSecondary} />
                       <Text style={[typography.label.small, { color: colors.textSecondary, fontWeight: '700' }]}>{f.label}</Text>
                     </TouchableOpacity>
@@ -697,6 +689,12 @@ export default function AdminDashboard() {
                   </View>
                 </View>
               )}
+              {/* Centered Footer Credits */}
+              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary }}>
+                  Designed & Developed by Subramanian T S, WebCraft Digital Solutions
+                </Text>
+              </View>
             </>
           }
           ListEmptyComponent={
