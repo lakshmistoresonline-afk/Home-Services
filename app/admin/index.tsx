@@ -106,6 +106,7 @@ export default function AdminDashboard() {
   const [status, setStatus] = useState<string>('');
   const [department, setDepartment] = useState<string>('');
   const [assignedFilter, setAssignedFilter] = useState<string>('');
+  const [activeViewTab, setActiveViewTab] = useState<'active' | 'history'>('active');
 
   const [items, setItems] = useState<Complaint[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
@@ -487,6 +488,16 @@ export default function AdminDashboard() {
     ].filter(Boolean) as { key: string; label: string; clear: () => void }[];
   }, [status, department, assignedFilter]);
 
+  const displayedItems = useMemo(() => {
+    return items.filter(item => {
+      if (activeViewTab === 'active') {
+        return ['Submitted', 'Assigned', 'Accepted', 'In Progress'].includes(item.status);
+      } else {
+        return ['Resolved', 'Closed', 'Cancelled'].includes(item.status);
+      }
+    });
+  }, [items, activeViewTab]);
+
   const handleBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -551,6 +562,51 @@ export default function AdminDashboard() {
         </ScrollView>
       </View>
 
+      {/* Active Requests vs Completed History Segmented Tab Bar */}
+      <View style={{ flexDirection: 'row', paddingHorizontal: spacing.lg, marginVertical: spacing.xs, gap: 10 }}>
+        <TouchableOpacity
+          onPress={() => setActiveViewTab('active')}
+          style={{
+            flex: 1,
+            paddingVertical: 10,
+            borderRadius: 12,
+            backgroundColor: activeViewTab === 'active' ? colors.primary : colors.surface,
+            borderWidth: 1,
+            borderColor: activeViewTab === 'active' ? colors.primary : colors.border,
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 6
+          }}
+        >
+          <Ionicons name="flash-outline" size={16} color={activeViewTab === 'active' ? '#fff' : colors.textSecondary} />
+          <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'active' ? '#fff' : colors.textSecondary }}>
+            Active ({items.filter(i => ['Submitted', 'Assigned', 'Accepted', 'In Progress'].includes(i.status)).length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setActiveViewTab('history')}
+          style={{
+            flex: 1,
+            paddingVertical: 10,
+            borderRadius: 12,
+            backgroundColor: activeViewTab === 'history' ? colors.primary : colors.surface,
+            borderWidth: 1,
+            borderColor: activeViewTab === 'history' ? colors.primary : colors.border,
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 6
+          }}
+        >
+          <Ionicons name="time-outline" size={16} color={activeViewTab === 'history' ? '#fff' : colors.textSecondary} />
+          <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'history' ? '#fff' : colors.textSecondary }}>
+            History ({items.filter(i => ['Resolved', 'Closed', 'Cancelled'].includes(i.status)).length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={[styles.searchRow, { borderColor: colors.border, backgroundColor: colors.surface, ...shadows.sm }]}>
         <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
         <TextInput
@@ -606,7 +662,7 @@ export default function AdminDashboard() {
         </View>
       ) : (
         <FlatList
-          data={items}
+          data={displayedItems}
           keyExtractor={(i) => i.complaint_id}
           contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 100 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(false)} tintColor={colors.primary} />}
