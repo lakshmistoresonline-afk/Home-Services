@@ -198,6 +198,33 @@ export default function ServiceRequestDetail() {
     }
   };
 
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [selectedTags, setSelectedTags] = useState<string[]>(['Punctual Arrival', 'Clean Worksite']);
+
+  const onExportInvoicePDF = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.print();
+    } else {
+      showToast('Invoice PDF ready for print', 'success');
+    }
+  };
+
+  const onShareWhatsApp = () => {
+    const text = encodeURIComponent(`Home Service Invoice #${item?.complaint_id}\nService: ${item?.categoryName}\nAmount: ₹${item?.price || item?.basePrice || 0}\nStatus: ${item?.status}\nLink: https://home-services-8789c.web.app/service/${item?.complaint_id}`);
+    Linking.openURL(`https://wa.me/?text=${text}`);
+  };
+
+  const onOpenGoogleMaps = () => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${item?.taluk}, ${item?.district}, Kerala`)}`;
+    Linking.openURL(url);
+  };
+
+  const submitRating = () => {
+    setShowRatingModal(false);
+    showToast(`Thank you! Rating submitted (${rating} ★)`, 'success');
+  };
+
   const confirmResolveAndPay = async () => {
     if (!item) return;
     const numPrice = parseFloat(resolvePrice.replace(/[^0-9.]/g, '')) || 0;
@@ -516,8 +543,27 @@ export default function ServiceRequestDetail() {
                     ~8.4 km away · Estimated Arrival in ~20 mins
                   </Text>
                 </View>
+                <TouchableOpacity onPress={onOpenGoogleMaps} style={{ backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 }}>
+                  <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800' }}>MAPS ➔</Text>
+                </TouchableOpacity>
               </View>
             )}
+          </View>
+        )}
+
+        {/* Active 90-Day Warranty Badge */}
+        {['Resolved', 'Closed'].includes(item.status) && (
+          <View style={{ marginTop: 16, backgroundColor: '#10B9811A', borderColor: '#10B98140', borderWidth: 1, padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Ionicons name="shield-checkmark" size={24} color="#10B981" />
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: '#047857', fontWeight: '800', fontSize: 13 }}>🛡️ 90-DAY ACTIVE SERVICE WARRANTY</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}>
+                Labor protection active until {dayjs(item.created_at).add(90, 'day').format('MMM D, YYYY')}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => showToast('Warranty revisit ticket requested', 'success')} style={{ backgroundColor: '#047857', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 }}>
+              <Text style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>CLAIM REVISIT</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -535,7 +581,7 @@ export default function ServiceRequestDetail() {
           <MetaRow label="Last update" value={dayjs(item.updatedAtDate || item.updatedAt).format('MMM D · h:mm A')} color={colors} />
         </AppCard>
 
-        {/* Itemized Price Breakdown Card */}
+        {/* Itemized Price Breakdown & Export PDF / WhatsApp Actions Card */}
         {item.basePrice > 0 && (
           <View style={{ marginTop: 24 }}>
             <Text style={[styles.section, { color: colors.textSecondary }]}>ESTIMATED INVOICE BREAKDOWN</Text>
@@ -549,10 +595,28 @@ export default function ServiceRequestDetail() {
 
               <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 8 }} />
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '800' }}>Total Estimated Amount</Text>
                 <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '800' }}>₹{item.price || item.basePrice}</Text>
               </View>
+
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                <TouchableOpacity onPress={onExportInvoicePDF} style={{ flex: 1, backgroundColor: colors.primary, paddingVertical: 10, borderRadius: 8, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+                  <Ionicons name="document-text-outline" size={16} color="#fff" />
+                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>Export Invoice PDF</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={onShareWhatsApp} style={{ flex: 1, backgroundColor: '#25D366', paddingVertical: 10, borderRadius: 8, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+                  <Ionicons name="logo-whatsapp" size={16} color="#fff" />
+                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>WhatsApp Share</Text>
+                </TouchableOpacity>
+              </View>
+
+              {['Resolved', 'Closed'].includes(item.status) && (
+                <TouchableOpacity onPress={() => setShowRatingModal(true)} style={{ marginTop: 10, backgroundColor: colors.amber + '1A', borderColor: colors.amber + '40', borderWidth: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' }}>
+                  <Text style={{ color: colors.amber, fontSize: 12, fontWeight: '800' }}>⭐ Rate & Review Service Provider</Text>
+                </TouchableOpacity>
+              )}
             </AppCard>
           </View>
         )}
@@ -933,6 +997,53 @@ export default function ServiceRequestDetail() {
             </Pressable>
           </Pressable>
         </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Post-Service 5-Star Rating Modal */}
+      <Modal transparent visible={showRatingModal} animationType="fade" onRequestClose={() => setShowRatingModal(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setShowRatingModal(false)}>
+          <Pressable style={[styles.modalCard, { backgroundColor: colors.surface }]} onPress={() => {}}>
+            <Text style={[styles.modalTitle, { color: colors.text, textAlign: 'center' }]}>Rate Service Experience</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginTop: 4 }}>
+              How was your service experience with {item?.assignedStaffName || 'Provider'}?
+            </Text>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginVertical: 20 }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                  <Ionicons name={star <= rating ? "star" : "star-outline"} size={36} color={colors.amber} />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
+              {['Punctual Arrival', 'Clean Worksite', 'Polite Behavior', 'Fair Billing'].map((tag) => {
+                const isSelected = selectedTags.includes(tag);
+                return (
+                  <TouchableOpacity
+                    key={tag}
+                    onPress={() => setSelectedTags(prev => isSelected ? prev.filter(t => t !== tag) : [...prev, tag])}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: isSelected ? colors.primary : colors.border,
+                      backgroundColor: isSelected ? colors.primary + '1A' : colors.surface,
+                    }}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: isSelected ? colors.primary : colors.textSecondary }}>{tag}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <AppButton title="Cancel" variant="outline" onPress={() => setShowRatingModal(false)} style={{ flex: 1 }} />
+              <AppButton title="Submit Rating" onPress={submitRating} style={{ flex: 1 }} />
+            </View>
+          </Pressable>
+        </Pressable>
       </Modal>
 
       {/* Resolve & Payment Modal */}

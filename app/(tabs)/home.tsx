@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl, Platform, Alert, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl, Platform, Alert, Linking, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,6 +36,34 @@ export default function HomeScreen() {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isVoiceSearching, setIsVoiceSearching] = useState(false);
+
+  const startVoiceSearch = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      try {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-IN';
+        recognition.interimResults = false;
+        setIsVoiceSearching(true);
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript) {
+            setSearchQuery(transcript);
+          }
+          setIsVoiceSearching(false);
+        };
+
+        recognition.onerror = () => setIsVoiceSearching(false);
+        recognition.onend = () => setIsVoiceSearching(false);
+        recognition.start();
+      } catch (e) {
+        setIsVoiceSearching(false);
+      }
+    }
+  };
 
   const load = useCallback(async () => {
     if (isLoggingOut) return;
@@ -228,6 +256,21 @@ export default function HomeScreen() {
             </View>
           </AppCard>
         </TouchableOpacity>
+
+        {/* Voice Command Search Bar */}
+        <View style={{ marginTop: spacing.md, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 16, paddingHorizontal: 14, height: 50 }}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} />
+          <TextInput
+            placeholder="Search 'AC cleaning', 'Well chlorination', 'Plumber'..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={{ flex: 1, color: colors.text, fontSize: 14, marginLeft: 8 }}
+          />
+          <TouchableOpacity onPress={startVoiceSearch} style={{ padding: 4 }}>
+            <Ionicons name={isVoiceSearching ? "mic" : "mic-outline"} size={22} color={isVoiceSearching ? colors.danger : colors.primary} />
+          </TouchableOpacity>
+        </View>
 
         {/* Quick Booking Category Bar */}
         <View style={{ marginTop: spacing.xl }}>

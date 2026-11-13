@@ -152,6 +152,11 @@ export default function BookingsListScreen() {
                     {dayjs(item.created_at).format('MMM D, YYYY · h:mm A')}
                   </Text>
                 </View>
+                {['Resolved', 'Closed'].includes(item.status) && (
+                  <View style={{ marginTop: 8, backgroundColor: '#10B98115', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' }}>
+                    <Text style={{ color: '#047857', fontSize: 11, fontWeight: '800' }}>🛡️ 90-DAY ACTIVE WARRANTY</Text>
+                  </View>
+                )}
               </AppCard>
             </TouchableOpacity>
           )}
