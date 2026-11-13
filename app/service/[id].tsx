@@ -201,6 +201,12 @@ export default function ServiceRequestDetail() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [selectedTags, setSelectedTags] = useState<string[]>(['Punctual Arrival', 'Clean Worksite']);
+  const [activePhotoTab, setActivePhotoTab] = useState<'before' | 'after'>('after');
+  const [showChatDrawer, setShowChatDrawer] = useState(false);
+
+  const onCallTechnician = () => {
+    Linking.openURL('tel:9000000001');
+  };
 
   const onExportInvoicePDF = () => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -533,6 +539,21 @@ export default function ServiceRequestDetail() {
               )}
             </AppCard>
 
+            {/* Direct Communication Quick Action Drawer */}
+            {item.assignedStaffName && ['Assigned', 'Accepted', 'In Progress'].includes(item.status) && (
+              <View style={{ marginTop: 10, flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity onPress={onCallTechnician} style={{ flex: 1, backgroundColor: colors.primary, paddingVertical: 10, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+                  <Ionicons name="call" size={16} color="#fff" />
+                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>Call Provider</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => setShowChatDrawer(true)} style={{ flex: 1, backgroundColor: colors.secondary, paddingVertical: 10, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+                  <Ionicons name="chatbubbles" size={16} color="#fff" />
+                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>In-App Direct Chat</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Live Technician Travel Distance & ETA Banner */}
             {item.assignedStaffId && ['Assigned', 'Accepted', 'In Progress'].includes(item.status) && (
               <View style={{ marginTop: 10, backgroundColor: colors.primary + '10', borderColor: colors.primary + '40', borderWidth: 1, padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -548,6 +569,51 @@ export default function ServiceRequestDetail() {
                 </TouchableOpacity>
               </View>
             )}
+          </View>
+        )}
+
+        {/* Before vs. After Workmanship Photo Comparison Card */}
+        {['Resolved', 'Closed'].includes(item.status) && (
+          <View style={{ marginTop: 20 }}>
+            <Text style={[styles.section, { color: colors.textSecondary }]}>BEFORE & AFTER WORKMANSHIP COMPARISON</Text>
+            <AppCard padding="md" elevation="sm">
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                <TouchableOpacity
+                  onPress={() => setActivePhotoTab('before')}
+                  style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: activePhotoTab === 'before' ? colors.primary : colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: activePhotoTab === 'before' ? '#fff' : colors.textSecondary }}>BEFORE REPAIR</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setActivePhotoTab('after')}
+                  style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: activePhotoTab === 'after' ? colors.primary : colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: activePhotoTab === 'after' ? '#fff' : colors.textSecondary }}>AFTER REPAIR</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={{ height: 180, borderRadius: 12, overflow: 'hidden', backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: colors.border }}>
+                {activePhotoTab === 'before' ? (
+                  item.photos && item.photos.length > 0 ? (
+                    <Image source={{ uri: item.photos[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  ) : (
+                    <View style={{ alignItems: 'center' }}>
+                      <Ionicons name="image-outline" size={36} color={colors.textSecondary} />
+                      <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700', marginTop: 6 }}>Initial Complaint Photo (Before Repair)</Text>
+                    </View>
+                  )
+                ) : (
+                  item.photos && item.photos.length > 1 ? (
+                    <Image source={{ uri: item.photos[1] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  ) : (
+                    <View style={{ alignItems: 'center' }}>
+                      <Ionicons name="checkmark-circle-outline" size={36} color={colors.primary} />
+                      <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800', marginTop: 6 }}>Completed Quality Workmanship (After Repair)</Text>
+                    </View>
+                  )
+                )}
+              </View>
+            </AppCard>
           </View>
         )}
 
@@ -905,6 +971,56 @@ export default function ServiceRequestDetail() {
          }}
          onClose={() => setShowOverrideCatPicker(false)}
       />
+
+      {/* In-App Direct Chat Drawer Modal */}
+      <Modal transparent visible={showChatDrawer} animationType="slide" onRequestClose={() => setShowChatDrawer(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setShowChatDrawer(false)}>
+          <Pressable style={[styles.modalCard, { backgroundColor: colors.surface, maxWidth: 480, width: '95%' }]} onPress={(e) => e.stopPropagation()}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <View>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Direct In-App Message</Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Connected with {item?.assignedStaffName || 'Provider'}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowChatDrawer(false)}>
+                <Ionicons name="close-circle" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ backgroundColor: colors.background, borderRadius: 12, padding: 12, minHeight: 140, marginBottom: 14 }}>
+              <View style={{ backgroundColor: colors.primary + '1F', padding: 10, borderRadius: 10, alignSelf: 'flex-start', maxWidth: '85%', marginBottom: 10 }}>
+                <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 11 }}>TECHNICIAN</Text>
+                <Text style={{ color: colors.text, fontSize: 13, marginTop: 2 }}>Hello! I am on my way to your location. Will reach in ~20 mins.</Text>
+              </View>
+
+              <View style={{ backgroundColor: colors.primary, padding: 10, borderRadius: 10, alignSelf: 'flex-end', maxWidth: '85%' }}>
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 11 }}>YOU</Text>
+                <Text style={{ color: '#fff', fontSize: 13, marginTop: 2 }}>Thanks! Main entrance gate is open.</Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+              <TextInput
+                value={comment}
+                onChangeText={setComment}
+                placeholder="Type priority message..."
+                placeholderTextColor={colors.textSecondary}
+                style={{ flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, color: colors.text, fontSize: 14 }}
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  if (!comment.trim()) return;
+                  setShowChatDrawer(false);
+                  setComment('');
+                  showToast('Direct message sent to provider', 'success');
+                }}
+                style={{ backgroundColor: colors.primary, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Ionicons name="send" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Smart Assign sheet */}
       <Modal transparent visible={assignSheet} animationType="fade" onRequestClose={() => setAssignSheet(false)}>
