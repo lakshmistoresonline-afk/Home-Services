@@ -98,56 +98,58 @@ export default function BookingsListScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Active Requests vs Completed History Segmented Tab Bar */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 20, marginBottom: spacing.md, gap: 10 }}>
-        <TouchableOpacity
-          onPress={() => setActiveViewTab('active')}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            borderRadius: 12,
-            backgroundColor: activeViewTab === 'active' ? colors.primary : colors.surface,
-            borderWidth: 1,
-            borderColor: activeViewTab === 'active' ? colors.primary : colors.border,
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 6
-          }}
-        >
-          <Ionicons name="flash-outline" size={16} color={activeViewTab === 'active' ? '#fff' : colors.textSecondary} />
-          <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'active' ? '#fff' : colors.textSecondary }}>
-            Active ({items.filter(i => ['Submitted', 'Assigned', 'Accepted', 'In Progress'].includes(i.status)).length})
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setActiveViewTab('history')}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            borderRadius: 12,
-            backgroundColor: activeViewTab === 'history' ? colors.primary : colors.surface,
-            borderWidth: 1,
-            borderColor: activeViewTab === 'history' ? colors.primary : colors.border,
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 6
-          }}
-        >
-          <Ionicons name="time-outline" size={16} color={activeViewTab === 'history' ? '#fff' : colors.textSecondary} />
-          <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'history' ? '#fff' : colors.textSecondary }}>
-            History ({items.filter(i => ['Resolved', 'Closed', 'Cancelled'].includes(i.status)).length})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       {loading ? (
         renderSkeleton()
       ) : (
         <FlatList
           data={displayedItems}
+          keyExtractor={(i) => i.complaint_id}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          ListHeaderComponent={
+            <View style={{ flexDirection: 'row', marginBottom: spacing.md, gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setActiveViewTab('active')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  backgroundColor: activeViewTab === 'active' ? colors.primary : colors.surface,
+                  borderWidth: 1,
+                  borderColor: activeViewTab === 'active' ? colors.primary : colors.border,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 6
+                }}
+              >
+                <Ionicons name="flash-outline" size={16} color={activeViewTab === 'active' ? '#fff' : colors.textSecondary} />
+                <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'active' ? '#fff' : colors.textSecondary }}>
+                  Active ({items.filter(i => ['Submitted', 'Assigned', 'Accepted', 'In Progress'].includes(i.status)).length})
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setActiveViewTab('history')}
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  backgroundColor: activeViewTab === 'history' ? colors.primary : colors.surface,
+                  borderWidth: 1,
+                  borderColor: activeViewTab === 'history' ? colors.primary : colors.border,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 6
+                }}
+              >
+                <Ionicons name="time-outline" size={16} color={activeViewTab === 'history' ? '#fff' : colors.textSecondary} />
+                <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'history' ? '#fff' : colors.textSecondary }}>
+                  History ({items.filter(i => ['Resolved', 'Closed', 'Cancelled'].includes(i.status)).length})
+                </Text>
+              </TouchableOpacity>
+            </View>
+          }
           keyExtractor={(i) => i.complaint_id}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
           refreshControl={

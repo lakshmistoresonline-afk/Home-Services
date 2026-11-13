@@ -543,115 +543,6 @@ export default function AdminDashboard() {
         </View>
       </View>
 
-      <View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
-          {isStaff ? (
-            <>
-              <StatChip label="Assigned" value={complaintStats.assigned} color={colors.primary} />
-              <StatChip label="In Progress" value={complaintStats.in_progress} color={colors.warning} />
-              <StatChip label="Resolved" value={complaintStats.resolved} color={colors.success} />
-            </>
-          ) : (
-            <>
-              <StatChip label="Total" value={complaintStats.total} color={colors.primary} />
-              <StatChip label="Open" value={complaintStats.submitted + complaintStats.assigned + complaintStats.in_progress} color={colors.warning} />
-              <StatChip label="Resolved" value={complaintStats.resolved} color={colors.success} />
-              <StatChip label="Unassigned" value={complaintStats.unassigned} color={colors.danger} />
-            </>
-          )}
-        </ScrollView>
-      </View>
-
-      {/* Active Requests vs Completed History Segmented Tab Bar */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: spacing.lg, marginVertical: spacing.xs, gap: 10 }}>
-        <TouchableOpacity
-          onPress={() => setActiveViewTab('active')}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            borderRadius: 12,
-            backgroundColor: activeViewTab === 'active' ? colors.primary : colors.surface,
-            borderWidth: 1,
-            borderColor: activeViewTab === 'active' ? colors.primary : colors.border,
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 6
-          }}
-        >
-          <Ionicons name="flash-outline" size={16} color={activeViewTab === 'active' ? '#fff' : colors.textSecondary} />
-          <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'active' ? '#fff' : colors.textSecondary }}>
-            Active ({items.filter(i => ['Submitted', 'Assigned', 'Accepted', 'In Progress'].includes(i.status)).length})
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setActiveViewTab('history')}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            borderRadius: 12,
-            backgroundColor: activeViewTab === 'history' ? colors.primary : colors.surface,
-            borderWidth: 1,
-            borderColor: activeViewTab === 'history' ? colors.primary : colors.border,
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 6
-          }}
-        >
-          <Ionicons name="time-outline" size={16} color={activeViewTab === 'history' ? '#fff' : colors.textSecondary} />
-          <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'history' ? '#fff' : colors.textSecondary }}>
-            History ({items.filter(i => ['Resolved', 'Closed', 'Cancelled'].includes(i.status)).length})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={[styles.searchRow, { borderColor: colors.border, backgroundColor: colors.surface, ...shadows.sm }]}>
-        <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
-        <TextInput
-          testID="admin-search-input"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder={isStaff ? "Search request ID or title" : "Search ID, name or staff"}
-          placeholderTextColor={colors.textSecondary}
-          style={{ flex: 1, color: colors.text, fontSize: 16, paddingLeft: spacing.xs }}
-          returnKeyType="search"
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')} testID="admin-search-clear">
-            <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={{ marginBottom: spacing.md }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-          <TouchableOpacity
-            onPress={() => setShowStatus(true)}
-            style={[styles.chip, { borderColor: status ? colors.primary : colors.border, backgroundColor: status ? colors.primary + '10' : colors.surface }]}
-          >
-            <Ionicons name="filter-outline" size={16} color={status ? colors.primary : colors.textSecondary} />
-            <Text style={[typography.label.medium, { color: status ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{status || 'Status'}</Text>
-          </TouchableOpacity>
-          {!isStaff && (
-            <TouchableOpacity
-              onPress={() => setShowDept(true)}
-              style={[styles.chip, { borderColor: department ? colors.primary : colors.border, backgroundColor: department ? colors.primary + '10' : colors.surface }]}
-            >
-              <Ionicons name="business-outline" size={16} color={department ? colors.primary : colors.textSecondary} />
-              <Text style={[typography.label.medium, { color: department ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{department || 'Department'}</Text>
-            </TouchableOpacity>
-          )}
-          {activeFilters.map((f) => (
-            <TouchableOpacity key={f.key} onPress={f.clear} style={[styles.chipClear, { borderColor: colors.border, backgroundColor: colors.surfaceTint }]}>
-              <Ionicons name="close" size={14} color={colors.textSecondary} />
-              <Text style={[typography.label.small, { color: colors.textSecondary, fontWeight: '700' }]}>{f.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
       {loading && items.length === 0 ? (
         <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
           {[1,2,3,4].map(i => (
@@ -668,6 +559,118 @@ export default function AdminDashboard() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(false)} tintColor={colors.primary} />}
           onEndReached={() => load(true)}
           onEndReachedThreshold={0.5}
+          ListHeaderComponent={
+            <>
+              <View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
+                  {isStaff ? (
+                    <>
+                      <StatChip label="Assigned" value={complaintStats.assigned} color={colors.primary} />
+                      <StatChip label="In Progress" value={complaintStats.in_progress} color={colors.warning} />
+                      <StatChip label="Resolved" value={complaintStats.resolved} color={colors.success} />
+                    </>
+                  ) : (
+                    <>
+                      <StatChip label="Total" value={complaintStats.total} color={colors.primary} />
+                      <StatChip label="Open" value={complaintStats.submitted + complaintStats.assigned + complaintStats.in_progress} color={colors.warning} />
+                      <StatChip label="Resolved" value={complaintStats.resolved} color={colors.success} />
+                      <StatChip label="Unassigned" value={complaintStats.unassigned} color={colors.danger} />
+                    </>
+                  )}
+                </ScrollView>
+              </View>
+
+              {/* Active Requests vs Completed History Segmented Tab Bar */}
+              <View style={{ flexDirection: 'row', marginVertical: spacing.xs, gap: 10 }}>
+                <TouchableOpacity
+                  onPress={() => setActiveViewTab('active')}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                    backgroundColor: activeViewTab === 'active' ? colors.primary : colors.surface,
+                    borderWidth: 1,
+                    borderColor: activeViewTab === 'active' ? colors.primary : colors.border,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 6
+                  }}
+                >
+                  <Ionicons name="flash-outline" size={16} color={activeViewTab === 'active' ? '#fff' : colors.textSecondary} />
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'active' ? '#fff' : colors.textSecondary }}>
+                    Active ({items.filter(i => ['Submitted', 'Assigned', 'Accepted', 'In Progress'].includes(i.status)).length})
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setActiveViewTab('history')}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                    backgroundColor: activeViewTab === 'history' ? colors.primary : colors.surface,
+                    borderWidth: 1,
+                    borderColor: activeViewTab === 'history' ? colors.primary : colors.border,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 6
+                  }}
+                >
+                  <Ionicons name="time-outline" size={16} color={activeViewTab === 'history' ? '#fff' : colors.textSecondary} />
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: activeViewTab === 'history' ? '#fff' : colors.textSecondary }}>
+                    History ({items.filter(i => ['Resolved', 'Closed', 'Cancelled'].includes(i.status)).length})
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={[styles.searchRow, { borderColor: colors.border, backgroundColor: colors.surface, marginHorizontal: 0, ...shadows.sm }]}>
+                <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
+                <TextInput
+                  testID="admin-search-input"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder={isStaff ? "Search request ID or title" : "Search ID, name or staff"}
+                  placeholderTextColor={colors.textSecondary}
+                  style={{ flex: 1, color: colors.text, fontSize: 16, paddingLeft: spacing.xs }}
+                  returnKeyType="search"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery('')} testID="admin-search-clear">
+                    <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View style={{ marginBottom: spacing.md }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+                  <TouchableOpacity
+                    onPress={() => setShowStatus(true)}
+                    style={[styles.chip, { borderColor: status ? colors.primary : colors.border, backgroundColor: status ? colors.primary + '10' : colors.surface }]}
+                  >
+                    <Ionicons name="filter-outline" size={16} color={status ? colors.primary : colors.textSecondary} />
+                    <Text style={[typography.label.medium, { color: status ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{status || 'Status'}</Text>
+                  </TouchableOpacity>
+                  {!isStaff && (
+                    <TouchableOpacity
+                      onPress={() => setShowDept(true)}
+                      style={[styles.chip, { borderColor: department ? colors.primary : colors.border, backgroundColor: department ? colors.primary + '10' : colors.surface }]}
+                    >
+                      <Ionicons name="business-outline" size={16} color={department ? colors.primary : colors.textSecondary} />
+                      <Text style={[typography.label.medium, { color: department ? colors.primary : colors.textSecondary, fontWeight: '700' }]}>{department || 'Department'}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {activeFilters.map((f) => (
+                    <TouchableOpacity key={f.key} onPress={f.clear} style={[styles.chipClear, { borderColor: colors.border, backgroundColor: colors.surfaceTint }]}>
+                      <Ionicons name="close" size={14} color={colors.textSecondary} />
+                      <Text style={[typography.label.small, { color: colors.textSecondary, fontWeight: '700' }]}>{f.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </>
+          }
           ListFooterComponent={
             <>
               {loadingMore && <ActivityIndicator style={{ marginVertical: spacing.xl }} color={colors.primary} />}
