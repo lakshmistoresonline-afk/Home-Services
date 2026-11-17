@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
@@ -203,9 +204,18 @@ export default function ServiceRequestDetail() {
   const [selectedTags, setSelectedTags] = useState<string[]>(['Punctual Arrival', 'Clean Worksite']);
   const [activePhotoTab, setActivePhotoTab] = useState<'before' | 'after'>('after');
   const [showChatDrawer, setShowChatDrawer] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
 
   const onCallTechnician = () => {
-    Linking.openURL('tel:9000000001');
+    const phone = staff?.mobile || citizen?.mobile || '9000000001';
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.innerWidth >= 768) {
+      // Desktop Web: Show Provider Contact Card Modal
+      setShowCallModal(true);
+    } else {
+      // Mobile Native / Mobile Browser: Launch Phone Dialer
+      Linking.openURL(`tel:${phone.replace(/[^0-9+]/g, '')}`);
+    }
   };
 
   const onExportInvoicePDF = () => {
@@ -975,7 +985,7 @@ export default function ServiceRequestDetail() {
 
           {/* Quick Phone Call Button */}
           <TouchableOpacity
-            onPress={() => Linking.openURL('tel:9000000001')}
+            onPress={onCallTechnician}
             style={{ backgroundColor: colors.primary + '1A', borderColor: colors.primary + '40', borderWidth: 1, height: 44, width: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
           >
             <Ionicons name="call" size={20} color={colors.primary} />
@@ -1015,6 +1025,64 @@ export default function ServiceRequestDetail() {
           </View>
         </View>
       )}
+
+      {/* Desktop Provider Contact Card Modal */}
+      <Modal transparent visible={showCallModal} animationType="fade" onRequestClose={() => setShowCallModal(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setShowCallModal(false)}>
+          <Pressable style={[styles.modalCard, { backgroundColor: colors.surface, maxWidth: 420, width: '92%' }]} onPress={(e) => e.stopPropagation()}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Provider Contact Details</Text>
+              <TouchableOpacity onPress={() => setShowCallModal(false)}>
+                <Ionicons name="close-circle" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ backgroundColor: colors.background, borderRadius: 16, padding: 18, alignItems: 'center', borderWidth: 1, borderColor: colors.border, marginBottom: 16 }}>
+              <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary + '1F', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                <Ionicons name="person" size={28} color={colors.primary} />
+              </View>
+              <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>{staff?.fullName || item?.assignedStaffName || 'Assigned Service Provider'}</Text>
+              <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2, fontWeight: '600' }}>
+                {staff?.designation || item?.assignedDepartment || 'Field Resource'}
+              </Text>
+
+              <View style={{ backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary + '40', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="call" size={18} color={colors.primary} />
+                <Text style={{ fontSize: 18, fontWeight: '800', color: colors.primary, letterSpacing: 0.5 }}>
+                  {staff?.mobile || citizen?.mobile || '+91 90000 00001'}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  const phone = staff?.mobile || citizen?.mobile || '9000000001';
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(phone);
+                  }
+                  showToast(`Copied ${phone} to clipboard`, 'success');
+                }}
+                style={{ flex: 1, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border, paddingVertical: 12, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
+              >
+                <Ionicons name="copy-outline" size={16} color={colors.text} />
+                <Text style={{ color: colors.text, fontWeight: '800', fontSize: 13 }}>Copy Number</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  const phone = staff?.mobile || citizen?.mobile || '9000000001';
+                  Linking.openURL(`tel:${phone.replace(/[^0-9+]/g, '')}`);
+                }}
+                style={{ flex: 1, backgroundColor: colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
+              >
+                <Ionicons name="call" size={16} color="#fff" />
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Launch Dialer</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Image viewer */}
       <Modal transparent visible={!!viewer} onRequestClose={() => setViewer(null)}>
