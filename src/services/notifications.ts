@@ -84,5 +84,17 @@ export const notificationService = {
       type: 'ACCOUNT',
       priority: 'LOW'
     });
+  },
+
+  sendWhatsAppAlert: (complaintId: string, status: string, title: string, amount?: number) => {
+    const trackingUrl = `https://home-services-8789c.web.app/service/${complaintId}`;
+    const text = encodeURIComponent(`🏠 Home Services Alert (#${complaintId})\nStatus: ${status}\nService: ${title}${amount ? `\nAmount: ₹${amount}` : ''}\nTrack Live: ${trackingUrl}`);
+    return `https://wa.me/?text=${text}`;
+  },
+
+  sendSMSAlert: (complaintId: string, status: string, title: string) => {
+    const trackingUrl = `https://home-services-8789c.web.app/service/${complaintId}`;
+    const text = encodeURIComponent(`Home Service Alert #${complaintId}: Status is now ${status}. Track live: ${trackingUrl}`);
+    return `sms:?body=${text}`;
   }
 };

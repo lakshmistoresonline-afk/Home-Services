@@ -470,6 +470,25 @@ export default function ServiceRequestDetail() {
           Filed on {dayjs(item.created_at).format('MMM D, YYYY · h:mm A')}
         </Text>
 
+        {/* Automated WhatsApp & SMS Instant Alert Dispatch Buttons */}
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+          <TouchableOpacity
+            onPress={() => Linking.openURL(notificationService.sendWhatsAppAlert(item.complaint_id, item.status, item.title, item.price || item.basePrice))}
+            style={{ backgroundColor: '#25D3661A', borderColor: '#25D36660', borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 4 }}
+          >
+            <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+            <Text style={{ color: '#059669', fontSize: 11, fontWeight: '800' }}>WhatsApp Alert</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => Linking.openURL(notificationService.sendSMSAlert(item.complaint_id, item.status, item.title))}
+            style={{ backgroundColor: colors.primary + '15', borderColor: colors.primary + '40', borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 4 }}
+          >
+            <Ionicons name="chatbox-ellipses-outline" size={14} color={colors.primary} />
+            <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>SMS Alert</Text>
+          </TouchableOpacity>
+        </View>
+
         {isAdminSide && (
           <AppCard style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 12 }} elevation="sm" padding="sm">
             <View style={[styles.userAvatar, { backgroundColor: colors.primary + '15' }]}>
