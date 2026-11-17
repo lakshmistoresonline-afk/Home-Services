@@ -947,6 +947,75 @@ export default function ServiceRequestDetail() {
       </ScrollView>
       </View>
 
+      {/* Sticky Floating Bottom Action Dock */}
+      {item && (
+        <View style={{
+          position: Platform.OS === 'web' ? ('fixed' as any) : 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          zIndex: 100,
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.08)'
+        }}>
+          {/* Quick WhatsApp Alert Button */}
+          <TouchableOpacity
+            onPress={() => Linking.openURL(notificationService.sendWhatsAppAlert(item.complaint_id, item.status, item.title, item.price || item.basePrice))}
+            style={{ backgroundColor: '#25D3661A', borderColor: '#25D36660', borderWidth: 1, height: 44, width: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
+          </TouchableOpacity>
+
+          {/* Quick Phone Call Button */}
+          <TouchableOpacity
+            onPress={() => Linking.openURL('tel:9000000001')}
+            style={{ backgroundColor: colors.primary + '1A', borderColor: colors.primary + '40', borderWidth: 1, height: 44, width: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Ionicons name="call" size={20} color={colors.primary} />
+          </TouchableOpacity>
+
+          {/* Primary Action Button */}
+          <View style={{ flex: 1 }}>
+            {['Resolved', 'Closed'].includes(item.status) ? (
+              <AppButton
+                title="★ RATE SERVICE"
+                onPress={() => setShowRatingModal(true)}
+                style={{ height: 44, backgroundColor: colors.amber }}
+                textStyle={{ fontSize: 13, fontWeight: '800' }}
+              />
+            ) : ['In Progress', 'Assigned'].includes(item.status) ? (
+              <AppButton
+                title="✅ RESOLVE & PAY"
+                onPress={() => { setResolvePrice(String(item.basePrice || 500)); setResolveModalVisible(true); }}
+                style={{ height: 44, backgroundColor: colors.success }}
+                textStyle={{ fontSize: 13, fontWeight: '800' }}
+              />
+            ) : !item.assignedStaffId && isSuperOrAdmin ? (
+              <AppButton
+                title="👤 ASSIGN PROVIDER"
+                onPress={() => setAssignSheet(true)}
+                style={{ height: 44, backgroundColor: colors.primary }}
+                textStyle={{ fontSize: 13, fontWeight: '800' }}
+              />
+            ) : (
+              <AppButton
+                title={`STATUS: ${item.status}`}
+                onPress={() => setStatusSheet(true)}
+                style={{ height: 44, backgroundColor: colors.primary }}
+                textStyle={{ fontSize: 13, fontWeight: '800' }}
+              />
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Image viewer */}
       <Modal transparent visible={!!viewer} onRequestClose={() => setViewer(null)}>
         <Pressable style={styles.backdrop} onPress={() => setViewer(null)}>

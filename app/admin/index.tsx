@@ -68,32 +68,40 @@ const ComplaintListItem = React.memo(({ item, onPress }: { item: Complaint, onPr
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
-      <AppCard padding="md" elevation="sm" style={{ borderLeftWidth: 4, borderLeftColor: borderColor }}>
-        <View style={styles.topRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <View style={{ backgroundColor: colors.primary + '15', padding: 6, borderRadius: 8 }}>
-              <Ionicons name={iconName} size={16} color={colors.primary} />
+      <AppCard padding="sm" elevation="sm" style={{ borderLeftWidth: 4, borderLeftColor: borderColor, paddingVertical: 10, paddingHorizontal: 14 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ backgroundColor: colors.primary + '15', width: 28, height: 28, borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name={iconName} size={15} color={colors.primary} />
             </View>
-            <Text style={[typography.label.small, { color: colors.textSecondary, letterSpacing: 1.2, fontWeight: '700' }]}>
+            <Text style={{ fontSize: 11, fontWeight: '800', color: colors.textSecondary, letterSpacing: 0.8 }}>
               {item.complaint_id || item.request_id}
+            </Text>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text, flex: 1 }} numberOfLines={1}>
+              {item.title}
             </Text>
           </View>
           <StatusBadge status={item.status} />
         </View>
 
-        <Text style={[typography.title.medium, { color: colors.text, marginTop: spacing.sm, fontWeight: '700' }]} numberOfLines={2}>
-          {item.title}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: colors.border + '60' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="person-outline" size={13} color={colors.primary} />
+              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>{item.citizenName}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="business-outline" size={13} color={colors.primary} />
+              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>{item.departmentName}</Text>
+            </View>
+          </View>
 
-        <View style={[styles.metaRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm, marginTop: spacing.md }]}>
-          <View style={styles.metaItem}>
-            <Ionicons name="person-outline" size={14} color={colors.primary} />
-            <Text style={[typography.body.small, { color: colors.textSecondary, fontWeight: '600' }]}>{item.citizenName}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="business-outline" size={14} color={colors.primary} />
-            <Text style={[typography.body.small, { color: colors.textSecondary, fontWeight: '600' }]}>{item.departmentName}</Text>
-          </View>
+          {item.assignedStaffName && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.primary + '10', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
+              <Ionicons name="shield-checkmark" size={12} color={colors.primary} />
+              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary }}>{item.assignedStaffName}</Text>
+            </View>
+          )}
         </View>
       </AppCard>
     </TouchableOpacity>
